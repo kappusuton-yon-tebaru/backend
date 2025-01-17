@@ -62,7 +62,9 @@ func bindStruct(s interface{}) error {
 				return err
 			}
 		} else {
-			viper.BindEnv(strings.Split(tag, ",")[0])
+			if err := viper.BindEnv(strings.Split(tag, ",")[0]); err != nil {
+				return err
+			}
 		}
 	}
 
