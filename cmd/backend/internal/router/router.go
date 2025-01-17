@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/agent"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
 )
 
 type Router struct {
@@ -15,6 +15,6 @@ func New() *Router {
 	}
 }
 
-func (r *Router) RegisterRoutes(app *agent.App) {
+func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/", app.GreetingHandler.Greeting)
 }

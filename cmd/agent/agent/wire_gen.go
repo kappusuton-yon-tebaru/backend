@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package app
+package agent
 
 import (
 	greeting2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"

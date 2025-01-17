@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/app"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/agent"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/router"
 )
 
 func main() {
-	app, err := app.Initialize()
+	app, err := agent.Initialize()
 	if err != nil {
 		panic(err)
 	}
