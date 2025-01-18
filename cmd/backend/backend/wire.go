@@ -1,13 +1,12 @@
 //go:build wireinject
 // +build wireinject
 
-package app
+package backend
 
 import (
 	"github.com/google/wire"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	shared_greeting "github.com/kappusuton-yon-tebaru/backend/internal/greeting"
 )
 
 type App struct {
@@ -29,7 +28,6 @@ func Initialize() (*App, error) {
 	wire.Build(
 		config.Load,
 		greeting.New,
-		shared_greeting.New,
 		New,
 	)
 
