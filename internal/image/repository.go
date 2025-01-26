@@ -30,6 +30,7 @@ func (r *Repository) GetAllImages(ctx context.Context) ([]models.Image, error) {
 
 	for cur.Next(ctx) {
 		var img ImageDTO
+
 		err = cur.Decode(&img)
 		if err != nil {
 			return nil, err
