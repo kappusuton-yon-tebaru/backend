@@ -30,13 +30,23 @@ func (r *Repository) GetAllImages(ctx context.Context) ([]models.Image, error) {
 
 	for cur.Next(ctx) {
 		var img ImageDTO
+
 		err = cur.Decode(&img)
 		if err != nil {
 			return nil, err
 		}
 
-		imgs = append(imgs, img.ToImage())
+		imgs = append(imgs, DTOToImage(img))
 	}
 
 	return imgs, nil
+}
+
+func (r *Repository) CreateImage(ctx context.Context, img CreateImageDTO) error {
+	_, err := r.image.InsertOne(ctx, img)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

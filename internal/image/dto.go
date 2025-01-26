@@ -15,7 +15,16 @@ type ImageDTO struct {
 	IsDeleted          bool          `bson:"is_deleted"`
 }
 
-func (img ImageDTO) ToImage() models.Image {
+type CreateImageDTO struct {
+	ImageName          string        `bson:"image_name"`
+	ProjectId          bson.ObjectID `bson:"project_id"`
+	JobId              bson.ObjectID `bson:"job_id"`
+	RegistryProviderId bson.ObjectID `bson:"registry_provider_id"`
+	Version            string        `bson:"version"`
+	IsDeleted          bool          `bson:"is_deleted"`
+}
+
+func DTOToImage(img ImageDTO) models.Image {
 	return models.Image{
 		Id:                 img.Id.Hex(),
 		ImageName:          img.ImageName,
