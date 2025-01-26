@@ -19,8 +19,9 @@ type BackendConfig struct {
 }
 
 type Config struct {
-	Agent   AgentConfig   `mapstructure:",squash"`
-	Backend BackendConfig `mapstructure:",squash"`
+	Agent    AgentConfig   `mapstructure:",squash"`
+	Backend  BackendConfig `mapstructure:",squash"`
+	MongoUri string        `mapstructure:"MONGO_URI"`
 }
 
 func Load() (*Config, error) {

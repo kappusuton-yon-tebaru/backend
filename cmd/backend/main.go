@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
@@ -12,6 +13,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	defer app.MongoClient.Disconnect(context.Background())
 
 	r := router.New()
 

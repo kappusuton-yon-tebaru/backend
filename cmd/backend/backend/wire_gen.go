@@ -9,6 +9,9 @@ package backend
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // Injectors from wire.go:
@@ -19,7 +22,12 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	handler := greeting.New()
-	app := New(configConfig, handler)
+	client, err := mongodb.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	repository := image.NewRepository(client)
+	app := New(configConfig, handler, client, repository)
 	return app, nil
 }
 
@@ -28,14 +36,20 @@ func Initialize() (*App, error) {
 type App struct {
 	Config          *config.Config
 	GreetingHandler *greeting.Handler
+	MongoClient     *mongo.Client
+	ImageRepo       *image.Repository
 }
 
 func New(
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
+	MongoClient *mongo.Client,
+	ImageRepo *image.Repository,
 ) *App {
 	return &App{
 		Config,
 		GreetingHandler,
+		MongoClient,
+		ImageRepo,
 	}
 }
