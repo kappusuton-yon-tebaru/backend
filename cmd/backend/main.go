@@ -18,6 +18,8 @@ func main() {
 		panic(err)
 	}
 
+	defer app.MongoClient.Disconnect(context.Background())
+
 	r := router.New()
 	config := cors.Config{
 		AllowOrigins:     []string{"http://example.com", "http://localhost:3000"},
