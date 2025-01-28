@@ -6,6 +6,7 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
@@ -28,11 +29,15 @@ func (s *Service) GetAllImages(ctx context.Context) ([]models.Image, error) {
 }
 
 func (s *Service) DeleteImage(ctx context.Context, id string) *werror.WError {
-	filter, err := NewFilter().SetId(id).Build()
+	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return werror.NewFromError(err).
 			SetCode(http.StatusBadRequest).
 			SetMessage("invalid image id")
+	}
+
+	filter := map[string]any{
+		"_id": objId,
 	}
 
 	count, err := s.repo.DeleteImage(ctx, filter)
