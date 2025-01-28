@@ -7,29 +7,39 @@ import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 )
 
 type App struct {
-	Config            *config.Config
-	GreetingHandler   *greeting.Handler
-	MongoClient       *mongo.Client
-	ImageHandler      *image.Handler
-	ServiceDeployment *svcdeploy.Handler
-	UserHandler       *user.Handler
-	ResourceHandler   *resource.Handler
-	RoleHandler 	  *role.Handler
+	Config                   *config.Config
+	GreetingHandler          *greeting.Handler
+	MongoClient              *mongo.Client
+	ImageHandler             *image.Handler
+	ServiceDeployment        *svcdeploy.Handler
+	UserHandler              *user.Handler
+	ResourceHandler          *resource.Handler
+	RoleHandler              *role.Handler
+	Config                   *config.Config
+	GreetingHandler          *greeting.Handler
+	MongoClient              *mongo.Client
+	ImageHandler             *image.Handler
+	ServiceDeployment        *svcdeploy.Handler
+	UserHandler              *user.Handler
+	ResourceHandler          *resource.Handler
+	ProjectRepositoryHandler *projectrepository.Handler
 }
 
 func New(
@@ -41,6 +51,7 @@ func New(
 	UserHandler *user.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
+	ProjectRepositoryHandler *projectrepository.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -51,6 +62,7 @@ func New(
 		UserHandler,
 		ResourceHandler,
 		RoleHandler,
+		ProjectRepositoryHandler,
 	}
 }
 
@@ -74,7 +86,9 @@ func Initialize() (*App, error) {
 		sharedRole.NewRepository,
 		sharedRole.NewService,
 		role.NewHandler,
-
+		sharedProjectRepository.NewRepository,
+		sharedProjectRepository.NewService,
+		projectrepository.NewHandler,
 		New,
 	)
 

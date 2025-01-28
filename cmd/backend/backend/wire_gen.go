@@ -9,6 +9,7 @@ package backend
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
@@ -16,6 +17,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
@@ -51,6 +53,10 @@ func Initialize() (*App, error) {
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
 	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, roleHandler)
+	projectrepositoryRepository := projectrepository.NewRepository(client)
+	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
+	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, projectrepositoryHandler)
 	return app, nil
 }
 
@@ -65,6 +71,14 @@ type App struct {
 	UserHandler       *user2.Handler
 	ResourceHandler   *resource2.Handler
 	RoleHandler       *role2.Handler
+	Config                   *config.Config
+	GreetingHandler          *greeting.Handler
+	MongoClient              *mongo.Client
+	ImageHandler             *image2.Handler
+	ServiceDeployment        *svcdeploy2.Handler
+	UserHandler              *user2.Handler
+	ResourceHandler          *resource2.Handler
+	ProjectRepositoryHandler *projectrepository2.Handler
 }
 
 func New(
@@ -76,6 +90,7 @@ func New(
 	UserHandler *user2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
+	ProjectRepositoryHandler *projectrepository2.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -86,5 +101,6 @@ func New(
 		UserHandler,
 		ResourceHandler,
 		RoleHandler,
+		ProjectRepositoryHandler,
 	}
 }
