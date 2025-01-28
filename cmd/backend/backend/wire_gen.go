@@ -10,10 +10,12 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
+	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -35,7 +37,10 @@ func Initialize() (*App, error) {
 	svcdeployRepository := svcdeploy.NewRepository(client)
 	svcdeployService := svcdeploy.NewService(svcdeployRepository)
 	svcdeployHandler := svcdeploy2.NewHandler(svcdeployService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler)
+	userRepository := user.NewRepository(client)
+	userService := user.NewService(userRepository)
+	userHandler := user2.NewHandler(userService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler)
 	return app, nil
 }
 
@@ -47,6 +52,7 @@ type App struct {
 	MongoClient       *mongo.Client
 	ImageHandler      *image2.Handler
 	ServiceDeployment *svcdeploy2.Handler
+	UserHandler       *user2.Handler
 }
 
 func New(
@@ -55,6 +61,7 @@ func New(
 	MongoClient *mongo.Client,
 	ImageHandler *image2.Handler,
 	ServiceDeployment *svcdeploy2.Handler,
+	UserHandler *user2.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -62,5 +69,6 @@ func New(
 		MongoClient,
 		ImageHandler,
 		ServiceDeployment,
+		UserHandler,
 	}
 }

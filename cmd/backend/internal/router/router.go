@@ -23,4 +23,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/svcdeploys", app.ServiceDeployment.GetAllServiceDeployments)
 	r.DELETE("/svcdeploy/:id", app.ServiceDeployment.DeleteServiceDeployment)
+
+	r.GET("/users", app.UserHandler.GetAllUsers)
+	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
 }
