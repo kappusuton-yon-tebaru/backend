@@ -7,11 +7,13 @@ import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -24,6 +26,7 @@ type App struct {
 	ImageHandler      *image.Handler
 	ServiceDeployment *svcdeploy.Handler
 	UserHandler       *user.Handler
+	ResourceHandler   *resource.Handler
 }
 
 func New(
@@ -33,6 +36,7 @@ func New(
 	ImageHandler *image.Handler,
 	ServiceDeployment *svcdeploy.Handler,
 	UserHandler *user.Handler,
+	ResourceHandler *resource.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -41,6 +45,7 @@ func New(
 		ImageHandler,
 		ServiceDeployment,
 		UserHandler,
+		ResourceHandler,
 	}
 }
 
@@ -58,6 +63,9 @@ func Initialize() (*App, error) {
 		sharedUser.NewRepository,
 		sharedUser.NewService,
 		user.NewHandler,
+		sharedResource.NewRepository,
+		sharedResource.NewService,
+		resource.NewHandler,
 		New,
 	)
 
