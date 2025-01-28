@@ -50,3 +50,12 @@ func (r *Repository) CreateImage(ctx context.Context, img CreateImageDTO) error 
 
 	return nil
 }
+
+func (r *Repository) DeleteImage(ctx context.Context, filter Filter) (int64, error) {
+	result, err := r.image.DeleteOne(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}

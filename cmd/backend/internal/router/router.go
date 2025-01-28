@@ -17,4 +17,7 @@ func New() *Router {
 
 func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/", app.GreetingHandler.Greeting)
+
+	r.GET("/images", app.ImageHandler.GetAllImages)
+	r.DELETE("/image/:id", app.ImageHandler.DeleteImage)
 }

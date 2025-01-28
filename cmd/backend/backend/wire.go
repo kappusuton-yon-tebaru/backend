@@ -6,8 +6,9 @@ package backend
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	"github.com/kappusuton-yon-tebaru/backend/internal/image"
+	shared_image "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -16,20 +17,20 @@ type App struct {
 	Config          *config.Config
 	GreetingHandler *greeting.Handler
 	MongoClient     *mongo.Client
-	ImageRepo       *image.Repository
+	ImageHandler    *image.Handler
 }
 
 func New(
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
-	ImageRepo *image.Repository,
+	ImageHandler *image.Handler,
 ) *App {
 	return &App{
 		Config,
 		GreetingHandler,
 		MongoClient,
-		ImageRepo,
+		ImageHandler,
 	}
 }
 
@@ -38,7 +39,9 @@ func Initialize() (*App, error) {
 		config.Load,
 		greeting.New,
 		mongodb.New,
-		image.NewRepository,
+		shared_image.NewRepository,
+		shared_image.NewService,
+		image.NewHandler,
 		New,
 	)
 

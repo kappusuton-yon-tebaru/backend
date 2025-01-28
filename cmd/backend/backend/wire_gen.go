@@ -8,6 +8,7 @@ package backend
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
+	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
@@ -27,7 +28,9 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	repository := image.NewRepository(client)
-	app := New(configConfig, handler, client, repository)
+	service := image.NewService(repository)
+	imageHandler := image2.NewHandler(service)
+	app := New(configConfig, handler, client, imageHandler)
 	return app, nil
 }
 
@@ -37,19 +40,19 @@ type App struct {
 	Config          *config.Config
 	GreetingHandler *greeting.Handler
 	MongoClient     *mongo.Client
-	ImageRepo       *image.Repository
+	ImageHandler    *image2.Handler
 }
 
 func New(
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
-	ImageRepo *image.Repository,
+	ImageHandler *image2.Handler,
 ) *App {
 	return &App{
 		Config,
 		GreetingHandler,
 		MongoClient,
-		ImageRepo,
+		ImageHandler,
 	}
 }
