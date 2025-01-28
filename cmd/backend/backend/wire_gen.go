@@ -52,25 +52,16 @@ func Initialize() (*App, error) {
 	roleRepository := role.NewRepository(client)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, roleHandler)
 	projectrepositoryRepository := projectrepository.NewRepository(client)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, projectrepositoryHandler)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, roleHandler, projectrepositoryHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Config            *config.Config
-	GreetingHandler   *greeting.Handler
-	MongoClient       *mongo.Client
-	ImageHandler      *image2.Handler
-	ServiceDeployment *svcdeploy2.Handler
-	UserHandler       *user2.Handler
-	ResourceHandler   *resource2.Handler
-	RoleHandler       *role2.Handler
 	Config                   *config.Config
 	GreetingHandler          *greeting.Handler
 	MongoClient              *mongo.Client
@@ -78,6 +69,7 @@ type App struct {
 	ServiceDeployment        *svcdeploy2.Handler
 	UserHandler              *user2.Handler
 	ResourceHandler          *resource2.Handler
+	RoleHandler              *role2.Handler
 	ProjectRepositoryHandler *projectrepository2.Handler
 }
 

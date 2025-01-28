@@ -32,13 +32,6 @@ type App struct {
 	UserHandler              *user.Handler
 	ResourceHandler          *resource.Handler
 	RoleHandler              *role.Handler
-	Config                   *config.Config
-	GreetingHandler          *greeting.Handler
-	MongoClient              *mongo.Client
-	ImageHandler             *image.Handler
-	ServiceDeployment        *svcdeploy.Handler
-	UserHandler              *user.Handler
-	ResourceHandler          *resource.Handler
 	ProjectRepositoryHandler *projectrepository.Handler
 }
 
