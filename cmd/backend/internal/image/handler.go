@@ -1,6 +1,8 @@
 package image
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 )
@@ -18,17 +20,17 @@ func NewHandler(service *image.Service) *Handler {
 func (h *Handler) GetAllImages(ctx *gin.Context) {
 	images, err := h.service.GetAllImages(ctx)
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(200, images)
+	ctx.JSON(http.StatusOK, images)
 }
 
 func (h *Handler) DeleteImage(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
-		ctx.JSON(400, map[string]any{
+		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "empty id",
 		})
 		return
@@ -36,13 +38,13 @@ func (h *Handler) DeleteImage(ctx *gin.Context) {
 
 	err := h.service.DeleteImage(ctx, id)
 	if err != nil {
-		ctx.JSON(500, map[string]any{
-			"message": err.Error(),
+		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
+			"message": err.GetMessageOr("internal server error"),
 		})
 		return
 	}
 
-	ctx.JSON(299, map[string]any{
+	ctx.JSON(http.StatusOK, map[string]any{
 		"message": "deleted",
 	})
 }
