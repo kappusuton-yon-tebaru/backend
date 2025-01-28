@@ -10,12 +10,14 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
+	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -45,7 +47,10 @@ func Initialize() (*App, error) {
 	resourceRepository := resource.NewRepository(client)
 	resourceService := resource.NewService(resourceRepository)
 	resourceHandler := resource2.NewHandler(resourceService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler)
+	roleRepository := role.NewRepository(client)
+	roleService := role.NewService(roleRepository)
+	roleHandler := role2.NewHandler(roleService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, userHandler, resourceHandler, roleHandler)
 	return app, nil
 }
 
@@ -59,6 +64,7 @@ type App struct {
 	ServiceDeployment *svcdeploy2.Handler
 	UserHandler       *user2.Handler
 	ResourceHandler   *resource2.Handler
+	RoleHandler       *role2.Handler
 }
 
 func New(
@@ -69,6 +75,7 @@ func New(
 	ServiceDeployment *svcdeploy2.Handler,
 	UserHandler *user2.Handler,
 	ResourceHandler *resource2.Handler,
+	RoleHandler *role2.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -78,5 +85,6 @@ func New(
 		ServiceDeployment,
 		UserHandler,
 		ResourceHandler,
+		RoleHandler,
 	}
 }

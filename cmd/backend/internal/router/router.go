@@ -29,4 +29,8 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
+
+	r.GET("/roles", app.RoleHandler.GetAllRoles)
+	r.DELETE("/roles/:id", app.RoleHandler.DeleteRoleById)
+
 }

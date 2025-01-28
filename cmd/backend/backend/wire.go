@@ -17,6 +17,8 @@ import (
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
+	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 )
 
 type App struct {
@@ -27,6 +29,7 @@ type App struct {
 	ServiceDeployment *svcdeploy.Handler
 	UserHandler       *user.Handler
 	ResourceHandler   *resource.Handler
+	RoleHandler 	  *role.Handler
 }
 
 func New(
@@ -37,6 +40,7 @@ func New(
 	ServiceDeployment *svcdeploy.Handler,
 	UserHandler *user.Handler,
 	ResourceHandler *resource.Handler,
+	RoleHandler *role.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -46,6 +50,7 @@ func New(
 		ServiceDeployment,
 		UserHandler,
 		ResourceHandler,
+		RoleHandler,
 	}
 }
 
@@ -66,6 +71,10 @@ func Initialize() (*App, error) {
 		sharedResource.NewRepository,
 		sharedResource.NewService,
 		resource.NewHandler,
+		sharedRole.NewRepository,
+		sharedRole.NewService,
+		role.NewHandler,
+
 		New,
 	)
 
