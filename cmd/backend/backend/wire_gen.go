@@ -9,9 +9,11 @@ package backend
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -30,17 +32,21 @@ func Initialize() (*App, error) {
 	repository := image.NewRepository(client)
 	service := image.NewService(repository)
 	imageHandler := image2.NewHandler(service)
-	app := New(configConfig, handler, client, imageHandler)
+	svcdeployRepository := svcdeploy.NewRepository(client)
+	svcdeployService := svcdeploy.NewService(svcdeployRepository)
+	svcdeployHandler := svcdeploy2.NewHandler(svcdeployService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Config          *config.Config
-	GreetingHandler *greeting.Handler
-	MongoClient     *mongo.Client
-	ImageHandler    *image2.Handler
+	Config            *config.Config
+	GreetingHandler   *greeting.Handler
+	MongoClient       *mongo.Client
+	ImageHandler      *image2.Handler
+	ServiceDeployment *svcdeploy2.Handler
 }
 
 func New(
@@ -48,11 +54,13 @@ func New(
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
 	ImageHandler *image2.Handler,
+	ServiceDeployment *svcdeploy2.Handler,
 ) *App {
 	return &App{
 		Config,
 		GreetingHandler,
 		MongoClient,
 		ImageHandler,
+		ServiceDeployment,
 	}
 }

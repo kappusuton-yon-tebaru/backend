@@ -20,4 +20,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/images", app.ImageHandler.GetAllImages)
 	r.DELETE("/image/:id", app.ImageHandler.DeleteImage)
+
+	r.GET("/svcdeploys", app.ServiceDeployment.GetAllServiceDeployments)
+	r.DELETE("/svcdeploy/:id", app.ServiceDeployment.DeleteServiceDeployment)
 }
