@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -46,7 +45,7 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, filter image.Filter) (int64, error) {
+func (r *Repository) DeleteUser(ctx context.Context, filter any) (int64, error) {
 	result, err := r.user.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

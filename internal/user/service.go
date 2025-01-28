@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
@@ -29,11 +29,15 @@ func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
 }
 
 func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError {
-	filter, err := image.NewFilter().SetId(id).Build()
+	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return werror.NewFromError(err).
 			SetCode(http.StatusBadRequest).
-			SetMessage("invalid image id")
+			SetMessage("invalid user id")
+	}
+
+	filter := map[string]any{
+		"_id": objId,
 	}
 
 	count, err := s.repo.DeleteUser(ctx, filter)
