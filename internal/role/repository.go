@@ -2,9 +2,11 @@ package role
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -43,6 +45,22 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	}
 
 	return roles, nil
+}
+
+func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, error) {
+	role := bson.M{
+		"role_name": dto.Role_name,
+	}
+
+	result, err := r.role.InsertOne(ctx, role)
+	if err != nil {
+		log.Println("Error inserting role:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting role: %v", err)
+	}
+
+	insertedID := result.InsertedID
+
+	return insertedID, nil
 }
 
 func (r *Repository) DeleteRole(ctx context.Context, filter any) (int64, error) {

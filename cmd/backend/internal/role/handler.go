@@ -27,6 +27,32 @@ func (h *Handler) GetAllRoles(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, images)
 }
 
+func (h *Handler) CreateRole(ctx *gin.Context) {
+	var roleDTO role.CreateRoleDTO
+
+	if err := ctx.ShouldBindJSON(&roleDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	id, err := h.service.CreateRole(ctx,roleDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create role",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message": "role created successfully",
+		"Role_id": id,
+	})
+}
+
 func (h *Handler) DeleteRoleById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

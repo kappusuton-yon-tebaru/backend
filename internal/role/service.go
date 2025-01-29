@@ -28,6 +28,15 @@ func (s *Service) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
+func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, error) {
+	id, err := s.repo.CreateRole(ctx, dto)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {

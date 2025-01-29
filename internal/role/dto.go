@@ -10,6 +10,10 @@ type RoleDTO struct {
 	Role_name 	string        `bson:"role_name"`
 }
 
+type CreateRoleDTO struct {
+	Role_name 	string        `bson:"role_name"`
+}
+
 func DTOToRole(role RoleDTO) models.Role {
 	return models.Role{
 		Id:       	role.Id.Hex(),

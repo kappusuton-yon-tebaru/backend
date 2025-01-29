@@ -2,9 +2,11 @@ package permission
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -43,6 +45,25 @@ func (r *Repository) GetAllPermissions(ctx context.Context) ([]models.Permission
 	}
 
 	return permissions, nil
+}
+
+func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionDTO) (any, error) {
+	permission := bson.M{
+		"permission_name": dto.Permission_name,
+		"action": dto.Action,
+		"resource_id": dto.Resource_id,
+		"resource_type": dto.Resource_type,
+	}
+
+	result, err := r.permission.InsertOne(ctx, permission)
+	log.Println("perm repo:", permission)
+
+	if err != nil {
+		log.Println("Error inserting permission:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting permission: %v", err)
+	}
+
+	return result.InsertedID, nil
 }
 
 func (r *Repository) DeletePermission(ctx context.Context, filter any) (int64, error) {

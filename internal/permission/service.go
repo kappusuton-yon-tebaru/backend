@@ -28,6 +28,15 @@ func (s *Service) GetAllPermissions(ctx context.Context) ([]models.Permission, e
 	return permissions, nil
 }
 
+func (s *Service) CreatePermission(ctx context.Context, dto CreatePermissionDTO) (any, error) {
+	id, err := s.repo.CreatePermission(ctx, dto)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s *Service) DeletePermissionById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {

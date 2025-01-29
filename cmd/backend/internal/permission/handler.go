@@ -1,6 +1,7 @@
 package permission
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,34 @@ func (h *Handler) GetAllPermissions(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, images)
+}
+
+func (h *Handler) CreatePermission(ctx *gin.Context) {
+	var permissionDTO permission.CreatePermissionDTO
+
+
+	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+	log.Println("perm handler:", permissionDTO)
+
+	id, err := h.service.CreatePermission(ctx,permissionDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create permission",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message": "permission created successfully",
+		"permission_id": id,
+	})
 }
 
 func (h *Handler) DeletePermissionById(ctx *gin.Context) {
