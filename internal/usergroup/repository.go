@@ -12,12 +12,14 @@ import (
 )
 
 type Repository struct {
-	usergroup *mongo.Collection
+	usergroup           *mongo.Collection
+	usergroupMembership *mongo.Collection
 }
 
 func NewRepository(client *mongo.Client) *Repository {
 	return &Repository{
-		usergroup: client.Database("Capstone").Collection("user_groups"),
+		usergroup:           client.Database("Capstone").Collection("user_groups"),
+		usergroupMembership: client.Database("Capstone").Collection("user_group_memberships"),
 	}
 }
 
@@ -48,11 +50,11 @@ func (r *Repository) GetAllUserGroups(ctx context.Context) ([]models.UserGroup, 
 }
 
 func (r *Repository) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (any, error) {
-	newusergroup := bson.M{
+	usergroup := bson.M{
 		"group_name": dto.GroupName,
 	}
 
-	result, err := r.usergroup.InsertOne(ctx, newusergroup)
+	result, err := r.usergroup.InsertOne(ctx, usergroup)
 	if err != nil {
 		log.Println("Error inserting user group:", err)
 		return primitive.NilObjectID, fmt.Errorf("error inserting user group: %v", err)
@@ -63,8 +65,34 @@ func (r *Repository) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO
 	return insertedID, nil
 }
 
+func (r *Repository) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id bson.ObjectID) (any, error) {
+	addUser := bson.M{
+		"group_id": id,
+		"user_id":  dto.UserId,
+	}
+
+	result, err := r.usergroupMembership.InsertOne(ctx, addUser)
+	if err != nil {
+		log.Println("Error inserting user to user group:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting user to user group: %v", err)
+	}
+
+	insertedID := result.InsertedID
+
+	return insertedID, nil
+}
+
 func (r *Repository) DeleteUserGroup(ctx context.Context, filter any) (int64, error) {
 	result, err := r.usergroup.DeleteOne(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}
+
+func (r *Repository) DeleteUserFromUserGroup(ctx context.Context, filter any) (int64, error) {
+	result, err := r.usergroupMembership.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
 	}

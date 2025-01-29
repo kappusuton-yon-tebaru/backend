@@ -37,6 +37,19 @@ func (s *Service) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (
 	return id, nil
 }
 
+func (s *Service) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id string) (any, error) {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return "", err
+	}
+	addId, err := s.repo.AddUserToUserGroup(ctx, dto, objId)
+	if err != nil {
+		return "", err
+	}
+
+	return addId, nil
+}
+
 func (s *Service) DeleteUserGroupById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
@@ -58,6 +71,40 @@ func (s *Service) DeleteUserGroupById(ctx context.Context, id string) *werror.WE
 		return werror.New().
 			SetCode(http.StatusNotFound).
 			SetMessage("User group not found")
+	}
+
+	return nil
+}
+
+func (s *Service) DeleteUserFromUserGroupById(ctx context.Context, groupId string, userId string) *werror.WError {
+	gId, err := bson.ObjectIDFromHex(groupId)
+	if err != nil {
+		return werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid user group id")
+	}
+
+	uId, err := bson.ObjectIDFromHex(userId)
+	if err != nil {
+		return werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid user id")
+	}
+
+	filter := map[string]any{
+		"group_id": gId,
+		"user_id":  uId,
+	}
+
+	count, err := s.repo.DeleteUserFromUserGroup(ctx, filter)
+	if err != nil {
+		return werror.NewFromError(err)
+	}
+
+	if count == 0 {
+		return werror.New().
+			SetCode(http.StatusNotFound).
+			SetMessage("User not in group")
 	}
 
 	return nil

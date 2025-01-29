@@ -14,6 +14,10 @@ type CreateUserGroupDTO struct {
 	GroupName string `json:"group_name" bson:"group_name"`
 }
 
+type AddUserToUserGroupDTO struct {
+	UserId bson.ObjectID `json:"user_id" bson:"user_id"`
+}
+
 func DTOToUserGroup(usergroup UserGroupDTO) models.UserGroup {
 	return models.UserGroup{
 		Id:        usergroup.Id.Hex(),

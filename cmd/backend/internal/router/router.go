@@ -30,7 +30,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
 	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)
-	r.DELETE("/usergroups/:id", app.UserGroupHandler.DeleteUserGroupById)
+	r.DELETE("/usergroups/:group_id", app.UserGroupHandler.DeleteUserGroupById)
+	r.POST("/usergroups/:id/user", app.UserGroupHandler.AddUserToUserGroup)
+	r.DELETE("/usergroups/:group_id/user/:user_id", app.UserGroupHandler.DeleteUserFromUserGroupById)
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
