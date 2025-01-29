@@ -11,6 +11,11 @@ type ResourceRelationshipDTO struct {
 	ChildResourceId  bson.ObjectID `bson:"child_resource_id"`
 }
 
+type CreateResourceRelationshipDTO struct {
+	ParentResourceId bson.ObjectID `bson:"parent_resource_id"`
+	ChildResourceId  bson.ObjectID `bson:"child_resource_id"`
+}
+
 func DTOToResourceRelationship(resourceRela ResourceRelationshipDTO) models.ResourceRelationship {
 	return models.ResourceRelationship{
 		Id:               resourceRela.Id.Hex(),

@@ -28,6 +28,15 @@ func (s *Service) GetAllResourceRelationships(ctx context.Context) ([]models.Res
 	return resourceRelas, nil
 }
 
+func (s *Service) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (any, error) {
+	id, err := s.repo.CreateResourceRelationship(ctx, dto)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s *Service) DeleteResourceRelationship(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {

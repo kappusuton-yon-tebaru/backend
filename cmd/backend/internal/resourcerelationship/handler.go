@@ -27,6 +27,32 @@ func (h *Handler) GetAllResourceRelationships(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resourceRelas)
 }
 
+func (h *Handler) CreateResourceRelationship(ctx *gin.Context) {
+	var resourceRelaDTO resourcerelationship.CreateResourceRelationshipDTO
+
+	if err := ctx.ShouldBindJSON(&resourceRelaDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	id, err := h.service.CreateResourceRelationship(ctx, resourceRelaDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create resource relationship",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message":                  "resource relationship created successfully",
+		"resource_relationship_id": id,
+	})
+}
+
 func (h *Handler) DeleteResourceRelationship(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

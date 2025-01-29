@@ -2,9 +2,11 @@ package resourcerelationship
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -43,6 +45,21 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	}
 
 	return resourceRelas, nil
+}
+
+func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (any, error) {
+	resourceRela := bson.M{
+		"parent_resource_id": dto.ParentResourceId,
+		"child_resource_id":  dto.ChildResourceId,
+	}
+
+	result, err := r.resourceRela.InsertOne(ctx, resourceRela)
+	if err != nil {
+		log.Println("Error inserting resource relationship:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting resource relationship: %v", err)
+	}
+
+	return result.InsertedID, nil
 }
 
 func (r *Repository) DeleteResourceRelationship(ctx context.Context, filter any) (int64, error) {
