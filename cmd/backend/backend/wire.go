@@ -11,6 +11,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
@@ -19,6 +20,7 @@ import (
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
+	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -29,6 +31,7 @@ type App struct {
 	MongoClient              *mongo.Client
 	ImageHandler             *image.Handler
 	ServiceDeployment        *svcdeploy.Handler
+	ServiceDeploymentEnv     *svcdeployenv.Handler
 	UserHandler              *user.Handler
 	ResourceHandler          *resource.Handler
 	RoleHandler              *role.Handler
@@ -41,6 +44,7 @@ func New(
 	MongoClient *mongo.Client,
 	ImageHandler *image.Handler,
 	ServiceDeployment *svcdeploy.Handler,
+	ServiceDeploymentEnv *svcdeployenv.Handler,
 	UserHandler *user.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
@@ -52,6 +56,7 @@ func New(
 		MongoClient,
 		ImageHandler,
 		ServiceDeployment,
+		ServiceDeploymentEnv,
 		UserHandler,
 		ResourceHandler,
 		RoleHandler,
@@ -70,6 +75,9 @@ func Initialize() (*App, error) {
 		sharedSvcDeploy.NewRepository,
 		sharedSvcDeploy.NewService,
 		svcdeploy.NewHandler,
+		sharedSvcDeployEnv.NewRepository,
+		sharedSvcDeployEnv.NewService,
+		svcdeployenv.NewHandler,
 		sharedUser.NewRepository,
 		sharedUser.NewService,
 		user.NewHandler,
