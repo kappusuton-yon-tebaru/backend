@@ -37,6 +37,8 @@ import (
 	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
+	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 )
 
 type App struct {
@@ -52,6 +54,7 @@ type App struct {
 	RoleHandler                 *role.Handler
 	PermissionHandler           *permission.Handler
 	RolePermissionHandler       *rolepermission.Handler
+	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
 	JobHandler				  	*job.Handler
@@ -72,6 +75,7 @@ func New(
 	RoleHandler *role.Handler,
 	PermissionHandler *permission.Handler,
 	RolePermissionHandler *rolepermission.Handler,
+	RoleUserGroupHandler *roleusergroup.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
 	JobHandler *job.Handler,
@@ -91,6 +95,7 @@ func New(
 		RoleHandler,
 		PermissionHandler,
 		RolePermissionHandler,
+		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 		JobHandler,
@@ -131,6 +136,9 @@ func Initialize() (*App, error) {
 		sharedRolePermission.NewRepository,
 		sharedRolePermission.NewService,
 		rolepermission.NewHandler,
+		sharedRoleUserGroup.NewRepository,
+		sharedRoleUserGroup.NewService,
+		roleusergroup.NewHandler,
 		sharedProjectRepository.NewRepository,
 		sharedProjectRepository.NewService,
 		projectrepository.NewHandler,

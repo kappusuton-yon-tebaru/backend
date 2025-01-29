@@ -1,24 +1,24 @@
-package rolepermission
+package roleusergroup
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
+	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 )
 
 type Handler struct {
-	service *rolepermission.Service
+	service *roleusergroup.Service
 }
 
-func NewHandler(service *rolepermission.Service) *Handler {
+func NewHandler(service *roleusergroup.Service) *Handler {
 	return &Handler{
 		service,
 	}
 }
 
-func (h *Handler) GetAllRolePermissions(ctx *gin.Context) {
-	images, err := h.service.GetAllRolePermissions(ctx)
+func (h *Handler) GetAllRoleUserGroups(ctx *gin.Context) {
+	images, err := h.service.GetAllRoleUserGroups(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -27,10 +27,10 @@ func (h *Handler) GetAllRolePermissions(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, images)
 }
 
-func (h *Handler) CreateRolePermission(ctx *gin.Context) {
-	var rolepermissionDTO rolepermission.CreateRolePermissionDTO
+func (h *Handler) CreateRoleUserGroup(ctx *gin.Context) {
+	var roleUserGroupDTO roleusergroup.CreateRoleUserGroupDTO
 
-	if err := ctx.ShouldBindJSON(&rolepermissionDTO); err != nil {
+	if err := ctx.ShouldBindJSON(&roleUserGroupDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
 			"error":   err.Error(),
@@ -38,22 +38,22 @@ func (h *Handler) CreateRolePermission(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateRolePermission(ctx,rolepermissionDTO)
+	id, err := h.service.CreateRoleUserGroup(ctx,roleUserGroupDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
-			"message": "failed to create rolepermission",
+			"message": "failed to create roleUserGroup",
 			"error":   err.Error(),
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "rolepermission created successfully",
-		"Role_permission_id": id,
+		"message": "roleUserGroup created successfully",
+		"Role_UserGroup_id": id,
 	})
 }
 
-func (h *Handler) DeleteRolePermissionById(ctx *gin.Context) {
+func (h *Handler) DeleteRoleUserGroupById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -62,7 +62,7 @@ func (h *Handler) DeleteRolePermissionById(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.DeleteRolePermissionById(ctx, id)
+	err := h.service.DeleteRoleUserGroupById(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -1,4 +1,4 @@
-package rolepermission
+package roleusergroup
 
 import (
 	"context"
@@ -19,17 +19,17 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllRolePermissions(ctx context.Context) ([]models.RolePermission, error) {
-	rolepermissions, err := s.repo.GetAllRolePermissions(ctx)
+func (s *Service) GetAllRoleUserGroups(ctx context.Context) ([]models.RoleUserGroup, error) {
+	roleUserGroups, err := s.repo.GetAllRoleUserGroups(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return rolepermissions, nil
+	return roleUserGroups, nil
 }
 
-func (s *Service) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (any, error) {
-	id, err := s.repo.CreateRolePermission(ctx, dto)
+func (s *Service) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (any, error) {
+	id, err := s.repo.CreateRoleUserGroup(ctx, dto)
 	if err != nil {
 		return "", err
 	}
@@ -37,7 +37,7 @@ func (s *Service) CreateRolePermission(ctx context.Context, dto CreateRolePermis
 	return id, nil
 }
 
-func (s *Service) DeleteRolePermissionById(ctx context.Context, id string) *werror.WError {
+func (s *Service) DeleteRoleUserGroupById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return werror.NewFromError(err).
@@ -49,7 +49,7 @@ func (s *Service) DeleteRolePermissionById(ctx context.Context, id string) *werr
 		"_id": objId,
 	}
 
-	count, err := s.repo.DeleteRolePermission(ctx, filter)
+	count, err := s.repo.DeleteRoleUserGroup(ctx, filter)
 	if err != nil {
 		return werror.NewFromError(err)
 	}
