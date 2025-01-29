@@ -29,6 +29,12 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
+	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
+	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
+	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 )
 
 type App struct {
@@ -45,6 +51,9 @@ type App struct {
 	PermissionHandler           *permission.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
+	JobHandler				  	*job.Handler
+	RegisterProviderHandler		*regproviders.Handler
+	ProjectEnvironmentHandler	*projectenv.Handler
 }
 
 func New(
@@ -61,6 +70,9 @@ func New(
 	PermissionHandler *permission.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
+	JobHandler *job.Handler,
+	RegisterProviderHandler *regproviders.Handler,
+	ProjectEnvironmentHandler *projectenv.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -76,6 +88,9 @@ func New(
 		PermissionHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
+		JobHandler,
+		RegisterProviderHandler,
+		ProjectEnvironmentHandler,
 	}
 }
 
@@ -114,6 +129,15 @@ func Initialize() (*App, error) {
 		sharedResourceRelationship.NewRepository,
 		sharedResourceRelationship.NewService,
 		resourcerelationship.NewHandler,
+		sharedJob.NewRepository,
+		sharedJob.NewService,
+		job.NewHandler,
+		sharedRegProviders.NewRepository,
+		sharedRegProviders.NewService,
+		regproviders.NewHandler,
+		sharedProjectEnvironment.NewRepository,
+		sharedProjectEnvironment.NewService,
+		projectenv.NewHandler,
 		New,
 	)
 
