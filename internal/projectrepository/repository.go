@@ -2,9 +2,11 @@ package projectrepository
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -43,6 +45,21 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	}
 
 	return projRepos, nil
+}
+
+func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (any, error) {
+	projRepo := bson.M{
+		"git_repo_url": dto.GitRepoUrl,
+		"project_id":   dto.ProjectId,
+	}
+
+	result, err := r.projRepo.InsertOne(ctx, projRepo)
+	if err != nil {
+		log.Println("Error inserting project repository:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting project repository: %v", err)
+	}
+
+	return result.InsertedID, nil
 }
 
 func (r *Repository) DeleteProjectRepository(ctx context.Context, filter any) (int64, error) {

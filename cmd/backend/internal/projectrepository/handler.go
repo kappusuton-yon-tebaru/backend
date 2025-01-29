@@ -27,6 +27,32 @@ func (h *Handler) GetAllProjectRepositories(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, projRepos)
 }
 
+func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
+	var projRepoDTO projectrepository.CreateProjectRepositoryDTO
+
+	if err := ctx.ShouldBindJSON(&projRepoDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	id, err := h.service.CreateProjectRepository(ctx, projRepoDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create project repository",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message":               "project repository created successfully",
+		"project_repository_id": id,
+	})
+}
+
 func (h *Handler) DeleteProjectRepository(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

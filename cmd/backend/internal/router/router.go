@@ -45,6 +45,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
+	r.POST("/projrepos", app.ProjectRepositoryHandler.CreateProjectRepository)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
 	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
