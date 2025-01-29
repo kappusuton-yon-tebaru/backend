@@ -1,24 +1,24 @@
-package permission
+package rolepermission
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 )
 
 type Handler struct {
-	service *permission.Service
+	service *rolepermission.Service
 }
 
-func NewHandler(service *permission.Service) *Handler {
+func NewHandler(service *rolepermission.Service) *Handler {
 	return &Handler{
 		service,
 	}
 }
 
-func (h *Handler) GetAllPermissions(ctx *gin.Context) {
-	images, err := h.service.GetAllPermissions(ctx)
+func (h *Handler) GetAllRolePermissions(ctx *gin.Context) {
+	images, err := h.service.GetAllRolePermissions(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -27,11 +27,10 @@ func (h *Handler) GetAllPermissions(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, images)
 }
 
-func (h *Handler) CreatePermission(ctx *gin.Context) {
-	var permissionDTO permission.CreatePermissionDTO
+func (h *Handler) CreateRolePermission(ctx *gin.Context) {
+	var rolepermissionDTO rolepermission.CreateRolePermissionDTO
 
-
-	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
+	if err := ctx.ShouldBindJSON(&rolepermissionDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
 			"error":   err.Error(),
@@ -39,22 +38,22 @@ func (h *Handler) CreatePermission(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreatePermission(ctx,permissionDTO)
+	id, err := h.service.CreateRole(ctx,rolepermissionDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
-			"message": "failed to create permission",
+			"message": "failed to create rolepermission",
 			"error":   err.Error(),
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "permission created successfully",
-		"permission_id": id,
+		"message": "rolepermission created successfully",
+		"Role_permission_id": id,
 	})
 }
 
-func (h *Handler) DeletePermissionById(ctx *gin.Context) {
+func (h *Handler) DeleteRolePermissionById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -63,7 +62,7 @@ func (h *Handler) DeletePermissionById(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.DeletePermissionById(ctx, id)
+	err := h.service.DeleteRolePermissionById(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -56,7 +56,6 @@ func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionD
 	}
 
 	result, err := r.permission.InsertOne(ctx, permission)
-	log.Println("perm repo:", permission)
 
 	if err != nil {
 		log.Println("Error inserting permission:", err)

@@ -46,6 +46,10 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/permissions", app.PermissionHandler.CreatePermission)
 	r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
 
+	r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
+	r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
+	r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
+
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.POST("/projrepos", app.ProjectRepositoryHandler.CreateProjectRepository)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
