@@ -28,13 +28,13 @@ func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (s *Service) CreateUser(ctx context.Context) (models.User, error) {
-	user, err := s.repo.InsertUser(ctx, userDTO)
+func (s *Service) CreateUser(ctx context.Context, dto CreateUserDTO) (any, error) {
+	id, err := s.repo.CreateUser(ctx, dto)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return user
+	return id, nil
 }
 
 func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError {

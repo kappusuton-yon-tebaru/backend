@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
@@ -46,7 +47,7 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (primitive.ObjectID, error) {
+func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (any, error) {
 	user := bson.M{
 		"name":     dto.Name,
 		"password": dto.Password,
@@ -54,18 +55,16 @@ func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (primiti
 
 	result, err := r.user.InsertOne(ctx, user)
 	if err != nil {
-		return "", err
+		log.Println("Error inserting user:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting user: %v", err)
 	}
 
-	insertedID, err := result.InsertedID.(primitive.ObjectID)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
+	insertedID := result.InsertedID
 
 	return insertedID, nil
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, filter image.Filter) (int64, error) {
+func (r *Repository) DeleteUser(ctx context.Context, filter any) (int64, error) {
 	result, err := r.user.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

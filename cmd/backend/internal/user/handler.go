@@ -27,6 +27,32 @@ func (h *Handler) GetAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, images)
 }
 
+func (h *Handler) CreateUser(ctx *gin.Context) {
+	var userDTO user.CreateUserDTO
+
+	if err := ctx.ShouldBindJSON(&userDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	id, err := h.service.CreateUser(ctx, userDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create user",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message": "user created successfully",
+		"user_id": id,
+	})
+}
+
 func (h *Handler) DeleteUserById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
