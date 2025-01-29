@@ -51,4 +51,16 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
 	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
+
+	r.GET("/jobs", app.JobHandler.GetAllJobs)
+	r.POST("/jobs", app.JobHandler.CreateJob)
+	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
+
+	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
+	r.POST("/regproviders", app.RegisterProviderHandler.CreateRegProvider)
+	r.DELETE("/regproviders/:id", app.RegisterProviderHandler.DeleteRegProvider)
+
+	r.GET("/projectenvs", app.ProjectEnvironmentHandler.GetAllProjectEnvs)
+	r.POST("/projectenvs", app.ProjectEnvironmentHandler.CreateProjectEnv)
+	r.DELETE("/projectenvs/:id", app.ProjectEnvironmentHandler.DeleteProjectEnv)
 }
