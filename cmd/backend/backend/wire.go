@@ -26,6 +26,8 @@ import (
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
+	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -40,6 +42,7 @@ type App struct {
 	UserGroupHandler            *usergroup.Handler
 	ResourceHandler             *resource.Handler
 	RoleHandler                 *role.Handler
+	PermissionHandler           *permission.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
 }
@@ -55,6 +58,7 @@ func New(
 	UserGroupHandler *usergroup.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
+	PermissionHandler *permission.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
 ) *App {
@@ -69,6 +73,7 @@ func New(
 		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
+		PermissionHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 	}
@@ -100,6 +105,9 @@ func Initialize() (*App, error) {
 		sharedRole.NewRepository,
 		sharedRole.NewService,
 		role.NewHandler,
+		sharedPermission.NewRepository,
+		sharedPermission.NewService,
+		permission.NewHandler,
 		sharedProjectRepository.NewRepository,
 		sharedProjectRepository.NewService,
 		projectrepository.NewHandler,

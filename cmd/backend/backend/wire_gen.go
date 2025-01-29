@@ -9,6 +9,7 @@ package backend
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	permission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
@@ -20,6 +21,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
@@ -64,13 +66,16 @@ func Initialize() (*App, error) {
 	roleRepository := role.NewRepository(client)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
+	permissionRepository := permission.NewRepository(client)
+	permissionService := permission.NewService(permissionRepository)
+	permissionHandler := permission2.NewHandler(permissionService)
 	projectrepositoryRepository := projectrepository.NewRepository(client)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(client)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, projectrepositoryHandler, resourcerelationshipHandler)
 	return app, nil
 }
 
@@ -87,6 +92,7 @@ type App struct {
 	UserGroupHandler            *usergroup2.Handler
 	ResourceHandler             *resource2.Handler
 	RoleHandler                 *role2.Handler
+	PermissionHandler           *permission2.Handler
 	ProjectRepositoryHandler    *projectrepository2.Handler
 	ResourceRelationshipHandler *resourcerelationship2.Handler
 }
@@ -102,6 +108,7 @@ func New(
 	UserGroupHandler *usergroup2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
+	PermissionHandler *permission2.Handler,
 	ProjectRepositoryHandler *projectrepository2.Handler,
 	ResourceRelationshipHandler *resourcerelationship2.Handler,
 ) *App {
@@ -116,6 +123,7 @@ func New(
 		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
+		PermissionHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 	}
