@@ -13,6 +13,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
@@ -22,6 +23,7 @@ import (
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
+	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -33,6 +35,7 @@ type App struct {
 	ServiceDeployment        *svcdeploy.Handler
 	ServiceDeploymentEnv     *svcdeployenv.Handler
 	UserHandler              *user.Handler
+	UserGroupHandler         *usergroup.Handler
 	ResourceHandler          *resource.Handler
 	RoleHandler              *role.Handler
 	ProjectRepositoryHandler *projectrepository.Handler
@@ -46,6 +49,7 @@ func New(
 	ServiceDeployment *svcdeploy.Handler,
 	ServiceDeploymentEnv *svcdeployenv.Handler,
 	UserHandler *user.Handler,
+	UserGroupHandler *usergroup.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
@@ -58,6 +62,7 @@ func New(
 		ServiceDeployment,
 		ServiceDeploymentEnv,
 		UserHandler,
+		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
 		ProjectRepositoryHandler,
@@ -81,6 +86,9 @@ func Initialize() (*App, error) {
 		sharedUser.NewRepository,
 		sharedUser.NewService,
 		user.NewHandler,
+		sharedUserGroup.NewRepository,
+		sharedUserGroup.NewService,
+		usergroup.NewHandler,
 		sharedResource.NewRepository,
 		sharedResource.NewService,
 		resource.NewHandler,

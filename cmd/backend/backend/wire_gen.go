@@ -15,6 +15,7 @@ import (
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
+	usergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
@@ -24,6 +25,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
+	"github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -51,6 +53,9 @@ func Initialize() (*App, error) {
 	userRepository := user.NewRepository(client)
 	userService := user.NewService(userRepository)
 	userHandler := user2.NewHandler(userService)
+	usergroupRepository := usergroup.NewRepository(client)
+	usergroupService := usergroup.NewService(usergroupRepository)
+	usergroupHandler := usergroup2.NewHandler(usergroupService)
 	resourceRepository := resource.NewRepository(client)
 	resourceService := resource.NewService(resourceRepository)
 	resourceHandler := resource2.NewHandler(resourceService)
@@ -60,7 +65,7 @@ func Initialize() (*App, error) {
 	projectrepositoryRepository := projectrepository.NewRepository(client)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, resourceHandler, roleHandler, projectrepositoryHandler)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, projectrepositoryHandler)
 	return app, nil
 }
 
@@ -74,6 +79,7 @@ type App struct {
 	ServiceDeployment        *svcdeploy2.Handler
 	ServiceDeploymentEnv     *svcdeployenv2.Handler
 	UserHandler              *user2.Handler
+	UserGroupHandler         *usergroup2.Handler
 	ResourceHandler          *resource2.Handler
 	RoleHandler              *role2.Handler
 	ProjectRepositoryHandler *projectrepository2.Handler
@@ -87,6 +93,7 @@ func New(
 	ServiceDeployment *svcdeploy2.Handler,
 	ServiceDeploymentEnv *svcdeployenv2.Handler,
 	UserHandler *user2.Handler,
+	UserGroupHandler *usergroup2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
 	ProjectRepositoryHandler *projectrepository2.Handler,
@@ -99,6 +106,7 @@ func New(
 		ServiceDeployment,
 		ServiceDeploymentEnv,
 		UserHandler,
+		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
 		ProjectRepositoryHandler,
