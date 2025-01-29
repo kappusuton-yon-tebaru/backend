@@ -28,6 +28,15 @@ func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
+func (s *Service) CreateUser(ctx context.Context) (models.User, error) {
+	user, err := s.repo.InsertUser(ctx, userDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	return user
+}
+
 func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
@@ -48,7 +57,7 @@ func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError 
 	if count == 0 {
 		return werror.New().
 			SetCode(http.StatusNotFound).
-			SetMessage("not found")
+			SetMessage("User not found")
 	}
 
 	return nil

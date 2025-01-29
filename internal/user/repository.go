@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -45,7 +46,26 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (primitive.ObjectID, error) {
+	user := bson.M{
+		"name":     dto.Name,
+		"password": dto.Password,
+	}
+
+	result, err := r.user.InsertOne(ctx, user)
+	if err != nil {
+		return "", err
+	}
+
+	insertedID, err := result.InsertedID.(primitive.ObjectID)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return insertedID, nil
+}
+
+func (r *Repository) DeleteUser(ctx context.Context, filter image.Filter) (int64, error) {
 	result, err := r.user.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

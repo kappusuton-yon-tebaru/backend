@@ -11,6 +11,11 @@ type UserDTO struct {
 	Password string        `bson:"password"`
 }
 
+type CreateUserDTO struct {
+	Name     string `bson:"name"`
+	Password string `bson:"password"`
+}
+
 func DTOToUser(user UserDTO) models.User {
 	return models.User{
 		Id:       user.Id.Hex(),
