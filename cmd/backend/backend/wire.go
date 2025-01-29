@@ -9,6 +9,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
@@ -19,6 +20,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
@@ -28,17 +30,18 @@ import (
 )
 
 type App struct {
-	Config                   *config.Config
-	GreetingHandler          *greeting.Handler
-	MongoClient              *mongo.Client
-	ImageHandler             *image.Handler
-	ServiceDeployment        *svcdeploy.Handler
-	ServiceDeploymentEnv     *svcdeployenv.Handler
-	UserHandler              *user.Handler
-	UserGroupHandler         *usergroup.Handler
-	ResourceHandler          *resource.Handler
-	RoleHandler              *role.Handler
-	ProjectRepositoryHandler *projectrepository.Handler
+	Config                      *config.Config
+	GreetingHandler             *greeting.Handler
+	MongoClient                 *mongo.Client
+	ImageHandler                *image.Handler
+	ServiceDeployment           *svcdeploy.Handler
+	ServiceDeploymentEnv        *svcdeployenv.Handler
+	UserHandler                 *user.Handler
+	UserGroupHandler            *usergroup.Handler
+	ResourceHandler             *resource.Handler
+	RoleHandler                 *role.Handler
+	ProjectRepositoryHandler    *projectrepository.Handler
+	ResourceRelationshipHandler *resourcerelationship.Handler
 }
 
 func New(
@@ -53,6 +56,7 @@ func New(
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
+	ResourceRelationshipHandler *resourcerelationship.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -66,6 +70,7 @@ func New(
 		ResourceHandler,
 		RoleHandler,
 		ProjectRepositoryHandler,
+		ResourceRelationshipHandler,
 	}
 }
 
@@ -98,6 +103,9 @@ func Initialize() (*App, error) {
 		sharedProjectRepository.NewRepository,
 		sharedProjectRepository.NewService,
 		projectrepository.NewHandler,
+		sharedResourceRelationship.NewRepository,
+		sharedResourceRelationship.NewService,
+		resourcerelationship.NewHandler,
 		New,
 	)
 

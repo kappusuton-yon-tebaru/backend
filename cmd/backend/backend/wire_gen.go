@@ -11,6 +11,7 @@ import (
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
+	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
@@ -21,6 +22,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
@@ -65,24 +67,28 @@ func Initialize() (*App, error) {
 	projectrepositoryRepository := projectrepository.NewRepository(client)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, projectrepositoryHandler)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(client)
+	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
+	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Config                   *config.Config
-	GreetingHandler          *greeting.Handler
-	MongoClient              *mongo.Client
-	ImageHandler             *image2.Handler
-	ServiceDeployment        *svcdeploy2.Handler
-	ServiceDeploymentEnv     *svcdeployenv2.Handler
-	UserHandler              *user2.Handler
-	UserGroupHandler         *usergroup2.Handler
-	ResourceHandler          *resource2.Handler
-	RoleHandler              *role2.Handler
-	ProjectRepositoryHandler *projectrepository2.Handler
+	Config                      *config.Config
+	GreetingHandler             *greeting.Handler
+	MongoClient                 *mongo.Client
+	ImageHandler                *image2.Handler
+	ServiceDeployment           *svcdeploy2.Handler
+	ServiceDeploymentEnv        *svcdeployenv2.Handler
+	UserHandler                 *user2.Handler
+	UserGroupHandler            *usergroup2.Handler
+	ResourceHandler             *resource2.Handler
+	RoleHandler                 *role2.Handler
+	ProjectRepositoryHandler    *projectrepository2.Handler
+	ResourceRelationshipHandler *resourcerelationship2.Handler
 }
 
 func New(
@@ -97,6 +103,7 @@ func New(
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
 	ProjectRepositoryHandler *projectrepository2.Handler,
+	ResourceRelationshipHandler *resourcerelationship2.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -110,5 +117,6 @@ func New(
 		ResourceHandler,
 		RoleHandler,
 		ProjectRepositoryHandler,
+		ResourceRelationshipHandler,
 	}
 }
