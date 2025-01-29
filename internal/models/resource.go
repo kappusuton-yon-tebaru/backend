@@ -9,7 +9,7 @@ const (
 )
 
 type Resource struct {
-	Id           string `json:"id"`
-	ResourceName string `json:"resource_name"`
-	ResourceType ResourceType
+	Id           string       `json:"id"`
+	ResourceName string       `json:"resource_name"`
+	ResourceType ResourceType `json:"resource_type"`
 }

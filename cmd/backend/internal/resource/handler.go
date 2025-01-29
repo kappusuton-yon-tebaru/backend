@@ -18,13 +18,13 @@ func NewHandler(service *resource.Service) *Handler {
 }
 
 func (h *Handler) GetAllResources(ctx *gin.Context) {
-	images, err := h.service.GetAllResources(ctx)
+	resources, err := h.service.GetAllResources(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, images)
+	ctx.JSON(http.StatusOK, resources)
 }
 
 func (h *Handler) DeleteResource(ctx *gin.Context) {
