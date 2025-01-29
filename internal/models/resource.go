@@ -1,15 +1,9 @@
 package models
 
-type ResourceType string
-
-const (
-	Organization ResourceType = "organization"
-	ProjectSpace ResourceType = "project_space"
-	Project      ResourceType = "project"
-)
+import "github.com/kappusuton-yon-tebaru/backend/internal/enum"
 
 type Resource struct {
-	Id           string       `json:"id"`
-	ResourceName string       `json:"resource_name"`
-	ResourceType ResourceType `json:"resource_type"`
+	Id           string `json:"id"`
+	ResourceName string `json:"resource_name"`
+	ResourceType enum.ResourceType `json:"resource_type"`
 }
