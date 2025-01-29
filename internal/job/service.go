@@ -28,13 +28,13 @@ func (s *Service) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) error {
-	err := s.repo.CreateJob(ctx, dto)
+func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (any, error) {
+	id, err := s.repo.CreateJob(ctx, dto)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *Service) DeleteJob(ctx context.Context, id string) *werror.WError {

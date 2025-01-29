@@ -28,14 +28,14 @@ func (s *Service) GetAllRegistryProviders(ctx context.Context) ([]models.Registr
 	return regProviders, nil
 }
 
-// func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) error {
-// 	err := s.repo.CreateRegistryProviders(ctx, dto)
-// 	if err != nil {
-// 		return err
-// 	}
+func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (any, error) {
+	id, err := s.repo.CreateRegistryProviders(ctx, dto)
+	if err != nil {
+		return "", err
+	}
 
-// 	return nil
-// }
+	return id, nil
+}
 
 func (s *Service) DeleteRegistryProviders(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)

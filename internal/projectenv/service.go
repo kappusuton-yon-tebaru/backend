@@ -28,13 +28,13 @@ func (s *Service) GetAllProjectEnvs(ctx context.Context) ([]models.ProjectEnv, e
 	return projectenvs, nil
 }
 
-func (s *Service) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) error {
-	err := s.repo.CreateProjectEnv(ctx, dto)
+func (s *Service) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (any, error) {
+	id, err := s.repo.CreateProjectEnv(ctx, dto)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *Service) DeleteProjectEnv(ctx context.Context, id string) *werror.WError {

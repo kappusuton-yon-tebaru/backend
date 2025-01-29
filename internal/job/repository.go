@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -42,13 +43,13 @@ func (r* Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) error {
-	_, err := r.job.InsertOne(ctx, dto)
+func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (any, error) {
+	result, err := r.job.InsertOne(ctx, dto)
 	if err != nil {
-		return err
+		return primitive.NilObjectID, err
 	}
 
-	return nil
+	return result.InsertedID, nil
 }
 
 func (r * Repository) DeleteJob(ctx context.Context, filter any) (int64, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -42,13 +43,13 @@ func (r *Repository) GetAllRegistryProviders(ctx context.Context) ([]models.Regi
 	return registryProviders, nil
 }
 
-func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) error {
-	_, err := r.regProviders.InsertOne(ctx, dto)
+func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (any, error) {
+	result, err := r.regProviders.InsertOne(ctx, dto)
 	if err != nil {
-		return err
+		return primitive.NilObjectID, err
 	}
 
-	return nil
+	return result.InsertedID, nil
 }
 
 func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter any) (int64, error) {
