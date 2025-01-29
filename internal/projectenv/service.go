@@ -1,4 +1,4 @@
-package job
+package projectenv
 
 import (
 	"context"
@@ -19,17 +19,17 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllJobs(ctx context.Context) ([]models.Job, error) {
-	jobs, err := s.repo.GetAllJobs(ctx)
+func (s *Service) GetAllProjectEnvs(ctx context.Context) ([]models.ProjectEnv, error) {
+	projectenvs, err := s.repo.GetAllProjectEnvs(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return jobs, nil
+	return projectenvs, nil
 }
 
-func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) error {
-	err := s.repo.CreateJob(ctx, dto)
+func (s *Service) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) error {
+	err := s.repo.CreateProjectEnv(ctx, dto)
 	if err != nil {
 		return err
 	}
@@ -37,19 +37,19 @@ func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) error {
 	return nil
 }
 
-func (s *Service) DeleteJob(ctx context.Context, id string) *werror.WError {
+func (s *Service) DeleteProjectEnv(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return werror.NewFromError(err).
 			SetCode(http.StatusBadRequest).
-			SetMessage("invalid job id")
+			SetMessage("invalid projectenv id")
 	}
 
 	filter := map[string]any{
 		"_id": objId,
 	}
 
-	count, err := s.repo.DeleteJob(ctx, filter)
+	count, err := s.repo.DeleteProjectEnv(ctx, filter)
 	if err != nil {
 		return werror.NewFromError(err)
 	}
