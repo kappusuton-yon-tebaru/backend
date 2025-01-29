@@ -35,14 +35,15 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/usergroups/:group_id/user/:user_id", app.UserGroupHandler.DeleteUserFromUserGroupById)
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
+	r.POST("/resources", app.ResourceHandler.CreateResource)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
 	r.DELETE("/roles/:id", app.RoleHandler.DeleteRoleById)
 
-	r.GET("projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
-	r.DELETE("projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
+	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
+	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
-	r.GET("resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
-	r.DELETE("resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
+	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
+	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 }

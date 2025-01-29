@@ -28,6 +28,15 @@ func (s *Service) GetAllResources(ctx context.Context) ([]models.Resource, error
 	return resources, nil
 }
 
+func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (any, error) {
+	id, err := s.repo.CreateResource(ctx, dto)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
