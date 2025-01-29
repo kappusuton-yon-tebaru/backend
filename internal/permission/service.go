@@ -1,4 +1,4 @@
-package resource
+package permission
 
 import (
 	"context"
@@ -19,37 +19,28 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllResources(ctx context.Context) ([]models.Resource, error) {
-	resources, err := s.repo.GetAllResources(ctx)
+func (s *Service) GetAllPermissions(ctx context.Context) ([]models.Permission, error) {
+	permissions, err := s.repo.GetAllPermissions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return resources, nil
+	return permissions, nil
 }
 
-func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (any, error) {
-	id, err := s.repo.CreateResource(ctx, dto)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
-}
-
-func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError {
+func (s *Service) DeletePermissionById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return werror.NewFromError(err).
 			SetCode(http.StatusBadRequest).
-			SetMessage("invalid resource id")
+			SetMessage("invalid image id")
 	}
 
 	filter := map[string]any{
 		"_id": objId,
 	}
 
-	count, err := s.repo.DeleteResource(ctx, filter)
+	count, err := s.repo.DeletePermission(ctx, filter)
 	if err != nil {
 		return werror.NewFromError(err)
 	}

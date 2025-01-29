@@ -27,6 +27,32 @@ func (h *Handler) GetAllResources(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resources)
 }
 
+func (h *Handler) CreateResource(ctx *gin.Context) {
+	var resourceDTO resource.CreateResourceDTO
+
+	if err := ctx.ShouldBindJSON(&resourceDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	id, err := h.service.CreateResource(ctx, resourceDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to create resource",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message":     "resource created successfully",
+		"resource_id": id,
+	})
+}
+
 func (h *Handler) DeleteResource(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

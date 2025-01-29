@@ -2,9 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -43,6 +45,21 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	}
 
 	return resources, nil
+}
+
+func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (any, error) {
+	resource := bson.M{
+		"resource_name": dto.ResourceName,
+		"resource_type": dto.ResourceType,
+	}
+
+	result, err := r.resource.InsertOne(ctx, resource)
+	if err != nil {
+		log.Println("Error inserting resource:", err)
+		return primitive.NilObjectID, fmt.Errorf("error inserting resource: %v", err)
+	}
+
+	return result.InsertedID, nil
 }
 
 func (r *Repository) DeleteResource(ctx context.Context, filter any) (int64, error) {

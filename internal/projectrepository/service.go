@@ -28,6 +28,15 @@ func (s *Service) GetAllProjectRepositories(ctx context.Context) ([]models.Proje
 	return projRepos, nil
 }
 
+func (s *Service) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (any, error) {
+	id, err := s.repo.CreateProjectRepository(ctx, dto)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s *Service) DeleteProjectRepository(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
