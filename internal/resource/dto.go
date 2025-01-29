@@ -18,6 +18,11 @@ type CreateResourceDTO struct {
 	ResourceType enum.ResourceType `bson:"resource_type"`
 }
 
+type CreateResourceDTO struct {
+	ResourceName string              `bson:"resource_name"`
+	ResourceType models.ResourceType `bson:"resource_type"`
+}
+
 func DTOToResource(resource ResourceDTO) models.Resource {
 	return models.Resource{
 		Id:           resource.Id.Hex(),
