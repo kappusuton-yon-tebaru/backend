@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -17,8 +16,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	defer app.MongoClient.Disconnect(context.Background())
 
 	r := router.New()
 	config := cors.Config{
