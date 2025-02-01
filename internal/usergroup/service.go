@@ -28,7 +28,7 @@ func (s *Service) GetAllUserGroups(ctx context.Context) ([]models.UserGroup, err
 	return usergroups, nil
 }
 
-func (s *Service) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (any, error) {
+func (s *Service) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (string, error) {
 	id, err := s.repo.CreateUserGroup(ctx, dto)
 	if err != nil {
 		return "", err
@@ -37,7 +37,7 @@ func (s *Service) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (
 	return id, nil
 }
 
-func (s *Service) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id string) (any, error) {
+func (s *Service) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id string) (string, error) {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return "", err

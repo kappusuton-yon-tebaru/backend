@@ -49,7 +49,7 @@ func (r *Repository) GetAllUserGroups(ctx context.Context) ([]models.UserGroup, 
 	return usergroups, nil
 }
 
-func (r *Repository) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (any, error) {
+func (r *Repository) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO) (string, error) {
 	usergroup := bson.M{
 		"group_name": dto.GroupName,
 	}
@@ -57,15 +57,15 @@ func (r *Repository) CreateUserGroup(ctx context.Context, dto CreateUserGroupDTO
 	result, err := r.usergroup.InsertOne(ctx, usergroup)
 	if err != nil {
 		log.Println("Error inserting user group:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting user group: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting user group: %v", err)
 	}
 
-	insertedID := result.InsertedID
+	insertedID := result.InsertedID.(bson.ObjectID)
 
-	return insertedID, nil
+	return insertedID.Hex(), nil
 }
 
-func (r *Repository) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id bson.ObjectID) (any, error) {
+func (r *Repository) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGroupDTO, id bson.ObjectID) (string, error) {
 	addUser := bson.M{
 		"group_id": id,
 		"user_id":  dto.UserId,
@@ -74,12 +74,12 @@ func (r *Repository) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGr
 	result, err := r.usergroupMembership.InsertOne(ctx, addUser)
 	if err != nil {
 		log.Println("Error inserting user to user group:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting user to user group: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting user to user group: %v", err)
 	}
 
-	insertedID := result.InsertedID
+	insertedID := result.InsertedID.(bson.ObjectID)
 
-	return insertedID, nil
+	return insertedID.Hex(), nil
 }
 
 func (r *Repository) DeleteUserGroup(ctx context.Context, filter map[string]any) (int64, error) {

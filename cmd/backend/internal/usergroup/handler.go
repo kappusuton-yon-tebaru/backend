@@ -48,8 +48,8 @@ func (h *Handler) CreateUserGroup(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "user created successfully",
-		"user_id": id,
+		"message":       "user created successfully",
+		"user_group_id": id,
 	})
 }
 

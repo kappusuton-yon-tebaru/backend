@@ -47,7 +47,7 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (any, error) {
+func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (string, error) {
 	user := bson.M{
 		"name":     dto.Name,
 		"password": dto.Password,
@@ -56,12 +56,12 @@ func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (any, er
 	result, err := r.user.InsertOne(ctx, user)
 	if err != nil {
 		log.Println("Error inserting user:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting user: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting user: %v", err)
 	}
 
-	insertedID := result.InsertedID
+	insertedID := result.InsertedID.(bson.ObjectID)
 
-	return insertedID, nil
+	return insertedID.Hex(), nil
 }
 
 func (r *Repository) DeleteUser(ctx context.Context, filter map[string]any) (int64, error) {
