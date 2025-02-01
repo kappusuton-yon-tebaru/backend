@@ -52,7 +52,7 @@ func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegi
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.regProviders.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

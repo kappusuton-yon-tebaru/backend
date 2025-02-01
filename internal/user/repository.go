@@ -64,7 +64,7 @@ func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (any, er
 	return insertedID, nil
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteUser(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.user.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

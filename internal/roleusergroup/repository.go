@@ -62,7 +62,7 @@ func (r *Repository) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUser
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeleteRoleUserGroup(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteRoleUserGroup(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.roleUsergroup.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

@@ -52,7 +52,7 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (any, erro
 	return result.InsertedID, nil
 }
 
-func (r * Repository) DeleteJob(ctx context.Context, filter any) (int64, error) {
+func (r * Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.job.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

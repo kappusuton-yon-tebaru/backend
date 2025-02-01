@@ -51,7 +51,7 @@ func (r *Repository) CreateServiceDeploymentEnv(ctx context.Context, dto CreateS
 	return nil
 }
 
-func (r *Repository) DeleteServiceDeploymentEnv(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteServiceDeploymentEnv(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.deploy.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

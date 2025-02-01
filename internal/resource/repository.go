@@ -62,7 +62,7 @@ func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) 
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeleteResource(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteResource(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.resource.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

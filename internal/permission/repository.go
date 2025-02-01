@@ -65,7 +65,7 @@ func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionD
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeletePermission(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeletePermission(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.permission.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

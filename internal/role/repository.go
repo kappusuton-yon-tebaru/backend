@@ -63,7 +63,7 @@ func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, er
 	return insertedID, nil
 }
 
-func (r *Repository) DeleteRole(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.role.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

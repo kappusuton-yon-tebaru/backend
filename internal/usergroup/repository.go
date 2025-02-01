@@ -82,7 +82,7 @@ func (r *Repository) AddUserToUserGroup(ctx context.Context, dto AddUserToUserGr
 	return insertedID, nil
 }
 
-func (r *Repository) DeleteUserGroup(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteUserGroup(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.usergroup.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
@@ -91,7 +91,7 @@ func (r *Repository) DeleteUserGroup(ctx context.Context, filter any) (int64, er
 	return result.DeletedCount, nil
 }
 
-func (r *Repository) DeleteUserFromUserGroup(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteUserFromUserGroup(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.usergroupMembership.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

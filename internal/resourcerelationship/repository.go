@@ -62,7 +62,7 @@ func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateR
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeleteResourceRelationship(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteResourceRelationship(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.resourceRela.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

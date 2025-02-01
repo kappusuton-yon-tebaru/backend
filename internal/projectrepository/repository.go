@@ -62,7 +62,7 @@ func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProj
 	return result.InsertedID, nil
 }
 
-func (r *Repository) DeleteProjectRepository(ctx context.Context, filter any) (int64, error) {
+func (r *Repository) DeleteProjectRepository(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.projRepo.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
