@@ -8,7 +8,39 @@ package backend
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
+	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	permission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
+	projectenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
+	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
+	regproviders2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
+	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
+	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
+	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
+	rolepermission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
+	roleusergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
+	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
+	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
+	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
+	usergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
+	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
+	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
+	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
+	"github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // Injectors from wire.go:
@@ -19,23 +51,120 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	handler := greeting.New()
-	app := New(configConfig, handler)
+	client, err := mongodb.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	repository := image.NewRepository(client)
+	service := image.NewService(repository)
+	imageHandler := image2.NewHandler(service)
+	svcdeployRepository := svcdeploy.NewRepository(client)
+	svcdeployService := svcdeploy.NewService(svcdeployRepository)
+	svcdeployHandler := svcdeploy2.NewHandler(svcdeployService)
+	svcdeployenvRepository := svcdeployenv.NewRepository(client)
+	svcdeployenvService := svcdeployenv.NewService(svcdeployenvRepository)
+	svcdeployenvHandler := svcdeployenv2.NewHandler(svcdeployenvService)
+	userRepository := user.NewRepository(client)
+	userService := user.NewService(userRepository)
+	userHandler := user2.NewHandler(userService)
+	usergroupRepository := usergroup.NewRepository(client)
+	usergroupService := usergroup.NewService(usergroupRepository)
+	usergroupHandler := usergroup2.NewHandler(usergroupService)
+	resourceRepository := resource.NewRepository(client)
+	resourceService := resource.NewService(resourceRepository)
+	resourceHandler := resource2.NewHandler(resourceService)
+	roleRepository := role.NewRepository(client)
+	roleService := role.NewService(roleRepository)
+	roleHandler := role2.NewHandler(roleService)
+	permissionRepository := permission.NewRepository(client)
+	permissionService := permission.NewService(permissionRepository)
+	permissionHandler := permission2.NewHandler(permissionService)
+	rolepermissionRepository := rolepermission.NewRepository(client)
+	rolepermissionService := rolepermission.NewService(rolepermissionRepository)
+	rolepermissionHandler := rolepermission2.NewHandler(rolepermissionService)
+	roleusergroupRepository := roleusergroup.NewRepository(client)
+	roleusergroupService := roleusergroup.NewService(roleusergroupRepository)
+	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
+	projectrepositoryRepository := projectrepository.NewRepository(client)
+	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
+	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(client)
+	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
+	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
+	jobRepository := job.NewRepository(client)
+	jobService := job.NewService(jobRepository)
+	jobHandler := job2.NewHandler(jobService)
+	regprovidersRepository := regproviders.NewRepository(client)
+	regprovidersService := regproviders.NewService(regprovidersRepository)
+	regprovidersHandler := regproviders2.NewHandler(regprovidersService)
+	projectenvRepository := projectenv.NewRepository(client)
+	projectenvService := projectenv.NewService(projectenvRepository)
+	projectenvHandler := projectenv2.NewHandler(projectenvService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Config          *config.Config
-	GreetingHandler *greeting.Handler
+	Config                      *config.Config
+	GreetingHandler             *greeting.Handler
+	MongoClient                 *mongo.Client
+	ImageHandler                *image2.Handler
+	ServiceDeployment           *svcdeploy2.Handler
+	ServiceDeploymentEnv        *svcdeployenv2.Handler
+	UserHandler                 *user2.Handler
+	UserGroupHandler            *usergroup2.Handler
+	ResourceHandler             *resource2.Handler
+	RoleHandler                 *role2.Handler
+	PermissionHandler           *permission2.Handler
+	RolePermissionHandler       *rolepermission2.Handler
+	RoleUserGroupHandler        *roleusergroup2.Handler
+	ProjectRepositoryHandler    *projectrepository2.Handler
+	ResourceRelationshipHandler *resourcerelationship2.Handler
+	JobHandler                  *job2.Handler
+	RegisterProviderHandler     *regproviders2.Handler
+	ProjectEnvironmentHandler   *projectenv2.Handler
 }
 
 func New(
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
+	MongoClient *mongo.Client,
+	ImageHandler *image2.Handler,
+	ServiceDeployment *svcdeploy2.Handler,
+	ServiceDeploymentEnv *svcdeployenv2.Handler,
+	UserHandler *user2.Handler,
+	UserGroupHandler *usergroup2.Handler,
+	ResourceHandler *resource2.Handler,
+	RoleHandler *role2.Handler,
+	PermissionHandler *permission2.Handler,
+	RolePermissionHandler *rolepermission2.Handler,
+	RoleUserGroupHandler *roleusergroup2.Handler,
+	ProjectRepositoryHandler *projectrepository2.Handler,
+	ResourceRelationshipHandler *resourcerelationship2.Handler,
+	JobHandler *job2.Handler,
+	RegisterProviderHandler *regproviders2.Handler,
+	ProjectEnvironmentHandler *projectenv2.Handler,
 ) *App {
 	return &App{
 		Config,
 		GreetingHandler,
+		MongoClient,
+		ImageHandler,
+		ServiceDeployment,
+		ServiceDeploymentEnv,
+		UserHandler,
+		UserGroupHandler,
+		ResourceHandler,
+		RoleHandler,
+		PermissionHandler,
+		RolePermissionHandler,
+		RoleUserGroupHandler,
+		ProjectRepositoryHandler,
+		ResourceRelationshipHandler,
+		JobHandler,
+		RegisterProviderHandler,
+		ProjectEnvironmentHandler,
 	}
 }
