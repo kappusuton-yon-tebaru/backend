@@ -38,7 +38,7 @@ func (h *Handler) CreateRolePermission(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateRolePermission(ctx,rolepermissionDTO)
+	id, err := h.service.CreateRolePermission(ctx, rolepermissionDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create rolepermission",
@@ -48,7 +48,7 @@ func (h *Handler) CreateRolePermission(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "rolepermission created successfully",
+		"message":            "rolepermission created successfully",
 		"Role_permission_id": id,
 	})
 }

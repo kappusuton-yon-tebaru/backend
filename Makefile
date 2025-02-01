@@ -7,6 +7,9 @@ gen:
 	@echo "Generating backend..."
 	@wire ./cmd/backend/backend
 
+	@echo "Generating builder consumer..."
+	@wire ./cmd/builder-consumer/builderconsumer/
+
 dev-agent:
 	@air -c ./cmd/agent/.air.toml
 

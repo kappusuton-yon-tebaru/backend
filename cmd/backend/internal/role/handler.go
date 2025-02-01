@@ -38,7 +38,7 @@ func (h *Handler) CreateRole(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateRole(ctx,roleDTO)
+	id, err := h.service.CreateRole(ctx, roleDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create role",

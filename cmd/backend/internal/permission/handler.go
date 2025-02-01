@@ -30,7 +30,6 @@ func (h *Handler) GetAllPermissions(ctx *gin.Context) {
 func (h *Handler) CreatePermission(ctx *gin.Context) {
 	var permissionDTO permission.CreatePermissionDTO
 
-
 	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
@@ -39,7 +38,7 @@ func (h *Handler) CreatePermission(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreatePermission(ctx,permissionDTO)
+	id, err := h.service.CreatePermission(ctx, permissionDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create permission",
@@ -49,7 +48,7 @@ func (h *Handler) CreatePermission(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "permission created successfully",
+		"message":       "permission created successfully",
 		"permission_id": id,
 	})
 }

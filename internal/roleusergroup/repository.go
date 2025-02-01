@@ -7,8 +7,8 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Repository struct {
@@ -49,8 +49,8 @@ func (r *Repository) GetAllRoleUserGroups(ctx context.Context) ([]models.RoleUse
 
 func (r *Repository) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (string, error) {
 	roleuserGroup := bson.M{
-		"role_id": dto.Role_id,
-		"user_group_id":dto.UserGroup_id,
+		"role_id":       dto.Role_id,
+		"user_group_id": dto.UserGroup_id,
 	}
 
 	result, err := r.roleUsergroup.InsertOne(ctx, roleuserGroup)

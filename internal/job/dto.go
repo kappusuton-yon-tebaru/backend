@@ -7,18 +7,18 @@ import (
 )
 
 type JobDTO struct {
-	Id          bson.ObjectID	`bson:"_id"`
-	JobType     string    		`bson:"job_type"`
-	JobStatus   enum.JobStatus	`bson:"job_status"`
-	JobDuration int       		`bson:"job_duration"`
-	JsonLogs    string    		`bson:"json_logs"`
+	Id          bson.ObjectID  `bson:"_id"`
+	JobType     string         `bson:"job_type"`
+	JobStatus   enum.JobStatus `bson:"job_status"`
+	JobDuration int            `bson:"job_duration"`
+	JsonLogs    string         `bson:"json_logs"`
 }
 
 type CreateJobDTO struct {
-	JobType     string    		`bson:"job_type"`
-	JobStatus   string	 		`bson:"job_status"`
-	JobDuration int       		`bson:"job_duration"`
-	JsonLogs    string    		`bson:"json_logs"`
+	JobType     string `bson:"job_type"`
+	JobStatus   string `bson:"job_status"`
+	JobDuration int    `bson:"job_duration"`
+	JsonLogs    string `bson:"json_logs"`
 }
 
 func DTOToJob(job JobDTO) models.Job {

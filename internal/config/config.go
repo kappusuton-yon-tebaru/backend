@@ -18,10 +18,18 @@ type BackendConfig struct {
 	Port int `mapstructure:"BACKEND_PORT"`
 }
 
+type BuilderConfig struct {
+	InCluster bool   `mapstructure:"BUILDER_IN_CLUSTER"`
+	QueueUri  string `mapstructure:"BUILDER_QUEUE_URI"`
+	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
+}
+
 type Config struct {
-	Agent    AgentConfig   `mapstructure:",squash"`
-	Backend  BackendConfig `mapstructure:",squash"`
-	MongoUri string        `mapstructure:"MONGO_URI"`
+	Agent         AgentConfig   `mapstructure:",squash"`
+	Backend       BackendConfig `mapstructure:",squash"`
+	MongoUri      string        `mapstructure:"MONGO_URI"`
+	BuilderConfig BuilderConfig `mapstructure:",squash"`
+	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
 }
 
 func Load() (*Config, error) {

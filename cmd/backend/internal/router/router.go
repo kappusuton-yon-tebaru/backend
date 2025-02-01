@@ -49,7 +49,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
 	r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
 	r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
-	
+
 	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
 	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
 	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)

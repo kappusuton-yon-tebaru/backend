@@ -38,7 +38,7 @@ func (h *Handler) CreateRoleUserGroup(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateRoleUserGroup(ctx,roleUserGroupDTO)
+	id, err := h.service.CreateRoleUserGroup(ctx, roleUserGroupDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create roleUserGroup",
@@ -48,7 +48,7 @@ func (h *Handler) CreateRoleUserGroup(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "roleUserGroup created successfully",
+		"message":           "roleUserGroup created successfully",
 		"Role_UserGroup_id": id,
 	})
 }

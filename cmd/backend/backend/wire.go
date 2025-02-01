@@ -7,38 +7,38 @@ import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
+	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
+	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
+	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
+	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
-	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
-	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
-	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
-	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
-	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
-	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 )
 
 type App struct {
@@ -57,9 +57,9 @@ type App struct {
 	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
-	JobHandler				  	*job.Handler
-	RegisterProviderHandler		*regproviders.Handler
-	ProjectEnvironmentHandler	*projectenv.Handler
+	JobHandler                  *job.Handler
+	RegisterProviderHandler     *regproviders.Handler
+	ProjectEnvironmentHandler   *projectenv.Handler
 }
 
 func New(

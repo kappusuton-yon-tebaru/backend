@@ -5,8 +5,8 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Repository struct {
@@ -19,7 +19,7 @@ func NewRepository(client *mongo.Client) *Repository {
 	}
 }
 
-func (r* Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
+func (r *Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	cur, err := r.job.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 	return id.Hex(), nil
 }
 
-func (r * Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {
+func (r *Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.job.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err

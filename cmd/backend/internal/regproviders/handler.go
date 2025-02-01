@@ -49,7 +49,7 @@ func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "registry provider created successfully",
-		"id": id,
+		"id":      id,
 	})
 }
 

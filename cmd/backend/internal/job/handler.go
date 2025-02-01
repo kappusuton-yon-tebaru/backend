@@ -29,7 +29,7 @@ func (h *Handler) GetAllJobs(ctx *gin.Context) {
 
 func (h *Handler) CreateJob(ctx *gin.Context) {
 	var jobDTO job.CreateJobDTO
-	
+
 	if err := ctx.ShouldBindJSON(&jobDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
@@ -49,7 +49,7 @@ func (h *Handler) CreateJob(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, map[string]any{
 		"message": "job created successfully",
-		"id": id,
+		"id":      id,
 	})
 }
 
