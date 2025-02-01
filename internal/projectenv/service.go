@@ -28,7 +28,7 @@ func (s *Service) GetAllProjectEnvs(ctx context.Context) ([]models.ProjectEnv, e
 	return projectenvs, nil
 }
 
-func (s *Service) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (any, error) {
+func (s *Service) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (string, error) {
 	id, err := s.repo.CreateProjectEnv(ctx, dto)
 	if err != nil {
 		return "", err

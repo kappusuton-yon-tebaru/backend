@@ -43,13 +43,15 @@ func (r *Repository) GetAllProjectEnvs(ctx context.Context) ([]models.ProjectEnv
 	return projectenvs, nil
 }
 
-func (r *Repository) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (any, error) {
+func (r *Repository) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (string, error) {
 	result, err := r.repo.InsertOne(ctx, dto)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return primitive.NilObjectID.Hex(), err
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r *Repository) DeleteProjectEnv(ctx context.Context, filter map[string]any) (int64, error) {

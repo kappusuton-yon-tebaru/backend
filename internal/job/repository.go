@@ -43,13 +43,15 @@ func (r* Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (any, error) {
+func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
 	result, err := r.job.InsertOne(ctx, dto)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return primitive.NilObjectID.Hex(), err
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r * Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {

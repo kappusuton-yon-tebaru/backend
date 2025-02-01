@@ -28,7 +28,7 @@ func (s *Service) GetAllRegistryProviders(ctx context.Context) ([]models.Registr
 	return regProviders, nil
 }
 
-func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (any, error) {
+func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	id, err := s.repo.CreateRegistryProviders(ctx, dto)
 	if err != nil {
 		return "", err

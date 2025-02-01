@@ -43,13 +43,15 @@ func (r *Repository) GetAllRegistryProviders(ctx context.Context) ([]models.Regi
 	return registryProviders, nil
 }
 
-func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (any, error) {
+func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	result, err := r.regProviders.InsertOne(ctx, dto)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return primitive.NilObjectID.Hex(), err
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter map[string]any) (int64, error) {

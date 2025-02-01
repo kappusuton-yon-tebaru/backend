@@ -28,7 +28,7 @@ func (s *Service) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (any, error) {
+func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
 	id, err := s.repo.CreateJob(ctx, dto)
 	if err != nil {
 		return "", err
