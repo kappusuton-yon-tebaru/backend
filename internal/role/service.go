@@ -28,7 +28,7 @@ func (s *Service) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
-func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, error) {
+func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	id, err := s.repo.CreateRole(ctx, dto)
 	if err != nil {
 		return "", err

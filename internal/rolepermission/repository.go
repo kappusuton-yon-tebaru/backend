@@ -47,7 +47,7 @@ func (r *Repository) GetAllRolePermissions(ctx context.Context) ([]models.RolePe
 	return rolepermissions, nil
 }
 
-func (r *Repository) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (any, error) {
+func (r *Repository) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (string, error) {
 	rolepermission := bson.M{
 		"role_id": dto.Role_id,
 		"permission_id":dto.Permission_id,
@@ -56,10 +56,10 @@ func (r *Repository) CreateRolePermission(ctx context.Context, dto CreateRolePer
 	result, err := r.rolepermission.InsertOne(ctx, rolepermission)
 	if err != nil {
 		log.Println("Error inserting rolepermission:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting rolepermission: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting rolepermission: %v", err)
 	}
 
-	return result.InsertedID, nil
+	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
 func (r *Repository) DeleteRolePermission(ctx context.Context, filter map[string]any) (int64, error) {

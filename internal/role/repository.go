@@ -47,7 +47,7 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
-func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, error) {
+func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
 		"role_name": dto.Role_name,
 	}
@@ -55,12 +55,10 @@ func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (any, er
 	result, err := r.role.InsertOne(ctx, role)
 	if err != nil {
 		log.Println("Error inserting role:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting role: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting role: %v", err)
 	}
 
-	insertedID := result.InsertedID
-
-	return insertedID, nil
+	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
 func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int64, error) {

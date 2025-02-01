@@ -47,7 +47,7 @@ func (r *Repository) GetAllRoleUserGroups(ctx context.Context) ([]models.RoleUse
 	return roleUserGroups, nil
 }
 
-func (r *Repository) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (any, error) {
+func (r *Repository) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (string, error) {
 	roleuserGroup := bson.M{
 		"role_id": dto.Role_id,
 		"user_group_id":dto.UserGroup_id,
@@ -56,10 +56,10 @@ func (r *Repository) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUser
 	result, err := r.roleUsergroup.InsertOne(ctx, roleuserGroup)
 	if err != nil {
 		log.Println("Error inserting roleUserGroup:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting roleUserGroup: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting roleUserGroup: %v", err)
 	}
 
-	return result.InsertedID, nil
+	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
 func (r *Repository) DeleteRoleUserGroup(ctx context.Context, filter map[string]any) (int64, error) {
