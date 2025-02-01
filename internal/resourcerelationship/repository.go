@@ -47,7 +47,7 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	return resourceRelas, nil
 }
 
-func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (any, error) {
+func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
 	resourceRela := bson.M{
 		"parent_resource_id": dto.ParentResourceId,
 		"child_resource_id":  dto.ChildResourceId,
@@ -56,10 +56,12 @@ func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateR
 	result, err := r.resourceRela.InsertOne(ctx, resourceRela)
 	if err != nil {
 		log.Println("Error inserting resource relationship:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting resource relationship: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting resource relationship: %v", err)
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r *Repository) DeleteResourceRelationship(ctx context.Context, filter map[string]any) (int64, error) {

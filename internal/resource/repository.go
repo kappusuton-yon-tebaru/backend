@@ -47,7 +47,7 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	return resources, nil
 }
 
-func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (any, error) {
+func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
 	resource := bson.M{
 		"resource_name": dto.ResourceName,
 		"resource_type": dto.ResourceType,
@@ -56,10 +56,12 @@ func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) 
 	result, err := r.resource.InsertOne(ctx, resource)
 	if err != nil {
 		log.Println("Error inserting resource:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting resource: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting resource: %v", err)
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r *Repository) DeleteResource(ctx context.Context, filter map[string]any) (int64, error) {

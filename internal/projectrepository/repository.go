@@ -47,7 +47,7 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (any, error) {
+func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,
 		"project_id":   dto.ProjectId,
@@ -56,10 +56,12 @@ func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProj
 	result, err := r.projRepo.InsertOne(ctx, projRepo)
 	if err != nil {
 		log.Println("Error inserting project repository:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting project repository: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting project repository: %v", err)
 	}
 
-	return result.InsertedID, nil
+	id := result.InsertedID.(bson.ObjectID)
+
+	return id.Hex(), nil
 }
 
 func (r *Repository) DeleteProjectRepository(ctx context.Context, filter map[string]any) (int64, error) {

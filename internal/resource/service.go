@@ -28,7 +28,7 @@ func (s *Service) GetAllResources(ctx context.Context) ([]models.Resource, error
 	return resources, nil
 }
 
-func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (any, error) {
+func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
 	id, err := s.repo.CreateResource(ctx, dto)
 	if err != nil {
 		return "", err
