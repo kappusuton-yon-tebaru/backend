@@ -28,7 +28,7 @@ func (s *Service) GetAllRoleUserGroups(ctx context.Context) ([]models.RoleUserGr
 	return roleUserGroups, nil
 }
 
-func (s *Service) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (any, error) {
+func (s *Service) CreateRoleUserGroup(ctx context.Context, dto CreateRoleUserGroupDTO) (string, error) {
 	id, err := s.repo.CreateRoleUserGroup(ctx, dto)
 	if err != nil {
 		return "", err

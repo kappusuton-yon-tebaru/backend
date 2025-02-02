@@ -47,7 +47,7 @@ func (r *Repository) GetAllPermissions(ctx context.Context) ([]models.Permission
 	return permissions, nil
 }
 
-func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionDTO) (any, error) {
+func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionDTO) (string, error) {
 	permission := bson.M{
 		"permission_name": dto.Permission_name,
 		"action": dto.Action,
@@ -59,10 +59,10 @@ func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionD
 
 	if err != nil {
 		log.Println("Error inserting permission:", err)
-		return primitive.NilObjectID, fmt.Errorf("error inserting permission: %v", err)
+		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting permission: %v", err)
 	}
 
-	return result.InsertedID, nil
+	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
 func (r *Repository) DeletePermission(ctx context.Context, filter map[string]any) (int64, error) {

@@ -28,7 +28,7 @@ func (s *Service) GetAllRolePermissions(ctx context.Context) ([]models.RolePermi
 	return rolepermissions, nil
 }
 
-func (s *Service) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (any, error) {
+func (s *Service) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (string, error) {
 	id, err := s.repo.CreateRolePermission(ctx, dto)
 	if err != nil {
 		return "", err

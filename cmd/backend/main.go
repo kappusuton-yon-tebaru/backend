@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gin-contrib/cors"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/router"
 )
@@ -18,6 +19,14 @@ func main() {
 	}
 
 	r := router.New()
+	config := cors.Config{
+		AllowOrigins:     []string{"http://example.com", "http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}
+
+	r.Use(cors.New(config))
 	r.RegisterRoutes(app)
 
 	go func() {
