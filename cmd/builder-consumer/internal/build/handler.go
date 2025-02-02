@@ -7,15 +7,18 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/rabbitmq/amqp091-go"
 )
 
 type Handler struct {
+	logger  *logger.Logger
 	service *build.Service
 }
 
-func NewHandler(service *build.Service) *Handler {
+func NewHandler(logger *logger.Logger, service *build.Service) *Handler {
 	return &Handler{
+		logger,
 		service,
 	}
 }

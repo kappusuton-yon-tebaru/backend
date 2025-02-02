@@ -10,9 +10,11 @@ import (
 	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 )
 
 type App struct {
+	Logger       *logger.Logger
 	Config       *config.Config
 	KubeClient   *kubernetes.Kubernetes
 	RmqClient    *rmq.Rmq
@@ -20,12 +22,14 @@ type App struct {
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
 	RmqClient *rmq.Rmq,
 	BuildHandler *build.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		KubeClient,
 		RmqClient,
@@ -36,6 +40,7 @@ func New(
 func Initialize() (*App, error) {
 	wire.Build(
 		config.Load,
+		logger.New,
 		kubernetes.New,
 		rmq.New,
 		sharedBuild.NewService,

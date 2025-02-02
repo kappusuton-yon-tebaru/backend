@@ -12,12 +12,17 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 )
 
 // Injectors from wire.go:
 
 func Initialize() (*App, error) {
 	configConfig, err := config.Load()
+	if err != nil {
+		return nil, err
+	}
+	loggerLogger, err := logger.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -30,14 +35,15 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	service := build.NewService(configConfig, kubernetesKubernetes)
-	handler := build2.NewHandler(service)
-	app := New(configConfig, kubernetesKubernetes, rmqRmq, handler)
+	handler := build2.NewHandler(loggerLogger, service)
+	app := New(loggerLogger, configConfig, kubernetesKubernetes, rmqRmq, handler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
+	Logger       *logger.Logger
 	Config       *config.Config
 	KubeClient   *kubernetes.Kubernetes
 	RmqClient    *rmq.Rmq
@@ -45,12 +51,14 @@ type App struct {
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
 	RmqClient *rmq.Rmq,
 	BuildHandler *build2.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		KubeClient,
 		RmqClient,
