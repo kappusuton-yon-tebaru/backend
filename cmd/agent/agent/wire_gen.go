@@ -10,6 +10,7 @@ import (
 	greeting2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 )
 
 // Injectors from wire.go:
@@ -19,24 +20,31 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	loggerLogger, err := logger.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
 	service := greeting.New()
 	handler := greeting2.New(service)
-	app := New(configConfig, handler)
+	app := New(loggerLogger, configConfig, handler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
+	Logger          *logger.Logger
 	Config          *config.Config
 	GreetingHandler *greeting2.Handler
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting2.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		GreetingHandler,
 	}
