@@ -24,6 +24,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
@@ -42,6 +43,7 @@ import (
 )
 
 type App struct {
+	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
 	MongoClient                 *mongo.Client
@@ -63,6 +65,7 @@ type App struct {
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
@@ -83,6 +86,7 @@ func New(
 	ProjectEnvironmentHandler *projectenv.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		GreetingHandler,
 		MongoClient,
@@ -107,6 +111,7 @@ func New(
 func Initialize() (*App, error) {
 	wire.Build(
 		config.Load,
+		logger.New,
 		greeting.New,
 		mongodb.New,
 		sharedImage.NewRepository,

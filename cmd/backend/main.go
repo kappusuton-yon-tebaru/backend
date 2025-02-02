@@ -6,10 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/router"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -18,15 +21,29 @@ func main() {
 		panic(err)
 	}
 
-	r := router.New()
-	config := cors.Config{
+	r := router.New(app.Config)
+
+	r.Use(func(ctx *gin.Context) {
+		start := time.Now()
+
+		ctx.Next()
+
+		app.Logger.Info("request",
+			zap.String("method", ctx.Request.Method),
+			zap.String("path", ctx.Request.URL.Path),
+			zap.Int("status", ctx.Writer.Status()),
+			zap.Duration("latency", time.Since(start)),
+			zap.String("client_ip", ctx.ClientIP()),
+		)
+	})
+
+	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://example.com", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
-	}
+	}))
 
-	r.Use(cors.New(config))
 	r.RegisterRoutes(app)
 
 	go func() {

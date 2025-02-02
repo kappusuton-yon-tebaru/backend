@@ -26,6 +26,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
@@ -47,6 +48,10 @@ import (
 
 func Initialize() (*App, error) {
 	configConfig, err := config.Load()
+	if err != nil {
+		return nil, err
+	}
+	loggerLogger, err := logger.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -100,13 +105,14 @@ func Initialize() (*App, error) {
 	projectenvRepository := projectenv.NewRepository(client)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
+	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
+	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
 	MongoClient                 *mongo.Client
@@ -128,6 +134,7 @@ type App struct {
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
@@ -148,6 +155,7 @@ func New(
 	ProjectEnvironmentHandler *projectenv2.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		GreetingHandler,
 		MongoClient,

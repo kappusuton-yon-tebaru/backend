@@ -25,6 +25,7 @@ type BuilderConfig struct {
 }
 
 type Config struct {
+	Development   bool          `mapstructure:"DEVELOPMENT"`
 	Agent         AgentConfig   `mapstructure:",squash"`
 	Backend       BackendConfig `mapstructure:",squash"`
 	MongoUri      string        `mapstructure:"MONGO_URI"`
