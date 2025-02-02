@@ -2,6 +2,7 @@ package kubernetes
 
 import (
 	"context"
+	"io"
 
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,4 +56,14 @@ func (p Pod) GetLogString(ctx context.Context, name string) (string, error) {
 	}
 
 	return string(log), err
+}
+
+func (p Pod) GetLogStream(ctx context.Context, name string) (io.ReadCloser, error) {
+	logs := p.client.GetLogs(name, &apicorev1.PodLogOptions{})
+	reader, err := logs.Stream(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return reader, err
 }

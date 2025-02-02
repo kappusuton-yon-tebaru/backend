@@ -7,10 +7,12 @@
 package agent
 
 import (
-	greeting2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"
+	monitoring2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	"github.com/kappusuton-yon-tebaru/backend/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
+	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/monitoring"
 )
 
 // Injectors from wire.go:
@@ -24,8 +26,13 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := greeting.New()
-	handler := greeting2.New(service)
+	kubernetesKubernetes, err := kubernetes.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	hubHub := hub.New()
+	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub)
+	handler := monitoring2.NewHandler(service)
 	app := New(loggerLogger, configConfig, handler)
 	return app, nil
 }
@@ -33,19 +40,19 @@ func Initialize() (*App, error) {
 // wire.go:
 
 type App struct {
-	Logger          *logger.Logger
-	Config          *config.Config
-	GreetingHandler *greeting2.Handler
+	Logger            *logger.Logger
+	Config            *config.Config
+	MonitoringHandler *monitoring2.Handler
 }
 
 func New(
 	Logger *logger.Logger,
 	Config *config.Config,
-	GreetingHandler *greeting2.Handler,
+	MonitoringHandler *monitoring2.Handler,
 ) *App {
 	return &App{
 		Logger,
 		Config,
-		GreetingHandler,
+		MonitoringHandler,
 	}
 }
