@@ -19,9 +19,7 @@ func (h *Hub) RegisterStreamer(id string, s *streamer.Streamer) {
 }
 
 func (h *Hub) UnregisterStreamer(id string) {
-	if _, ok := h.streamers[id]; ok {
-		delete(h.streamers, id)
-	}
+	delete(h.streamers, id)
 }
 
 func (h *Hub) GetOrRegisterStreamer(id string) *streamer.Streamer {

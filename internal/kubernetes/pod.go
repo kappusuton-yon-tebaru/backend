@@ -59,7 +59,10 @@ func (p Pod) GetLogString(ctx context.Context, name string) (string, error) {
 }
 
 func (p Pod) GetLogStream(ctx context.Context, name string) (io.ReadCloser, error) {
-	logs := p.client.GetLogs(name, &apicorev1.PodLogOptions{})
+	logs := p.client.GetLogs(name, &apicorev1.PodLogOptions{
+		Follow: true,
+	})
+
 	reader, err := logs.Stream(ctx)
 	if err != nil {
 		return nil, err

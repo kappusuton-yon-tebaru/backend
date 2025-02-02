@@ -3,11 +3,11 @@ package build
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -23,12 +23,12 @@ func NewHandler(logger *logger.Logger, service *build.Service) *Handler {
 	}
 }
 
-func (h *Handler) BuildImageHandler(msg amqp091.Delivery) error {
+func (h *Handler) BuildImageHandler(msg amqp091.Delivery) *werror.WError {
 	var body BuildRequestDTO
 
 	err := json.Unmarshal(msg.Body, &body)
 	if err != nil {
-		return fmt.Errorf("error while unmarshaling: %v", err)
+		return werror.NewFromError(err)
 	}
 
 	config := kubernetes.BuildImageDTO{
@@ -39,9 +39,9 @@ func (h *Handler) BuildImageHandler(msg amqp091.Delivery) error {
 	}
 
 	ctx := context.Background()
-	err = h.service.BuildImage(ctx, config)
-	if err != nil {
-		return fmt.Errorf("error while create pod: %v", err)
+	werr := h.service.BuildImage(ctx, config)
+	if werr != nil {
+		return werr
 	}
 
 	return nil

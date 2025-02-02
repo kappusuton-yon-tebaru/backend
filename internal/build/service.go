@@ -50,10 +50,11 @@ func (s *Service) BuildImage(ctx context.Context, dto kubernetes.BuildImageDTO) 
 		}
 
 		if pod.Status.Phase == apicorev1.PodFailed ||
-			pod.Status.Phase == apicorev1.PodUnknown ||
-			pod.Status.Phase == apicorev1.PodSucceeded {
+			pod.Status.Phase == apicorev1.PodUnknown {
 			s.logger.Error("pod failed to start", zap.String("name", builderPod.Name))
 			// podClient.GetLogString(ctx, builderPod.Name)
+			break
+		} else if pod.Status.Phase == apicorev1.PodSucceeded {
 			break
 		}
 
