@@ -31,7 +31,7 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	hubHub := hub.New()
-	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub)
+	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub, loggerLogger)
 	handler := monitoring2.NewHandler(service)
 	app := New(loggerLogger, configConfig, handler)
 	return app, nil

@@ -34,7 +34,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := build.NewService(configConfig, kubernetesKubernetes)
+	service := build.NewService(configConfig, kubernetesKubernetes, loggerLogger)
 	handler := build2.NewHandler(loggerLogger, service)
 	app := New(loggerLogger, configConfig, kubernetesKubernetes, rmqRmq, handler)
 	return app, nil
