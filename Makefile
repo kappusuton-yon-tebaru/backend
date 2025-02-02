@@ -1,4 +1,4 @@
-.PHONY: gen dev-agent dev-backend
+.PHONY: gen dev-agent dev-backend lint
 
 gen:
 	@echo "Generating agent..."
@@ -15,3 +15,6 @@ dev-agent:
 
 dev-backend:
 	@air -c ./cmd/backend/.air.toml
+
+lint:
+	@golangci-lint run
