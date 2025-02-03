@@ -7,16 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
-	"github.com/kappusuton-yon-tebaru/backend/internal/monitoring"
 	"go.uber.org/zap"
 )
 
 type Handler struct {
-	service *monitoring.Service
+	service *Service
 	logger  *logger.Logger
 }
 
-func NewHandler(service *monitoring.Service, logger *logger.Logger) *Handler {
+func NewHandler(service *Service, logger *logger.Logger) *Handler {
 	return &Handler{
 		service,
 		logger,

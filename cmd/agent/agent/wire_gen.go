@@ -7,12 +7,11 @@
 package agent
 
 import (
-	monitoring2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
-	"github.com/kappusuton-yon-tebaru/backend/internal/monitoring"
 )
 
 // Injectors from wire.go:
@@ -32,7 +31,7 @@ func Initialize() (*App, error) {
 	}
 	hubHub := hub.New()
 	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub, loggerLogger)
-	handler := monitoring2.NewHandler(service, loggerLogger)
+	handler := monitoring.NewHandler(service, loggerLogger)
 	app := New(loggerLogger, configConfig, handler)
 	return app, nil
 }
@@ -42,13 +41,13 @@ func Initialize() (*App, error) {
 type App struct {
 	Logger            *logger.Logger
 	Config            *config.Config
-	MonitoringHandler *monitoring2.Handler
+	MonitoringHandler *monitoring.Handler
 }
 
 func New(
 	Logger *logger.Logger,
 	Config *config.Config,
-	MonitoringHandler *monitoring2.Handler,
+	MonitoringHandler *monitoring.Handler,
 ) *App {
 	return &App{
 		Logger,

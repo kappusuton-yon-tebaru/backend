@@ -10,7 +10,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
-	shared_monitoring "github.com/kappusuton-yon-tebaru/backend/internal/monitoring"
 )
 
 type App struct {
@@ -37,7 +36,7 @@ func Initialize() (*App, error) {
 		logger.New,
 		kubernetes.New,
 		hub.New,
-		shared_monitoring.NewService,
+		monitoring.NewService,
 		monitoring.NewHandler,
 		New,
 	)
