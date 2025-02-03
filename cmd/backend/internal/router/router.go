@@ -85,4 +85,5 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/projectenvs/:id", app.ProjectEnvironmentHandler.DeleteProjectEnv)
 
 	r.POST("/build", app.BuildHandler.Build)
+	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 }

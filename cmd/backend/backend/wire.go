@@ -9,6 +9,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
@@ -66,6 +67,7 @@ type App struct {
 	RegisterProviderHandler     *regproviders.Handler
 	ProjectEnvironmentHandler   *projectenv.Handler
 	BuildHandler                *build.Handler
+	MonitoringHandler           *monitoring.Handler
 }
 
 func New(
@@ -89,6 +91,7 @@ func New(
 	RegisterProviderHandler *regproviders.Handler,
 	ProjectEnvironmentHandler *projectenv.Handler,
 	BuildHandler *build.Handler,
+	MonitoringHandler *monitoring.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -111,6 +114,7 @@ func New(
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
 		BuildHandler,
+		MonitoringHandler,
 	}
 }
 
@@ -169,6 +173,7 @@ func Initialize() (*App, error) {
 		rmq.New,
 		build.NewService,
 		build.NewHandler,
+		monitoring.NewHandler,
 		New,
 	)
 

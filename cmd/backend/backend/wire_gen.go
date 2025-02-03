@@ -11,6 +11,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	permission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	projectenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
@@ -115,7 +116,8 @@ func Initialize() (*App, error) {
 	}
 	buildService := build.NewService(builderRmq)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
-	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler)
+	monitoringHandler := monitoring.NewHandler(loggerLogger)
+	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler)
 	return app, nil
 }
 
@@ -142,6 +144,7 @@ type App struct {
 	RegisterProviderHandler     *regproviders2.Handler
 	ProjectEnvironmentHandler   *projectenv2.Handler
 	BuildHandler                *build.Handler
+	MonitoringHandler           *monitoring.Handler
 }
 
 func New(
@@ -165,6 +168,7 @@ func New(
 	RegisterProviderHandler *regproviders2.Handler,
 	ProjectEnvironmentHandler *projectenv2.Handler,
 	BuildHandler *build.Handler,
+	MonitoringHandler *monitoring.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -187,5 +191,6 @@ func New(
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
 		BuildHandler,
+		MonitoringHandler,
 	}
 }
