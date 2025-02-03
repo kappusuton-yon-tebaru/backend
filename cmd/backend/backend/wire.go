@@ -5,6 +5,7 @@ package backend
 
 import (
 	"github.com/google/wire"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -32,6 +33,7 @@ import (
 	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
 	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
@@ -39,6 +41,7 @@ import (
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -62,6 +65,7 @@ type App struct {
 	JobHandler                  *job.Handler
 	RegisterProviderHandler     *regproviders.Handler
 	ProjectEnvironmentHandler   *projectenv.Handler
+	BuildHandler                *build.Handler
 }
 
 func New(
@@ -84,6 +88,7 @@ func New(
 	JobHandler *job.Handler,
 	RegisterProviderHandler *regproviders.Handler,
 	ProjectEnvironmentHandler *projectenv.Handler,
+	BuildHandler *build.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -105,6 +110,7 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		BuildHandler,
 	}
 }
 
@@ -159,6 +165,10 @@ func Initialize() (*App, error) {
 		sharedProjectEnvironment.NewRepository,
 		sharedProjectEnvironment.NewService,
 		projectenv.NewHandler,
+		validator.New,
+		rmq.New,
+		build.NewService,
+		build.NewHandler,
 		New,
 	)
 

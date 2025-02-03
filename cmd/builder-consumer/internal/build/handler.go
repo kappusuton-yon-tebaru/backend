@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/rabbitmq/amqp091-go"
@@ -13,10 +12,10 @@ import (
 
 type Handler struct {
 	logger  *logger.Logger
-	service *build.Service
+	service *Service
 }
 
-func NewHandler(logger *logger.Logger, service *build.Service) *Handler {
+func NewHandler(logger *logger.Logger, service *Service) *Handler {
 	return &Handler{
 		logger,
 		service,

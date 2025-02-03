@@ -6,18 +6,17 @@ package builderconsumer
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/rmq"
-	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
 type App struct {
 	Logger       *logger.Logger
 	Config       *config.Config
 	KubeClient   *kubernetes.Kubernetes
-	RmqClient    *rmq.Rmq
+	RmqClient    *rmq.BuilderRmq
 	BuildHandler *build.Handler
 }
 
@@ -25,7 +24,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
-	RmqClient *rmq.Rmq,
+	RmqClient *rmq.BuilderRmq,
 	BuildHandler *build.Handler,
 ) *App {
 	return &App{
@@ -43,7 +42,7 @@ func Initialize() (*App, error) {
 		logger.New,
 		kubernetes.New,
 		rmq.New,
-		sharedBuild.NewService,
+		build.NewService,
 		build.NewHandler,
 		New,
 	)

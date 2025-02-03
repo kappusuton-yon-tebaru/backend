@@ -7,12 +7,11 @@
 package builderconsumer
 
 import (
-	build2 "github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/rmq"
-	"github.com/kappusuton-yon-tebaru/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
 // Injectors from wire.go:
@@ -30,13 +29,13 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	rmqRmq, err := rmq.New(configConfig)
+	builderRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
 	service := build.NewService(configConfig, kubernetesKubernetes, loggerLogger)
-	handler := build2.NewHandler(loggerLogger, service)
-	app := New(loggerLogger, configConfig, kubernetesKubernetes, rmqRmq, handler)
+	handler := build.NewHandler(loggerLogger, service)
+	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler)
 	return app, nil
 }
 
@@ -46,16 +45,16 @@ type App struct {
 	Logger       *logger.Logger
 	Config       *config.Config
 	KubeClient   *kubernetes.Kubernetes
-	RmqClient    *rmq.Rmq
-	BuildHandler *build2.Handler
+	RmqClient    *rmq.BuilderRmq
+	BuildHandler *build.Handler
 }
 
 func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
-	RmqClient *rmq.Rmq,
-	BuildHandler *build2.Handler,
+	RmqClient *rmq.BuilderRmq,
+	BuildHandler *build.Handler,
 ) *App {
 	return &App{
 		Logger,

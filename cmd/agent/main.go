@@ -46,11 +46,10 @@ func main() {
 
 		app.Logger.Info("start serving request")
 
-		if err := r.Run(fmt.Sprintf("0.0.0.0:%v", app.Config.Backend.Port)); err != nil {
+		if err := r.Run(fmt.Sprintf("0.0.0.0:%v", app.Config.Agent.Port)); err != nil {
 			app.Logger.Fatal("error occured while running gin", zap.Error(err))
 		}
 	}()
 
 	<-utils.WaitForTermination(app.Logger, func() {})
 }
-

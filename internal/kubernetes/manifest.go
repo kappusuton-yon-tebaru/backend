@@ -19,7 +19,7 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 
 	return &apicorev1.Pod{
 		ObjectMeta: apimetav1.ObjectMeta{
-			Name: "worker-" + config.AppName,
+			Name: "worker-" + config.Id,
 		},
 		Spec: apicorev1.PodSpec{
 			Containers: []apicorev1.Container{

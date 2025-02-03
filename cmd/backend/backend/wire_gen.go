@@ -7,6 +7,7 @@
 package backend
 
 import (
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -34,6 +35,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
@@ -41,6 +43,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -105,7 +108,14 @@ func Initialize() (*App, error) {
 	projectenvRepository := projectenv.NewRepository(client)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
-	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
+	validatorValidator := validator.New()
+	builderRmq, err := rmq.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	buildService := build.NewService(builderRmq)
+	buildHandler := build.NewHandler(validatorValidator, buildService)
+	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler)
 	return app, nil
 }
 
@@ -131,6 +141,7 @@ type App struct {
 	JobHandler                  *job2.Handler
 	RegisterProviderHandler     *regproviders2.Handler
 	ProjectEnvironmentHandler   *projectenv2.Handler
+	BuildHandler                *build.Handler
 }
 
 func New(
@@ -153,6 +164,7 @@ func New(
 	JobHandler *job2.Handler,
 	RegisterProviderHandler *regproviders2.Handler,
 	ProjectEnvironmentHandler *projectenv2.Handler,
+	BuildHandler *build.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -174,5 +186,6 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		BuildHandler,
 	}
 }
