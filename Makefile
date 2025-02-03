@@ -1,14 +1,10 @@
 .PHONY: gen dev-agent dev-backend lint
 
 gen:
-	@echo "Generating agent..."
-	@wire ./cmd/agent/agent
-
-	@echo "Generating backend..."
-	@wire ./cmd/backend/backend
-
-	@echo "Generating builder consumer..."
-	@wire ./cmd/builder-consumer/builderconsumer/
+	@go run tools/wire/main.go \
+		./cmd/agent/agent \
+		./cmd/backend/backend \
+		./cmd/builder-consumer/builderconsumer
 
 dev-agent:
 	@air -c ./cmd/agent/.air.toml
