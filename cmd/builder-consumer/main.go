@@ -30,10 +30,7 @@ func main() {
 					}
 				}()
 
-				err := app.BuildHandler.BuildImageHandler(msg)
-				if err != nil {
-					app.Logger.Error("error occured while handling message", zap.Error(err))
-				}
+				app.BuildHandler.BuildImageHandler(msg)
 			}()
 		}
 	}()
