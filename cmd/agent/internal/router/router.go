@@ -26,5 +26,6 @@ func New(cfg *config.Config) *Router {
 }
 
 func (r *Router) RegisterRoutes(app *agent.App) {
-	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
+	r.GET("/ws/job/:id/log", app.MonitoringHandler.IntervalPing)
+	// r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 }

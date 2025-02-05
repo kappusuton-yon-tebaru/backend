@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,18 +52,59 @@ func (h *Handler) StreamJobLog(ctx *gin.Context) {
 		}
 	}()
 
-	for {
-		t, bs, err := upConn.ReadMessage()
-		if err != nil {
-			h.logger.Error("error occured while reading websocket message from upstream", zap.Error(err))
-			break
-		}
+	done := make(chan struct{})
 
-		err = conn.WriteMessage(t, bs)
-		if err != nil {
-			h.logger.Error("error occured while writing websocket message", zap.Error(err))
-			break
+	// TODO: properly handle websocket connection
+
+	go func() {
+		for {
+			select {
+			case _, ok := <-done:
+				if !ok {
+					return
+				}
+			default:
+				t, bs, err := upConn.ReadMessage()
+				if err != nil {
+					h.logger.Error("error occured while reading websocket message from upstream", zap.Error(err))
+					close(done)
+					return
+				}
+
+				err = conn.WriteMessage(t, bs)
+				if err != nil {
+					h.logger.Error("error occured while writing websocket message to downstream", zap.Error(err))
+					close(done)
+					return
+				}
+			}
 		}
-	}
+	}()
+
+	func() {
+		for {
+			select {
+			case _, ok := <-done:
+				if !ok {
+					return
+				}
+			default:
+				t, bs, err := conn.ReadMessage()
+				if err != nil {
+					h.logger.Error("error occured while reading websocket message from downstream", zap.Error(err))
+					close(done)
+					return
+				}
+
+				err = upConn.WriteMessage(t, bs)
+				if err != nil {
+					h.logger.Error("error occured while writing websocket message to upstream", zap.Error(err))
+					close(done)
+					return
+				}
+			}
+		}
+	}()
+
+	fmt.Println("ws closed")
 }
-
