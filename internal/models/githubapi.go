@@ -23,13 +23,16 @@ type File struct {
 
 type Branch struct {
 	Name   string `json:"name"`
+	Object struct {
+		Sha string `json:"sha"`
+	} `json:"object"`
 	Commit struct {
 		Sha       string `json:"sha"`
 		Committer struct {
 			Name string `json:"name"`
 			Date string `json:"date"`
 		} `json:"committer"`
-	} `json:"commit"`
+	} `json:"commit,omitempty"`  // optional field if needed for other GitHub API responses
 }
 
 // CommitMetadata represents metadata for a commit
@@ -51,4 +54,17 @@ type FileData struct {
 	Sha      string `json:"sha"`
 	Content  string `json:"content"`
 	Encoding string `json:"encoding"`
+}
+
+// BaseBranchResponse represents the response structure when fetching a branch reference.
+type BaseBranchResponse struct {
+	Object struct {
+		Sha string `json:"sha"`
+	} `json:"object"`
+}
+
+// CreateBranchRequest is the payload for creating a new branch.
+type CreateBranchRequest struct {
+	Ref string `json:"ref"`
+	Sha string `json:"sha"`
 }

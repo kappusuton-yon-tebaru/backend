@@ -132,3 +132,35 @@ func (h *Handler) FetchFileContent(c *gin.Context) {
 		"content": content,
 	})
 }
+
+// CreateBranch handles requests to create a new branch.
+func (h *Handler) CreateBranch(c *gin.Context) {
+	fullname := c.Param("owner") + "/" + c.Param("repo")
+	branchName := c.DefaultQuery("branch_name", "")
+	selectedBranchName := c.DefaultQuery("selected_branch", "")
+	token := c.GetHeader("Authorization")
+
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
+
+	// Remove "Bearer " prefix from the token
+	token = token[len("Bearer "):]
+
+	// Step 1: Get the base branch SHA (the selected branch)
+	baseBranchSHA, err := h.service.GetBaseBranchSHA(c.Request.Context(), fullname, selectedBranchName, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Step 2: Create the new branch
+	branch, err := h.service.CreateBranch(c.Request.Context(), fullname, branchName, baseBranchSHA, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, branch)
+}
