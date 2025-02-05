@@ -45,6 +45,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/usergroups/:group_id/user/:user_id", app.UserGroupHandler.DeleteUserFromUserGroupById)
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
+	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
 	r.POST("/resources", app.ResourceHandler.CreateResource)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
 
@@ -65,10 +66,12 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
+	r.GET("/projrepos/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoriesByProjectID)
 	r.POST("/projrepos", app.ProjectRepositoryHandler.CreateProjectRepository)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
 	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
+	r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourcesByParentID)
 	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
@@ -90,4 +93,15 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
 	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
+
+	r.GET("/github/userrepos", app.GithubAPIHandler.GetUserRepos)
+	r.GET("/github/:owner/:repo/contents", app.GithubAPIHandler.GetRepoContents) // ?path={folderPath}&branch={branchName}
+	r.GET("/github/:owner/:repo/branches", app.GithubAPIHandler.GetRepoBranches)
+	r.POST("/github/:owner/:repo/create-branch", app.GithubAPIHandler.CreateBranch) // ?branch_name={new-branch}&selected_branch={main}
+	r.PUT("/github/:owner/:repo/push", app.GithubAPIHandler.UpdateFileContent) 
+	r.GET("/github/:owner/:repo/commit-metadata", app.GithubAPIHandler.GetCommitMetadata) // ?path={filePath}&branch={branchName}
+	r.GET("/github/:owner/:repo/file-content", app.GithubAPIHandler.FetchFileContent) // ?path={filePath}&branch={branchName}
+	
+	r.GET("/project/:id/services ", app.GithubAPIHandler.GetServices) 
+
 }
