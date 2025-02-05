@@ -21,7 +21,7 @@ func (s *Service) GetUserRepos(ctx context.Context, token string) ([]models.Repo
 	return s.repo.GetUserRepos(ctx, token)
 }
 
-func (s *Service) GetRepoContents(fullname string, path string, token string) ([]models.File, error) {
+func (s *Service) GetRepoContents(ctx context.Context, fullname string, path string, token string) ([]models.File, error) {
     if fullname == "" {
         return nil, errors.New("Repository fullname is required")
     }
@@ -30,7 +30,7 @@ func (s *Service) GetRepoContents(fullname string, path string, token string) ([
 }
 
 // GetRepoBranches fetches the branches of a repository
-func (s *Service) GetRepoBranches(fullname string, token string) ([]models.Branch, error) {
+func (s *Service) GetRepoBranches(ctx context.Context, fullname string, token string) ([]models.Branch, error) {
     if fullname == "" {
         return nil, errors.New("Repository fullname is required")
     }
@@ -39,10 +39,18 @@ func (s *Service) GetRepoBranches(fullname string, token string) ([]models.Branc
 }
 
 // GetCommitMetadata fetches the commit metadata for a file in a repository
-func (s *Service) GetCommitMetadata(path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
+func (s *Service) GetCommitMetadata(ctx context.Context, path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
     if fullname == "" || path == "" || branch == "" {
         return nil, errors.New("Repository fullname, path, and branch are required")
     }
 
     return s.repo.GetCommitMetadata(path, branch, fullname, token)
+}
+
+func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, branch, token string) (string, string, error) {
+	if fullname == "" || filePath == "" || branch == "" || token == "" {
+		return "", "", errors.New("missing required parameters")
+	}
+
+	return s.repo.FetchFileContent(ctx, fullname, filePath, branch, token)
 }

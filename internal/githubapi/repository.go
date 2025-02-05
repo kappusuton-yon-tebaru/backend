@@ -2,6 +2,7 @@ package githubapi
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -178,4 +179,41 @@ func (r *Repository) GetCommitMetadata(path string, branch string, fullname stri
         LastEditTime: nil,
         CommitMessage: "No commits found",
     }, nil
+}
+
+func (r *Repository) FetchFileContent(ctx context.Context, fullname, filePath, branch, token string) (string, string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s?ref=%s", fullname, filePath, branch)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("error fetching file content: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	var fileData models.FileData
+	err = json.NewDecoder(resp.Body).Decode(&fileData)
+	if err != nil {
+		return "", "", err
+	}
+
+	if fileData.Encoding == "base64" {
+		decodedContent, err := base64.StdEncoding.DecodeString(fileData.Content)
+		if err != nil {
+			return "", "", errors.New("failed to decode base64 content")
+		}
+		return string(decodedContent), fileData.Sha, nil
+	}
+
+	return "", "", errors.New("unsupported file encoding")
 }

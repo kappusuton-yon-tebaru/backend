@@ -1,22 +1,18 @@
 package githubapi
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 )
 
-// Handler is responsible for handling HTTP requests related to GitHub
 type Handler struct {
     service *githubapi.Service
 }
 
 // NewHandler creates a new Handler instance
 func NewHandler(service *githubapi.Service) *Handler {
-	log.Println("Received request to /github/repos") // Log request
-
     return &Handler{
 		service,
 	}
@@ -44,7 +40,7 @@ func (h *Handler) GetUserRepos(c *gin.Context) {
 }
 
 func (h *Handler) GetRepoContents(c *gin.Context) {
-    fullname := c.Param("name")+"/"+c.Param("repo")
+    fullname := c.Param("owner")+"/"+c.Param("repo")
     path := c.DefaultQuery("path", "") // Default to an empty string if no path is provided
 
     token := c.GetHeader("Authorization")
@@ -55,7 +51,7 @@ func (h *Handler) GetRepoContents(c *gin.Context) {
 
     // Remove "Bearer " prefix from the token
     token = token[len("Bearer "):]
-    contents, err := h.service.GetRepoContents(fullname, path, token)
+    contents, err := h.service.GetRepoContents(c.Request.Context(),fullname, path, token)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -66,7 +62,7 @@ func (h *Handler) GetRepoContents(c *gin.Context) {
 
 // GetRepoBranches handles requests to fetch branches of a GitHub repository
 func (h *Handler) GetRepoBranches(c *gin.Context) {
-    fullname := c.Param("name")+"/"+c.Param("repo")
+    fullname := c.Param("owner")+"/"+c.Param("repo")
 
     token := c.GetHeader("Authorization")
     if token == "" {
@@ -77,7 +73,7 @@ func (h *Handler) GetRepoBranches(c *gin.Context) {
     // Remove "Bearer " prefix from the token
     token = token[len("Bearer "):]
 
-    branches, err := h.service.GetRepoBranches(fullname, token)
+    branches, err := h.service.GetRepoBranches(c.Request.Context(), fullname, token)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -88,7 +84,7 @@ func (h *Handler) GetRepoBranches(c *gin.Context) {
 
 // GetCommitMetadata handles requests to fetch commit metadata for a file in a GitHub repository
 func (h *Handler) GetCommitMetadata(c *gin.Context) {
-    fullname := c.Param("name")+"/"+c.Param("repo")
+    fullname := c.Param("owner")+"/"+c.Param("repo")
 
     path := c.DefaultQuery("path", "") // Get the path query parameter (e.g., "README.md")
     branch := c.DefaultQuery("branch", "") // Get the branch query parameter (e.g., "main")
@@ -102,11 +98,37 @@ func (h *Handler) GetCommitMetadata(c *gin.Context) {
     // Remove "Bearer " prefix from the token
     token = token[len("Bearer "):]
 
-    metadata, err := h.service.GetCommitMetadata(path, branch, fullname, token)
+    metadata, err := h.service.GetCommitMetadata(c.Request.Context(), path, branch, fullname, token)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
     c.JSON(http.StatusOK, metadata)
+}
+
+func (h *Handler) FetchFileContent(c *gin.Context) {
+	fullname := c.Param("owner") + "/" + c.Param("repo")
+	filePath := c.Query("path")
+	branch := c.Query("branch")
+	token := c.GetHeader("Authorization")
+
+    if token == "" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+        return
+    }
+
+    // Remove "Bearer " prefix from the token
+    token = token[len("Bearer "):]
+
+	content, sha, err := h.service.FetchFileContent(c.Request.Context(), fullname, filePath, branch, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"sha":     sha,
+		"content": content,
+	})
 }
