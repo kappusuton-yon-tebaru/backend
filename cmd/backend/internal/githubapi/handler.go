@@ -85,3 +85,28 @@ func (h *Handler) GetRepoBranches(c *gin.Context) {
 
     c.JSON(http.StatusOK, branches)
 }
+
+// GetCommitMetadata handles requests to fetch commit metadata for a file in a GitHub repository
+func (h *Handler) GetCommitMetadata(c *gin.Context) {
+    fullname := c.Param("name")+"/"+c.Param("repo")
+
+    path := c.DefaultQuery("path", "") // Get the path query parameter (e.g., "README.md")
+    branch := c.DefaultQuery("branch", "") // Get the branch query parameter (e.g., "main")
+
+    token := c.GetHeader("Authorization")
+    if token == "" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+        return
+    }
+
+    // Remove "Bearer " prefix from the token
+    token = token[len("Bearer "):]
+
+    metadata, err := h.service.GetCommitMetadata(path, branch, fullname, token)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, metadata)
+}
