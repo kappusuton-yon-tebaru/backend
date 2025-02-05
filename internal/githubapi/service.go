@@ -28,3 +28,12 @@ func (s *Service) GetRepoContents(fullname string, path string, token string) ([
 
     return s.repo.GetRepoContents(fullname, path, token)
 }
+
+// GetRepoBranches fetches the branches of a repository
+func (s *Service) GetRepoBranches(fullname string, token string) ([]models.Branch, error) {
+    if fullname == "" {
+        return nil, errors.New("Repository fullname is required")
+    }
+
+    return s.repo.GetRepoBranches(fullname, token)
+}
