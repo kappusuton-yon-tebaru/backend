@@ -47,3 +47,8 @@ type Commit struct {
 		Message string `json:"message"`
 	} `json:"commit"`
 }
+type FileData struct {
+	Sha      string `json:"sha"`
+	Content  string `json:"content"`
+	Encoding string `json:"encoding"`
+}
