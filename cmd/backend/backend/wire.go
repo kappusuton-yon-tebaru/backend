@@ -49,6 +49,9 @@ import (
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
+	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
+
 )
 
 type App struct {
@@ -76,6 +79,8 @@ type App struct {
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
+	GithubAPIHandler				*githubapi.Handler
+
 }
 
 func New(
@@ -103,6 +108,7 @@ func New(
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
+	GithubAPIHandler *githubapi.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -129,6 +135,7 @@ func New(
 		BuildHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
+		GithubAPIHandler,
 	}
 }
 
@@ -195,6 +202,9 @@ func Initialize() (*App, error) {
 		build.NewHandler,
 		monitoring.NewHandler,
 		reverseproxy.New,
+		sharedGithubAPI.NewRepository,
+		sharedGithubAPI.NewService,
+		githubapi.NewHandler,
 		New,
 	)
 
