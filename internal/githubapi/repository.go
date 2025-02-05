@@ -81,3 +81,38 @@ func (r *Repository) GetRepoContents(fullname string, path string, token string)
 
     return contents, nil
 }
+
+// GetRepoBranches fetches the branches of a GitHub repository
+func (r *Repository) GetRepoBranches(fullname string, token string) ([]models.Branch, error) {
+    if token == "" {
+        return nil, errors.New("No access token found")
+    }
+
+    url := fmt.Sprintf("https://api.github.com/repos/%s/branches", fullname)
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    // Set Authorization header with the Bearer token
+    req.Header.Set("Authorization", "Bearer "+token)
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("Failed to fetch branches, status code: %d", resp.StatusCode)
+    }
+
+    var branches []models.Branch
+    err = json.NewDecoder(resp.Body).Decode(&branches)
+    if err != nil {
+        return nil, err
+    }
+
+    return branches, nil
+}

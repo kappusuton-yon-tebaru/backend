@@ -18,3 +18,14 @@ type File struct {
     Size    int    `json:"size"`
     DownloadURL string `json:"download_url"`
 }
+
+type Branch struct {
+    Name string `json:"name"`
+    Commit struct {
+        Sha string `json:"sha"`
+        Committer struct {
+            Name  string `json:"name"`
+            Date  string `json:"date"`
+        } `json:"committer"`
+    } `json:"commit"`
+}
