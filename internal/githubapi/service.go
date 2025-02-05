@@ -54,3 +54,20 @@ func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, bran
 
 	return s.repo.FetchFileContent(ctx, fullname, filePath, branch, token)
 }
+// GetBaseBranchSHA calls the repository to get the SHA of the base branch.
+func (s *Service) GetBaseBranchSHA(ctx context.Context, fullname, branchName, token string) (string, error) {
+	if fullname == "" || branchName == "" || token == "" {
+		return "", errors.New("missing required parameters")
+	}
+
+	return s.repo.GetBaseBranchSHA(ctx, fullname, branchName, token)
+}
+
+// CreateBranch calls the repository to create a new branch.
+func (s *Service) CreateBranch(ctx context.Context, fullname, branchName, baseBranchSHA, token string) (*models.Branch, error) {
+	if fullname == "" || branchName == "" || baseBranchSHA == "" || token == "" {
+		return nil, errors.New("missing required parameters")
+	}
+
+	return s.repo.CreateBranch(ctx, fullname, branchName, baseBranchSHA, token)
+}

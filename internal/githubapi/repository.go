@@ -1,6 +1,7 @@
 package githubapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -216,4 +217,77 @@ func (r *Repository) FetchFileContent(ctx context.Context, fullname, filePath, b
 	}
 
 	return "", "", errors.New("unsupported file encoding")
+}
+
+// GetBaseBranchSHA fetches the SHA of the base branch for the given branch name.
+func (r *Repository) GetBaseBranchSHA(ctx context.Context, fullname, branchName, token string) (string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/git/refs/heads/%s", fullname, branchName)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch base branch SHA: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	var resData models.BaseBranchResponse
+	err = json.NewDecoder(resp.Body).Decode(&resData)
+	if err != nil {
+		return "", err
+	}
+
+	return resData.Object.Sha, nil
+}
+
+// CreateBranch creates a new branch from the selected branch.
+func (r *Repository) CreateBranch(ctx context.Context, fullname, branchName, baseBranchSHA, token string) (*models.Branch, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/git/refs", fullname)
+
+	branchRequest := models.CreateBranchRequest{
+		Ref: fmt.Sprintf("refs/heads/%s", branchName),
+		Sha: baseBranchSHA,
+	}
+
+	body, err := json.Marshal(branchRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("failed to create branch: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	var branchData models.Branch
+	err = json.NewDecoder(resp.Body).Decode(&branchData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &branchData, nil
 }
