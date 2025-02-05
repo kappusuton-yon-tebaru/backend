@@ -10,3 +10,11 @@ type Repository struct {
         AvatarURL string `json:"avatar_url"`
     } `json:"owner"`
 }
+
+type File struct {
+    Name    string `json:"name"`
+    Path    string `json:"path"`
+    Sha     string `json:"sha"`
+    Size    int    `json:"size"`
+    DownloadURL string `json:"download_url"`
+}
