@@ -37,3 +37,12 @@ func (s *Service) GetRepoBranches(fullname string, token string) ([]models.Branc
 
     return s.repo.GetRepoBranches(fullname, token)
 }
+
+// GetCommitMetadata fetches the commit metadata for a file in a repository
+func (s *Service) GetCommitMetadata(path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
+    if fullname == "" || path == "" || branch == "" {
+        return nil, errors.New("Repository fullname, path, and branch are required")
+    }
+
+    return s.repo.GetCommitMetadata(path, branch, fullname, token)
+}
