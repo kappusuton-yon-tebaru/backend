@@ -47,3 +47,37 @@ func (r *Repository) GetUserRepos(ctx context.Context, token string) ([]models.R
 
     return repos, nil
 }
+
+func (r *Repository) GetRepoContents(fullname string, path string, token string) ([]models.File, error) {
+    if token == "" {
+        return nil, errors.New("No access token found")
+    }
+
+    url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s", fullname, path)
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    // Set Authorization header with the Bearer token
+    req.Header.Set("Authorization", "Bearer "+token)
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("Failed to fetch repository contents, status code: %d", resp.StatusCode)
+    }
+
+    var contents []models.File
+    err = json.NewDecoder(resp.Body).Decode(&contents)
+    if err != nil {
+        return nil, err
+    }
+
+    return contents, nil
+}
