@@ -1,10 +1,10 @@
 package dockerhub
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"net/http"
+	// "bytes"
+	// "encoding/json"
+	// "fmt"
+	// "net/http"
 	"os"
 )
 
@@ -20,56 +20,56 @@ func NewDockerHubRepository(apiURL, token string) *DockerHubRepository {
 	}
 }
 
-func (r *DockerHubRepository) GetImages() ([]string, error) {
-	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
+// func (r *DockerHubRepository) GetImages() ([]string, error) {
+// 	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
+// 	req, err := http.NewRequest("GET", url, nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
+// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
+// 	res, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	defer res.Body.Close()
+// 	defer res.Body.Close()
 
-	var result struct {
-		Results []struct {
-			Name string `json:"name"`
-		} `json:"results"`
-	}
+// 	var result struct {
+// 		Results []struct {
+// 			Name string `json:"name"`
+// 		} `json:"results"`
+// 	}
 
-	json.NewDecoder(res.Body).Decode(&result)
+// 	json.NewDecoder(res.Body).Decode(&result)
 
-	var images []string
-	for _, img := range result.Results {
-		images = append(images, img.Name)
-	}
-	return images, nil
+// 	var images []string
+// 	for _, img := range result.Results {
+// 		images = append(images, img.Name)
+// 	}
+// 	return images, nil
 	
-}
+// }
 
-func (r *DockerHubRepository) PushImage(imageName, tag string) error {
-	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(nil))
-	if err != nil {
-		return err
-	}
+// func (r *DockerHubRepository) PushImage(imageName, tag string) error {
+// 	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
+// 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(nil))
+// 	if err != nil {
+// 		return err
+// 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
+// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
+// 	res, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	defer res.Body.Close()
+// 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusCreated {
-		return fmt.Errorf("failed to push image: %s", res.Status)
-	}
-	return nil
-}
+// 	if res.StatusCode != http.StatusCreated {
+// 		return fmt.Errorf("failed to push image: %s", res.Status)
+// 	}
+// 	return nil
+// }
