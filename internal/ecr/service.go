@@ -10,7 +10,7 @@ func NewService(repo *ECRRepository) *Service {
 	}
 }
 
-func (s *Service) GetECRImages(repoName string) ([]ECRImageResponse, error) {
+func (s *Service) GetECRImages(repoName string, serviceName string) ([]ECRImageResponse, error) {
 	images, err := s.repo.GetImages(repoName)
 	if err != nil {
 		return nil, err
@@ -19,20 +19,9 @@ func (s *Service) GetECRImages(repoName string) ([]ECRImageResponse, error) {
 	var response []ECRImageResponse
 	for _, img := range images {
 		response = append(response, ECRImageResponse{
-			RepositoryName: repoName,
-			ImageDigest:    img,
-			ImageTag:       "latest",
+			ImageTag:       img,
 		})
 	}
 
 	return response, nil
-}
-
-func (s *Service) PushECRImage(req PushECRImageRequest) (string, error) {
-	id, err := s.repo.PushImage(req.RepositoryName, req.ImageName, req.Tag)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
 }

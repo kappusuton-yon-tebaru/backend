@@ -27,7 +27,7 @@ func (h *ImageHandler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	images, err := h.service.GetECRImages(req.RepositoryName)
+	images, err := h.service.GetECRImages(req.RepositoryName, req.ServiceName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
@@ -37,30 +37,4 @@ func (h *ImageHandler) GetECRImages(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, images)
-}
-
-func (h *ImageHandler) PushImageToECR(ctx *gin.Context) {
-	var req ecr.PushECRImageRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "invalid input",
-			"error": err.Error(),
-		})
-		return
-	}
-
-	id, err := h.service.PushECRImage(req)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]any{
-			"message": "internal server error",
-			"error": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "push successfully",
-		"id": id,
-	})
 }
