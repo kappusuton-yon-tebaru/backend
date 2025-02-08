@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,12 +11,14 @@ import (
 )
 
 type Repository struct {
-	job *mongo.Collection
+	client *mongo.Client
+	job    *mongo.Collection
 }
 
 func NewRepository(client *mongo.Client) *Repository {
 	return &Repository{
-		job: client.Database("Capstone").Collection("jobs"),
+		client: client,
+		job:    client.Database("Capstone").Collection("jobs"),
 	}
 }
 
@@ -55,13 +58,47 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 }
 
 func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) ([]string, error) {
-	results, err := r.job.InsertMany(ctx, dtos)
+	session, err := r.client.StartSession()
+	if err != nil {
+		return nil, err
+	}
+
+	defer session.EndSession(ctx)
+
+	results, err := session.WithTransaction(ctx, func(ctx context.Context) (interface{}, error) {
+		now := time.Now()
+
+		parentJob := map[string]any{
+			"parent_job_id": bson.NilObjectID,
+			"created_at":    now,
+		}
+
+		result, err := r.job.InsertOne(ctx, parentJob)
+		if err != nil {
+			return nil, err
+		}
+
+		parentId := result.InsertedID.(bson.ObjectID)
+
+		for i := range len(dtos) {
+			dtos[i].JobParentId = parentId
+			dtos[i].CreatedAt = now
+		}
+
+		results, err := r.job.InsertMany(ctx, dtos)
+		if err != nil {
+			return nil, err
+		}
+
+		return results.InsertedIDs, err
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
 	ids := []string{}
-	for _, result := range results.InsertedIDs {
+	for _, result := range results.([]interface{}) {
 		id := result.(bson.ObjectID)
 		ids = append(ids, id.Hex())
 	}

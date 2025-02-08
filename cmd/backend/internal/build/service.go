@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
@@ -36,7 +35,6 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) *werror.WErr
 		jobs = append(jobs, job.CreateJobDTO{
 			JobType:   string(enum.JobTypeBuild),
 			JobStatus: string(enum.JobStatusPending),
-			CreatedAt: time.Now(),
 		})
 	}
 
