@@ -18,10 +18,17 @@ type BackendConfig struct {
 	Port int `mapstructure:"BACKEND_PORT"`
 }
 
+type ECRConfig struct {
+	Region string `mapstructure:"AWS_REGION"`
+	AccessKey string `mapstructure:"AWS_ACCESS_KEY"`
+	SecretKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+}
+
 type Config struct {
 	Agent    AgentConfig   `mapstructure:",squash"`
 	Backend  BackendConfig `mapstructure:",squash"`
 	MongoUri string        `mapstructure:"MONGO_URI"`
+	ECR      ECRConfig     `mapstructure:",squash"`
 }
 
 func Load() (*Config, error) {
