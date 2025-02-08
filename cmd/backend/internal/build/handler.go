@@ -35,7 +35,7 @@ func (h *Handler) Build(ctx *gin.Context) {
 		return
 	}
 
-	jobId, err := h.service.BuildImage(ctx, req)
+	err := h.service.BuildImage(ctx, req)
 	if err != nil {
 		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
 			"message": err.GetMessageOr("internal server error"),
@@ -43,7 +43,5 @@ func (h *Handler) Build(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, map[string]any{
-		"job_id": jobId,
-	})
+	ctx.Status(http.StatusCreated)
 }

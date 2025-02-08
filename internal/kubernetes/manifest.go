@@ -10,7 +10,7 @@ import (
 func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 	args := []string{
 		fmt.Sprintf("--dockerfile=%s", config.Dockerfile),
-		fmt.Sprintf("--context=%s", config.Url),
+		fmt.Sprintf("--context=%s", config.RepoUrl),
 	}
 
 	for _, dest := range config.Destinations {

@@ -9,8 +9,10 @@ package builderconsumer
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
@@ -33,8 +35,14 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := build.NewService(configConfig, kubernetesKubernetes, loggerLogger)
-	handler := build.NewHandler(loggerLogger, service)
+	client, err := mongodb.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	repository := job.NewRepository(client)
+	service := job.NewService(repository)
+	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
+	handler := build.NewHandler(loggerLogger, buildService)
 	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler)
 	return app, nil
 }

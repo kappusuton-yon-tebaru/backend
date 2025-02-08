@@ -3,33 +3,69 @@ package build
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"time"
 
-	"github.com/google/uuid"
+	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
+	"github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
+	"go.uber.org/zap"
 )
 
 type Service struct {
-	rmq *rmq.BuilderRmq
+	rmq        *rmq.BuilderRmq
+	jobService *job.Service
+	logger     *logger.Logger
 }
 
-func NewService(rmq *rmq.BuilderRmq) *Service {
+func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Logger) *Service {
 	return &Service{
 		rmq,
+		jobService,
+		logger,
 	}
 }
 
-func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
-	req.Id = uuid.New().String()
+func (s *Service) BuildImage(ctx context.Context, req BuildRequest) *werror.WError {
+	jobs := []job.CreateJobDTO{}
 
-	bs, err := json.Marshal(req)
-	if err != nil {
-		return "", nil
+	for range len(req.Services) {
+		jobs = append(jobs, job.CreateJobDTO{
+			JobType:   string(enum.JobTypeBuild),
+			JobStatus: string(enum.JobStatusPending),
+			CreatedAt: time.Now(),
+		})
 	}
 
-	if err := s.rmq.Publish(ctx, bs); err != nil {
-		return "", werror.NewFromError(err)
+	jobIds, werr := s.jobService.CreateGroupJobs(ctx, jobs)
+	if werr != nil {
+		s.logger.Error("error occured while creating jobs", zap.Error(werr.Err))
+		return werr
 	}
 
-	return req.Id, nil
+	for i, service := range req.Services {
+		jobId := jobIds[i]
+
+		buildCtx := sharedBuild.BuildContext{
+			Id:          jobId,
+			RepoUrl:     req.RepoUrl,
+			Destination: fmt.Sprintf("%s:%s", req.RegistryUrl, service.Tag),
+			Dockerfile:  service.Dockerfile,
+		}
+
+		bs, err := json.Marshal(buildCtx)
+		if err != nil {
+			return nil
+		}
+
+		if err := s.rmq.Publish(ctx, bs); err != nil {
+			s.logger.Error("error occured while publishing build context", zap.Error(err))
+			return werror.NewFromError(err).SetMessage("error occured while publishing build context")
+		}
+	}
+
+	return nil
 }

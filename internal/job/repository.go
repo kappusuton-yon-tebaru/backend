@@ -54,6 +54,41 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 	return id.Hex(), nil
 }
 
+func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) ([]string, error) {
+	results, err := r.job.InsertMany(ctx, dtos)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []string{}
+	for _, result := range results.InsertedIDs {
+		id := result.(bson.ObjectID)
+		ids = append(ids, id.Hex())
+	}
+
+	return ids, nil
+}
+
+func (r *Repository) UpdateJobStatus(ctx context.Context, jobId string, jobStatus string) error {
+	id, err := bson.ObjectIDFromHex(jobId)
+	if err != nil {
+		return err
+	}
+
+	update := map[string]any{
+		"$set": map[string]any{
+			"job_status": jobStatus,
+		},
+	}
+
+	_, err = r.job.UpdateByID(ctx, id, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.job.DeleteOne(ctx, filter)
 	if err != nil {

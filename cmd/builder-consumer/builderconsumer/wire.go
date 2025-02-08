@@ -7,8 +7,10 @@ import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
@@ -44,6 +46,9 @@ func Initialize() (*App, error) {
 		rmq.New,
 		build.NewService,
 		build.NewHandler,
+		mongodb.New,
+		job.NewRepository,
+		job.NewService,
 		New,
 	)
 

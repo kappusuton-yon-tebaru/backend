@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/rabbitmq/amqp091-go"
@@ -23,7 +24,7 @@ func NewHandler(logger *logger.Logger, service *Service) *Handler {
 }
 
 func (h *Handler) BuildImageHandler(msg amqp091.Delivery) {
-	var body BuildRequestDTO
+	var body sharedBuild.BuildContext
 
 	err := json.Unmarshal(msg.Body, &body)
 	if err != nil {
@@ -34,8 +35,8 @@ func (h *Handler) BuildImageHandler(msg amqp091.Delivery) {
 	config := kubernetes.BuildImageDTO{
 		Id:           body.Id,
 		Dockerfile:   body.Dockerfile,
-		Url:          body.Url,
-		Destinations: body.Destinations,
+		RepoUrl:      body.RepoUrl,
+		Destinations: []string{body.Destination},
 	}
 
 	ctx := context.Background()

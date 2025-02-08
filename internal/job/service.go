@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -35,6 +36,24 @@ func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, erro
 	}
 
 	return id, nil
+}
+
+func (s *Service) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) ([]string, *werror.WError) {
+	ids, err := s.repo.CreateGroupJobs(ctx, dtos)
+	if err != nil {
+		return nil, werror.NewFromError(err).SetMessage("error occured while creating jobs")
+	}
+
+	return ids, nil
+}
+
+func (s *Service) UpdateJobStatus(ctx context.Context, jobId string, jobStatus enum.JobStatus) *werror.WError {
+	err := s.repo.UpdateJobStatus(ctx, jobId, string(jobStatus))
+	if err != nil {
+		return werror.NewFromError(err).SetMessage("error occured while updating job status")
+	}
+
+	return nil
 }
 
 func (s *Service) DeleteJob(ctx context.Context, id string) *werror.WError {

@@ -1,4 +1,4 @@
-.PHONY: gen dev-agent dev-backend lint
+.PHONY: gen dev-agent dev-backend dev-builder-consumer lint
 
 gen:
 	@go run tools/wire/main.go \
@@ -11,6 +11,9 @@ dev-agent:
 
 dev-backend:
 	@air -c ./cmd/backend/.air.toml
+
+dev-builder-consumer:
+	@air -c ./cmd/builder-consumer/.air.toml
 
 lint:
 	@golangci-lint run

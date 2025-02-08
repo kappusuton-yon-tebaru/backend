@@ -1,6 +1,8 @@
 package job
 
 import (
+	"time"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,10 +17,9 @@ type JobDTO struct {
 }
 
 type CreateJobDTO struct {
-	JobType     string `bson:"job_type"`
-	JobStatus   string `bson:"job_status"`
-	JobDuration int    `bson:"job_duration"`
-	JsonLogs    string `bson:"json_logs"`
+	JobType   string    `bson:"job_type"`
+	JobStatus string    `bson:"job_status"`
+	CreatedAt time.Time `bson:"created_at"`
 }
 
 func DTOToJob(job JobDTO) models.Job {

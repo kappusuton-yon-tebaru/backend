@@ -3,6 +3,6 @@ package kubernetes
 type BuildImageDTO struct {
 	Id           string
 	Dockerfile   string
-	Url          string
+	RepoUrl      string
 	Destinations []string
 }

@@ -114,7 +114,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	buildService := build.NewService(builderRmq)
+	buildService := build.NewService(builderRmq, jobService, loggerLogger)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
 	monitoringHandler := monitoring.NewHandler(loggerLogger)
 	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler)

@@ -4,6 +4,7 @@ import "github.com/kappusuton-yon-tebaru/backend/internal/enum"
 
 type Job struct {
 	Id          string         `json:"id"`
+	JobParentId string         `json:"job_parent_id"`
 	JobType     string         `json:"job_type"`
 	JobStatus   enum.JobStatus `json:"job_status"`
 	JobDuration int            `json:"job_duration"`
