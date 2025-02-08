@@ -17,6 +17,16 @@ func NewHandler(service *job.Service) *Handler {
 	}
 }
 
+func (h *Handler) GetAllJobParents(ctx *gin.Context) {
+	jobs, err := h.service.GetAllJobParents(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jobs)
+}
+
 func (h *Handler) GetAllJobs(ctx *gin.Context) {
 	jobs, err := h.service.GetAllJobs(ctx)
 	if err != nil {

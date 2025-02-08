@@ -22,18 +22,52 @@ func NewRepository(client *mongo.Client) *Repository {
 	}
 }
 
-// func (r *Repository) GetAllParentJobs(ctx context.Context) ([]models.Job, error) {
-// 	filter := map[string]any{
-// 		"parent_job_id": bson.NilObjectID,
-// 	}
-//
-// 	cur, err := r.job.Find(ctx, filter)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	defer cur.Close(ctx)
-// }
+func (r *Repository) GetAllJobParents(ctx context.Context) ([]JobParentDTO, error) {
+	pipeline := []map[string]any{
+		{
+			"$lookup": map[string]any{
+				"from":         "jobs",
+				"localField":   "_id",
+				"foreignField": "parent_job_id",
+				"as":           "jobs",
+			},
+		},
+		{
+			"$match": map[string]any{
+				"parent_job_id": bson.NilObjectID,
+			},
+		},
+		{
+			"$project": map[string]any{
+				"$id":        true,
+				"created_at": true,
+				"jobs":       true,
+			},
+		},
+	}
+
+	cur, err := r.job.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cur.Close(ctx)
+
+	jobParents := make([]JobParentDTO, 0)
+
+	for cur.Next(ctx) {
+		var dto JobParentDTO
+
+		err := cur.Decode(&dto)
+		if err != nil {
+			return nil, err
+		}
+
+		jobParents = append(jobParents, dto)
+	}
+
+	return jobParents, nil
+}
 
 func (r *Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	cur, err := r.job.Find(ctx, bson.D{})

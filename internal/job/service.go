@@ -20,6 +20,52 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
+func (s *Service) GetAllJobParents(ctx context.Context) ([]models.Job, error) {
+	dtos, err := s.repo.GetAllJobParents(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	jobs := make([]models.Job, 0)
+	for _, dto := range dtos {
+		numJob := len(dto.Jobs)
+		statusMap := map[enum.JobStatus]int{}
+
+		for _, job := range dto.Jobs {
+			statusMap[job.JobStatus] += 1
+		}
+
+		var finalStatus enum.JobStatus
+		for status, count := range statusMap {
+			if status == enum.JobStatusPending && count == numJob {
+				finalStatus = enum.JobStatusPending
+			}
+
+			if status == enum.JobStatusSuccess && count == numJob {
+				finalStatus = enum.JobStatusSuccess
+			}
+
+			if status == enum.JobStatusRunning && count > 0 {
+				finalStatus = enum.JobStatusRunning
+			}
+
+			if status == enum.JobStatusFailed && count > 0 {
+				finalStatus = enum.JobStatusFailed
+			}
+		}
+
+		job := models.Job{
+			Id:        dto.Id.Hex(),
+			CreatedAt: dto.CreatedAt,
+			JobStatus: finalStatus,
+		}
+
+		jobs = append(jobs, job)
+	}
+
+	return jobs, nil
+}
+
 func (s *Service) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	jobs, err := s.repo.GetAllJobs(ctx)
 	if err != nil {

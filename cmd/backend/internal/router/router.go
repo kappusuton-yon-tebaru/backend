@@ -72,7 +72,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
-	r.GET("/jobs", app.JobHandler.GetAllJobs)
+	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.POST("/jobs", app.JobHandler.CreateJob)
 	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 

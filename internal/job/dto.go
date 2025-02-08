@@ -14,12 +14,13 @@ type JobDTO struct {
 	JobStatus   enum.JobStatus `bson:"job_status"`
 	JobDuration int            `bson:"job_duration"`
 	JsonLogs    string         `bson:"json_logs"`
+	CreatedAt   time.Time      `bson:"created_at"`
 }
 
 type CreateJobDTO struct {
 	JobParentId bson.ObjectID `bson:"parent_job_id"`
-	JobType     string        `bson:"job_type"`
-	JobStatus   string        `bson:"job_status"`
+	JobType     string        `bson:"job_type,omitempty"`
+	JobStatus   string        `bson:"job_status,omitempty"`
 	CreatedAt   time.Time     `bson:"created_at"`
 }
 
@@ -31,4 +32,10 @@ func DTOToJob(job JobDTO) models.Job {
 		JobDuration: job.JobDuration,
 		JsonLogs:    job.JsonLogs,
 	}
+}
+
+type JobParentDTO struct {
+	Id        bson.ObjectID `bson:"_id"`
+	Jobs      []JobDTO      `bson:"jobs"`
+	CreatedAt time.Time     `bson:"created_at"`
 }
