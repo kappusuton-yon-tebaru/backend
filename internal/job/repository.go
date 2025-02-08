@@ -69,8 +69,12 @@ func (r *Repository) GetAllJobParents(ctx context.Context) ([]JobParentDTO, erro
 	return jobParents, nil
 }
 
-func (r *Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
-	cur, err := r.job.Find(ctx, bson.D{})
+func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID) ([]models.Job, error) {
+	filter := map[string]any{
+		"parent_job_id": id,
+	}
+
+	cur, err := r.job.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}

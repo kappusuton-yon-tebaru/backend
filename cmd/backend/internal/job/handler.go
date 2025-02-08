@@ -27,10 +27,20 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jobs)
 }
 
-func (h *Handler) GetAllJobs(ctx *gin.Context) {
-	jobs, err := h.service.GetAllJobs(ctx)
+func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	jobs, err := h.service.GetAllJobsByParentId(ctx, id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
+			"message": err.GetMessageOr("internal server error"),
+		})
 		return
 	}
 

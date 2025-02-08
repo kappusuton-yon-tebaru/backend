@@ -66,10 +66,17 @@ func (s *Service) GetAllJobParents(ctx context.Context) ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (s *Service) GetAllJobs(ctx context.Context) ([]models.Job, error) {
-	jobs, err := s.repo.GetAllJobs(ctx)
+func (s *Service) GetAllJobsByParentId(ctx context.Context, id string) ([]models.Job, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid parent job id")
+	}
+
+	jobs, err := s.repo.GetAllJobsByParentId(ctx, objId)
+	if err != nil {
+		return nil, werror.NewFromError(err)
 	}
 
 	return jobs, nil

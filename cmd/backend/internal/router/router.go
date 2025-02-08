@@ -73,6 +73,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
+	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
 	r.POST("/jobs", app.JobHandler.CreateJob)
 	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
