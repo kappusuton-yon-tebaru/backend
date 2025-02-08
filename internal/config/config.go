@@ -19,16 +19,21 @@ type BackendConfig struct {
 }
 
 type ECRConfig struct {
-	Region string `mapstructure:"AWS_REGION"`
-	AccessKey string `mapstructure:"AWS_ACCESS_KEY"`
-	SecretKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	Region 		string `mapstructure:"AWS_REGION"`
+	AccessKey 	string `mapstructure:"AWS_ACCESS_KEY"`
+	SecretKey 	string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+}
+
+type DockerHubConfig struct {
+	Token string `mapstructure:"DOCKERHUB_TOKEN"`
 }
 
 type Config struct {
-	Agent    AgentConfig   `mapstructure:",squash"`
-	Backend  BackendConfig `mapstructure:",squash"`
-	MongoUri string        `mapstructure:"MONGO_URI"`
-	ECR      ECRConfig     `mapstructure:",squash"`
+	Agent    	AgentConfig   	`mapstructure:",squash"`
+	Backend  	BackendConfig 	`mapstructure:",squash"`
+	MongoUri 	string        	`mapstructure:"MONGO_URI"`
+	ECR      	ECRConfig     	`mapstructure:",squash"`
+	DockerHub 	DockerHubConfig `mapstructure:",squash"`
 }
 
 func Load() (*Config, error) {

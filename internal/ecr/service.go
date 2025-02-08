@@ -1,5 +1,7 @@
 package ecr
 
+import "strings"
+
 type Service struct {
 	repo *ECRRepository
 }
@@ -18,9 +20,11 @@ func (s *Service) GetECRImages(repoName string, serviceName string) ([]ECRImageR
 
 	var response []ECRImageResponse
 	for _, img := range images {
-		response = append(response, ECRImageResponse{
-			ImageTag:       img,
-		})
+		if strings.Contains(img, serviceName) {
+			response = append(response, ECRImageResponse{
+				ImageTag: img,
+			})
+		}
 	}
 
 	return response, nil

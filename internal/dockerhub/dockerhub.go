@@ -1,11 +1,9 @@
 package dockerhub
 
 import (
-	// "bytes"
-	// "encoding/json"
-	// "fmt"
-	// "net/http"
-	"os"
+	"encoding/json"
+	"fmt"
+	"net/http"
 )
 
 type DockerHubRepository struct {
@@ -13,63 +11,55 @@ type DockerHubRepository struct {
 	token  string
 }
 
-func NewDockerHubRepository(apiURL, token string) *DockerHubRepository {
+func NewDockerHubRepository(cfg DockerConfig) *DockerHubRepository {
 	return &DockerHubRepository{
 		apiURL: "https://hub.docker.com/v2",
-		token:  os.Getenv("DOCKERHUB_TOKEN"),
+		token:  cfg.DockerHubToken,
 	}
 }
 
-// func (r *DockerHubRepository) GetImages() ([]string, error) {
-// 	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
-// 	req, err := http.NewRequest("GET", url, nil)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (r *DockerHubRepository) GetImages(namespace string, repoName string) ([]DockerHubImageResponse, error) {
+	url := fmt.Sprintf("%s/namespaces/%s/repositories/%s/tags", r.apiURL, namespace, repoName)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
-// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
 
-// 	res, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
-// 	defer res.Body.Close()
+	defer res.Body.Close()
 
-// 	var result struct {
-// 		Results []struct {
-// 			Name string `json:"name"`
-// 		} `json:"results"`
-// 	}
+	var result struct {
+		Results []struct {
+			Count int    `json:"count"`
+			Next string `json:"next"`
+			Previous string `json:"previous"`
+			Results struct {
+				Name string `json:"name"`
+				LastUpdated string `json:"last_updated"`
+				Status string `json:"status"`
+			} `json:"results"`
+		} `json:"results"`
+	}
 
-// 	json.NewDecoder(res.Body).Decode(&result)
+	json.NewDecoder(res.Body).Decode(&result)
 
-// 	var images []string
-// 	for _, img := range result.Results {
-// 		images = append(images, img.Name)
-// 	}
-// 	return images, nil
+	var images []DockerHubImageResponse
+	for _, resp := range result.Results {
+		if resp.Results.Status != "active" {
+			continue
+		}
+
+		images = append(images, DockerHubImageResponse{
+			ImageTag: resp.Results.Name,
+			LastUpdated: resp.Results.LastUpdated,
+		})
+	}
+	return images, nil
 	
-// }
-
-// func (r *DockerHubRepository) PushImage(imageName, tag string) error {
-// 	url := fmt.Sprintf("%s/repositories/%s/images", r.apiURL, "kappusuton-yon-tebaru")
-// 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(nil))
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
-
-// 	res, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	defer res.Body.Close()
-
-// 	if res.StatusCode != http.StatusCreated {
-// 		return fmt.Errorf("failed to push image: %s", res.Status)
-// 	}
-// 	return nil
-// }
+}
