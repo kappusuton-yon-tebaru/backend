@@ -14,7 +14,7 @@ func main() {
 
 	app.Logger.Info("builder consumer initalizing")
 
-	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.BuilderConfig.QueueUri))
+	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.BuilderConfig.QueueName), zap.String("queue_uri", app.Config.BuilderConfig.QueueUri))
 	msgs, err := app.RmqClient.Ch.Consume(app.Config.BuilderConfig.QueueName, "agent-builder-consumer", true, false, false, false, nil)
 	if err != nil {
 		panic(err)

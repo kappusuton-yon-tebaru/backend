@@ -32,6 +32,8 @@ func (h *Handler) BuildImageHandler(msg amqp091.Delivery) {
 		return
 	}
 
+	h.logger.Info("consuming job", zap.String("job_id", body.Id))
+
 	config := kubernetes.BuildImageDTO{
 		Id:           body.Id,
 		Dockerfile:   body.Dockerfile,
