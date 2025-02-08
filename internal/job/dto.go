@@ -17,7 +17,7 @@ type JobDTO struct {
 }
 
 type CreateJobDTO struct {
-	JobParentId bson.ObjectID `bson:"json_parent_id"`
+	JobParentId bson.ObjectID `bson:"parent_job_id"`
 	JobType     string        `bson:"job_type"`
 	JobStatus   string        `bson:"job_status"`
 	CreatedAt   time.Time     `bson:"created_at"`

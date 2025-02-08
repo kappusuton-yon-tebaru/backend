@@ -22,6 +22,19 @@ func NewRepository(client *mongo.Client) *Repository {
 	}
 }
 
+// func (r *Repository) GetAllParentJobs(ctx context.Context) ([]models.Job, error) {
+// 	filter := map[string]any{
+// 		"parent_job_id": bson.NilObjectID,
+// 	}
+//
+// 	cur, err := r.job.Find(ctx, filter)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	defer cur.Close(ctx)
+// }
+
 func (r *Repository) GetAllJobs(ctx context.Context) ([]models.Job, error) {
 	cur, err := r.job.Find(ctx, bson.D{})
 	if err != nil {
@@ -68,9 +81,9 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 	results, err := session.WithTransaction(ctx, func(ctx context.Context) (interface{}, error) {
 		now := time.Now()
 
-		parentJob := map[string]any{
-			"parent_job_id": bson.NilObjectID,
-			"created_at":    now,
+		parentJob := CreateJobDTO{
+			JobParentId: bson.NilObjectID,
+			CreatedAt:   now,
 		}
 
 		result, err := r.job.InsertOne(ctx, parentJob)
