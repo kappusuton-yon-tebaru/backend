@@ -31,6 +31,7 @@ func DTOToJob(job JobDTO) models.Job {
 		JobStatus:   job.JobStatus,
 		JobDuration: job.JobDuration,
 		JsonLogs:    job.JsonLogs,
+		CreatedAt:   job.CreatedAt,
 	}
 }
 
