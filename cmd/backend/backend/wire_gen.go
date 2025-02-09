@@ -164,6 +164,8 @@ type App struct {
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
+	ECRHandler                  *ecr.Handler
+	DockerHubHandler            *dockerhub.Handler
 }
 
 func New(
@@ -191,6 +193,8 @@ func New(
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
+	ECRHandler *ecr.Handler,
+	DockerHubHandler *dockerhub.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -217,5 +221,7 @@ func New(
 		BuildHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
+		ECRHandler,
+		DockerHubHandler,
 	}
 }

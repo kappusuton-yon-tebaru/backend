@@ -93,4 +93,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
 	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
+	r.GET("/ecr/images", app.ECRHandler.GetECRImages)
+
+	r.GET("/dockerhub/images", app.DockerHubHandler.GetDockerHubImages)
 }
