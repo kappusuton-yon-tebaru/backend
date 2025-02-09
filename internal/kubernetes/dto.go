@@ -6,3 +6,8 @@ type BuildImageDTO struct {
 	RepoUrl      string
 	Destinations []string
 }
+
+type ConfigureMaxWorkerDTO struct {
+	WorkerImageUri string
+	WorkerNumber   int32
+}

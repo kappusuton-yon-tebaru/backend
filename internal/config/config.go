@@ -11,7 +11,8 @@ import (
 )
 
 type AgentConfig struct {
-	Port int `mapstructure:"AGENT_PORT"`
+	Port           int    `mapstructure:"AGENT_PORT"`
+	WorkerImageUri string `mapstructure:"WORKER_IMAGE_URI"`
 }
 
 type BackendConfig struct {
