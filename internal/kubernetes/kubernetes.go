@@ -17,7 +17,7 @@ type Kubernetes struct {
 func New(cfg *config.Config) (*Kubernetes, error) {
 	var config *rest.Config
 	var err error
-	if cfg.BuilderConfig.InCluster {
+	if cfg.InCluster {
 		config, err = rest.InClusterConfig()
 		if err != nil {
 			return nil, err

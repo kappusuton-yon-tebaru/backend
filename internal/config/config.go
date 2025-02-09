@@ -19,12 +19,12 @@ type BackendConfig struct {
 }
 
 type BuilderConfig struct {
-	InCluster bool   `mapstructure:"BUILDER_IN_CLUSTER"`
 	QueueUri  string `mapstructure:"BUILDER_QUEUE_URI"`
 	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
 }
 
 type Config struct {
+	InCluster     bool          `mapstructure:"IN_CLUSTER"`
 	Development   bool          `mapstructure:"DEVELOPMENT"`
 	Agent         AgentConfig   `mapstructure:",squash"`
 	Backend       BackendConfig `mapstructure:",squash"`

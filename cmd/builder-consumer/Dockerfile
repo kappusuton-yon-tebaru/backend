@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build cmd/agent/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build cmd/builder-consumer/main.go
 
 # ==================== runner ====================
 FROM alpine:latest AS runner
