@@ -43,5 +43,7 @@ func (h *Handler) Build(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message": "image building job submitted",
+	})
 }
