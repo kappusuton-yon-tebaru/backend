@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
@@ -44,6 +45,11 @@ func (r *Repository) GetAllJobParents(ctx context.Context) ([]JobParentDTO, erro
 				"jobs":       true,
 			},
 		},
+		{
+			"$sort": map[string]any{
+				"created_at": -1,
+			},
+		},
 	}
 
 	cur, err := r.job.Aggregate(ctx, pipeline)
@@ -74,7 +80,11 @@ func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID)
 		"parent_job_id": id,
 	}
 
-	cur, err := r.job.Find(ctx, filter)
+	opt := options.Find().SetSort(map[string]any{
+		"created_at": -1,
+	})
+
+	cur, err := r.job.Find(ctx, filter, opt)
 	if err != nil {
 		return nil, err
 	}
