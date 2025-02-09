@@ -40,3 +40,8 @@ type JobParentDTO struct {
 	Jobs      []JobDTO      `bson:"jobs"`
 	CreatedAt time.Time     `bson:"created_at"`
 }
+
+type CreateGroupJobsResponse struct {
+	ParentId string
+	JobIds   []string
+}

@@ -108,11 +108,13 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 	return id.Hex(), nil
 }
 
-func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) ([]string, error) {
+func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, error) {
 	session, err := r.client.StartSession()
 	if err != nil {
-		return nil, err
+		return CreateGroupJobsResponse{}, err
 	}
+
+	var parentId bson.ObjectID
 
 	defer session.EndSession(ctx)
 
@@ -129,7 +131,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 			return nil, err
 		}
 
-		parentId := result.InsertedID.(bson.ObjectID)
+		parentId = result.InsertedID.(bson.ObjectID)
 
 		for i := range len(dtos) {
 			dtos[i].JobParentId = parentId
@@ -145,7 +147,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 	})
 
 	if err != nil {
-		return nil, err
+		return CreateGroupJobsResponse{}, err
 	}
 
 	ids := []string{}
@@ -154,7 +156,10 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 		ids = append(ids, id.Hex())
 	}
 
-	return ids, nil
+	return CreateGroupJobsResponse{
+		ParentId: parentId.Hex(),
+		JobIds:   ids,
+	}, nil
 }
 
 func (r *Repository) UpdateJobStatus(ctx context.Context, jobId string, jobStatus string) error {

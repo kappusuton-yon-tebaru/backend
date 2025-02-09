@@ -91,13 +91,13 @@ func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, erro
 	return id, nil
 }
 
-func (s *Service) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) ([]string, *werror.WError) {
-	ids, err := s.repo.CreateGroupJobs(ctx, dtos)
+func (s *Service) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, *werror.WError) {
+	resp, err := s.repo.CreateGroupJobs(ctx, dtos)
 	if err != nil {
-		return nil, werror.NewFromError(err).SetMessage("error occured while creating jobs")
+		return CreateGroupJobsResponse{}, werror.NewFromError(err).SetMessage("error occured while creating jobs")
 	}
 
-	return ids, nil
+	return resp, nil
 }
 
 func (s *Service) UpdateJobStatus(ctx context.Context, jobId string, jobStatus enum.JobStatus) *werror.WError {

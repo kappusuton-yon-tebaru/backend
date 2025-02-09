@@ -28,7 +28,7 @@ func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Log
 	}
 }
 
-func (s *Service) BuildImage(ctx context.Context, req BuildRequest) *werror.WError {
+func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
 	jobs := []job.CreateJobDTO{}
 
 	for range len(req.Services) {
@@ -38,14 +38,14 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) *werror.WErr
 		})
 	}
 
-	jobIds, werr := s.jobService.CreateGroupJobs(ctx, jobs)
+	resp, werr := s.jobService.CreateGroupJobs(ctx, jobs)
 	if werr != nil {
 		s.logger.Error("error occured while creating jobs", zap.Error(werr.Err))
-		return werr
+		return "", werr
 	}
 
 	for i, service := range req.Services {
-		jobId := jobIds[i]
+		jobId := resp.JobIds[i]
 
 		buildCtx := sharedBuild.BuildContext{
 			Id:          jobId,
@@ -56,14 +56,14 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) *werror.WErr
 
 		bs, err := json.Marshal(buildCtx)
 		if err != nil {
-			return nil
+			return "", nil
 		}
 
 		if err := s.rmq.Publish(ctx, bs); err != nil {
 			s.logger.Error("error occured while publishing build context", zap.Error(err))
-			return werror.NewFromError(err).SetMessage("error occured while publishing build context")
+			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
 		}
 	}
 
-	return nil
+	return resp.ParentId, nil
 }
