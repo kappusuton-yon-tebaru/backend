@@ -5,16 +5,17 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 )
 
 type ECRRepository struct {
 	client *ecr.ECR
 }
 
-func NewECRRepository(cfg AWSConfig) *ECRRepository {
+func NewECRRepository(cfg *config.Config) *ECRRepository {
 	session := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(cfg.Region),
-		Credentials: credentials.NewStaticCredentials(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
+		Region: aws.String(cfg.ECR.Region),
+		Credentials: credentials.NewStaticCredentials(cfg.ECR.AccessKey, cfg.ECR.AccessKey, ""),
 	}))
 	return &ECRRepository{
 		client: ecr.New(session),

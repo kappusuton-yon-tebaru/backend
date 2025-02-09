@@ -4,21 +4,20 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 )
 
-type ImageHandler struct {
-	service *dockerhub.Service
+type Handler struct {
+	service *Service
 }
 
-func NewImageHandler(service *dockerhub.Service) *ImageHandler {
-	return &ImageHandler{
+func NewHandler(service *Service) *Handler {
+	return &Handler{
 		service,
 	}
 }
 
-func (h *ImageHandler) GetDockerHubImages(ctx *gin.Context) {
-	var req dockerhub.GetDockerHubImagesRequest
+func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
+	var req GetDockerHubImagesRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",

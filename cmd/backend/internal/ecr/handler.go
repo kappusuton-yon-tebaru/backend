@@ -4,21 +4,20 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 )
 
-type ImageHandler struct {
-	service *ecr.Service
+type Handler struct {
+	service *Service
 }
 
-func NewImageHandler(service *ecr.Service) *ImageHandler {
-	return &ImageHandler{
+func NewHandler(service *Service) *Handler {
+	return &Handler{
 		service,
 	}
 }
 
-func (h *ImageHandler) GetECRImages(ctx *gin.Context) {
-	var req ecr.GetECRImagesRequest
+func (h *Handler) GetECRImages(ctx *gin.Context) {
+	var req GetECRImagesRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",

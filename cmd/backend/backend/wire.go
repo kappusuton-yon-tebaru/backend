@@ -15,7 +15,11 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
+	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
+	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
@@ -60,6 +64,8 @@ type App struct {
 	JobHandler				  	*job.Handler
 	RegisterProviderHandler		*regproviders.Handler
 	ProjectEnvironmentHandler	*projectenv.Handler
+	ECRHandler					*ecr.Handler
+	DockerHubHandler			*dockerhub.Handler
 }
 
 func New(
@@ -81,6 +87,8 @@ func New(
 	JobHandler *job.Handler,
 	RegisterProviderHandler *regproviders.Handler,
 	ProjectEnvironmentHandler *projectenv.Handler,
+	ECRHandler *ecr.Handler,
+	DockerHubHandler *dockerhub.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -101,6 +109,8 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		ECRHandler,
+		DockerHubHandler,
 	}
 }
 
@@ -154,6 +164,12 @@ func Initialize() (*App, error) {
 		sharedProjectEnvironment.NewRepository,
 		sharedProjectEnvironment.NewService,
 		projectenv.NewHandler,
+		ecr.NewECRRepository,
+		ecr.NewService,
+		ecr.NewHandler,
+		dockerhub.NewDockerHubRepository,
+		dockerhub.NewService,
+		dockerhub.NewHandler,
 		New,
 	)
 

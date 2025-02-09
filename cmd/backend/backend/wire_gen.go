@@ -7,6 +7,8 @@
 package backend
 
 import (
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -100,7 +102,13 @@ func Initialize() (*App, error) {
 	projectenvRepository := projectenv.NewRepository(client)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
+	ecrRepository := ecr.NewECRRepository(configConfig)
+	ecrService := ecr.NewService(ecrRepository)
+	ecrHandler := ecr.NewHandler(ecrService)
+	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
+	dockerhubService := dockerhub.NewService(dockerHubRepository)
+	dockerhubHandler := dockerhub.NewHandler(dockerhubService)
+	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler)
 	return app, nil
 }
 
@@ -125,6 +133,8 @@ type App struct {
 	JobHandler                  *job2.Handler
 	RegisterProviderHandler     *regproviders2.Handler
 	ProjectEnvironmentHandler   *projectenv2.Handler
+	ECRHandler                  *ecr.Handler
+	DockerHubHandler            *dockerhub.Handler
 }
 
 func New(
@@ -146,6 +156,8 @@ func New(
 	JobHandler *job2.Handler,
 	RegisterProviderHandler *regproviders2.Handler,
 	ProjectEnvironmentHandler *projectenv2.Handler,
+	ECRHandler *ecr.Handler,
+	DockerHubHandler *dockerhub.Handler,
 ) *App {
 	return &App{
 		Config,
@@ -166,5 +178,7 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		ECRHandler,
+		DockerHubHandler,
 	}
 }

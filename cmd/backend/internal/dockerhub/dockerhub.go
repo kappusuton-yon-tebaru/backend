@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 )
 
 type DockerHubRepository struct {
@@ -11,10 +13,10 @@ type DockerHubRepository struct {
 	token  string
 }
 
-func NewDockerHubRepository(cfg DockerConfig) *DockerHubRepository {
+func NewDockerHubRepository(cfg *config.Config) *DockerHubRepository {
 	return &DockerHubRepository{
 		apiURL: "https://hub.docker.com/v2",
-		token:  cfg.DockerHubToken,
+		token:  cfg.DockerHub.Token,
 	}
 }
 
