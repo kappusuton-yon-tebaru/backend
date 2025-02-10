@@ -291,3 +291,41 @@ func (r *Repository) CreateBranch(ctx context.Context, fullname, branchName, bas
 
 	return &branchData, nil
 }
+
+// UpdateFileContent updates the file content on GitHub
+func (r *Repository) UpdateFileContent(fullname, path, commitMsg, base64Content, sha, branch, token string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s", fullname, path)
+
+	body := map[string]interface{}{
+		"message": commitMsg,
+		"content": base64Content,
+		"sha":     sha,
+		"branch":  branch,
+	}
+
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %v", err)
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to execute request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to update file: status code %d", resp.StatusCode)
+	}
+
+	return nil
+}

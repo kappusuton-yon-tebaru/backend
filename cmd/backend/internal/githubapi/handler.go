@@ -164,3 +164,40 @@ func (h *Handler) CreateBranch(c *gin.Context) {
 
 	c.JSON(http.StatusOK, branch)
 }
+
+// UpdateFileContent handles the file content update route using JSON payload
+func (h *Handler) UpdateFileContent(c *gin.Context) {
+	fullname := c.Param("owner") + "/" + c.Param("repo")
+	token := c.GetHeader("Authorization")
+
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
+
+	// Remove "Bearer " prefix from the token
+	token = token[len("Bearer "):]
+
+	// Bind JSON payload to struct
+	var req struct {
+		Path      string `json:"path"`
+		Message   string `json:"message"`
+		Base64Content   string `json:"base64Content"`
+		Sha       string `json:"sha"`
+		Branch    string `json:"branch"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Call service to update file content
+	err := h.service.UpdateFileContent(c.Request.Context(), fullname, req.Path, req.Message, req.Base64Content, req.Sha, req.Branch, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "File successfully updated"})
+}
