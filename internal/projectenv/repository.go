@@ -43,6 +43,17 @@ func (r *Repository) GetAllProjectEnvs(ctx context.Context) ([]models.ProjectEnv
 	return projectenvs, nil
 }
 
+func (r *Repository) GetProjectEnv(ctx context.Context, filter map[string]any) (models.ProjectEnv, error) {
+	var dto ProjectEnvDTO
+
+	err := r.repo.FindOne(ctx, filter).Decode(&dto)
+	if err != nil {
+		return models.ProjectEnv{}, err
+	}
+
+	return DTOToProjectEnv(dto), nil
+}
+
 func (r *Repository) CreateProjectEnv(ctx context.Context, dto CreateProjectEnvDTO) (string, error) {
 	result, err := r.repo.InsertOne(ctx, dto)
 	if err != nil {

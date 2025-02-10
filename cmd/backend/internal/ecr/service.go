@@ -13,7 +13,7 @@ func NewService(repo *ECRRepository) *Service {
 }
 
 func (s *Service) GetECRImages(repoName string, serviceName string) ([]ECRImageResponse, error) {
-	images, err := s.repo.GetImages(repoName)
+	images, err := s.repo.GetImages(repoName, serviceName)
 	if err != nil {
 		return nil, err
 	}

@@ -15,14 +15,14 @@ type ECRRepository struct {
 func NewECRRepository(cfg *config.Config) *ECRRepository {
 	session := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(cfg.ECR.Region),
-		Credentials: credentials.NewStaticCredentials(cfg.ECR.AccessKey, cfg.ECR.AccessKey, ""),
+		Credentials: credentials.NewStaticCredentials(cfg.ECR.AccessKey, cfg.ECR.SecretKey, ""),
 	}))
 	return &ECRRepository{
 		client: ecr.New(session),
 	}
 }
 
-func (r *ECRRepository) GetImages(repoName string) ([]string, error) {
+func (r *ECRRepository) GetImages(repoName string, projectEnvId string) ([]string, error) {
 	input := &ecr.ListImagesInput{
 		RepositoryName: aws.String(repoName),
 		Filter: &ecr.ListImagesFilter{
