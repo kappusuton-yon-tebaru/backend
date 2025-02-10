@@ -71,3 +71,7 @@ func (s *Service) CreateBranch(ctx context.Context, fullname, branchName, baseBr
 
 	return s.repo.CreateBranch(ctx, fullname, branchName, baseBranchSHA, token)
 }
+
+func (s *Service) UpdateFileContent(ctx context.Context, fullname, path, commitMsg, base64Content, sha, branch, token string) error {
+	return s.repo.UpdateFileContent(fullname, path, commitMsg, base64Content, sha, branch, token)
+}
