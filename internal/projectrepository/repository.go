@@ -17,7 +17,7 @@ type Repository struct {
 
 func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		projRepo: db.Collection("projects_repositories"),
+		projRepo: client.Database("Capstone").Collection("projects_repositories"),
 	}
 }
 
@@ -86,8 +86,8 @@ func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, proj
 
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
 	projRepo := bson.M{
-		"git_repo_url": dto.GitRepoUrl,
-		"project_id":   dto.ProjectId,
+		"git_repo_url": dto.Git_Repo_Url,
+		"project_id":   dto.Project_Id,
 	}
 
 	result, err := r.projRepo.InsertOne(ctx, projRepo)
