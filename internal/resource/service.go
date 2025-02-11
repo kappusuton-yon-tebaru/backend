@@ -28,6 +28,26 @@ func (s *Service) GetAllResources(ctx context.Context) ([]models.Resource, error
 	return resources, nil
 }
 
+func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resource, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return models.Resource{}, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid id")
+	}
+
+	filter := map[string]any{
+		"_id": objId,
+	}
+	
+	resource, err := s.repo.GetResourceByID(ctx, filter)
+	if err != nil {
+		return models.Resource{}, werror.NewFromError(err)
+	}
+
+	return resource, nil
+}
+
 func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
 	id, err := s.repo.CreateResource(ctx, dto)
 	if err != nil {

@@ -103,7 +103,7 @@ func Initialize() (*App, error) {
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
-	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
+	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository, resourceRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
 	jobRepository := job.NewRepository(database)
 	jobService := job.NewService(jobRepository)

@@ -27,6 +27,23 @@ func (h *Handler) GetAllResources(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resources)
 }
 
+func (h *Handler) GetResourceByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+		return
+	}
+
+	resource, err := h.service.GetResourceByID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resource)
+}
+
 func (h *Handler) CreateResource(ctx *gin.Context) {
 	var resourceDTO resource.CreateResourceDTO
 
