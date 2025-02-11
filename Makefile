@@ -22,3 +22,9 @@ dev-builder-consumer:
 
 lint:
 	@golangci-lint run
+
+apply:
+	@kubectl apply --server-side --field-manager=system -f deployment/master.yaml
+
+delete:
+	@kubectl delete -f deployment/master.yaml
