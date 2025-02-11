@@ -82,12 +82,12 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]mo
 	if err != nil {
 		return nil, err
 	}
-
 	var services []models.Service
 	seen := make(map[string]bool)
 
 	for _, filePath := range files {
-		if strings.HasPrefix(filePath, "apps/") && strings.HasSuffix(filePath, "/Dockerfile") {
+
+		if strings.HasPrefix(filePath, "apps/") && strings.HasSuffix(strings.ToLower(filePath), "/dockerfile"){
 			parts := strings.Split(filePath, "/")
 			if len(parts) >= 2 {
 				serviceName := parts[1]
