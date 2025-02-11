@@ -74,3 +74,15 @@ type Service struct {
 	DockerfilePath string `json:"dockerfile_path"`
 	OwnerRepo 	   string `json:"owner_repo"`
 }
+// CreateRepoRequest represents the request payload for creating a GitHub repository
+type CreateRepoRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description,omitempty"`
+	Private     bool   `json:"private"`
+}
+
+// CreateRepoResponse represents the response after creating a repository
+type CreateRepoResponse struct {
+	FullName string `json:"full_name"`
+	HTMLURL  string `json:"html_url"`
+}
