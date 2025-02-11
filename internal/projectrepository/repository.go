@@ -47,6 +47,43 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
+func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
+	objID, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		log.Println("Invalid Project ID:", err)
+		return nil, err
+	}
+
+	filter := bson.M{"project_id": objID}
+	cur, err := r.projRepo.Find(ctx, filter)
+	if err != nil {
+		log.Println("Error in Find:", err)
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	projRepos := make([]models.ProjectRepository, 0)
+
+	for cur.Next(ctx) {
+		var projrepo ProjectRepositoryDTO
+
+		err = cur.Decode(&projrepo)
+		if err != nil {
+			log.Println("Error in Decode:", err)
+			return nil, err
+		}
+
+		projRepos = append(projRepos, DTOToProjectRepository(projrepo))
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Println("Cursor error:", err)
+		return nil, err
+	}
+
+	return projRepos, nil
+}
+
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,

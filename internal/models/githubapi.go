@@ -68,3 +68,9 @@ type CreateBranchRequest struct {
 	Ref string `json:"ref"`
 	Sha string `json:"sha"`
 }
+
+type Service struct {
+	Name           string `json:"name"`
+	DockerfilePath string `json:"dockerfile_path"`
+	OwnerRepo 	   string `json:"owner_repo"`
+}

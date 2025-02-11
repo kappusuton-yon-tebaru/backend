@@ -27,6 +27,24 @@ func (h *Handler) GetAllProjectRepositories(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, projRepos)
 }
 
+func (h *Handler) GetProjectRepositoriesByProjectID(ctx *gin.Context) {
+	projectID := ctx.Param("project_id")
+
+	if projectID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "project_id is required"})
+		return
+	}
+
+	projRepo, err := h.service.GetProjectRepositoriesByProjectID(ctx, projectID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, projRepo)
+}
+
+
 func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
 	var projRepoDTO projectrepository.CreateProjectRepositoryDTO
 

@@ -28,6 +28,15 @@ func (s *Service) GetAllProjectRepositories(ctx context.Context) ([]models.Proje
 	return projRepos, nil
 }
 
+func (s *Service) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
+	projRepos, err := s.repo.GetProjectRepositoriesByProjectID(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return projRepos, nil
+}
+
 func (s *Service) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
 	id, err := s.repo.CreateProjectRepository(ctx, dto)
 	if err != nil {
