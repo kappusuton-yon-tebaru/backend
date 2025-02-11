@@ -28,10 +28,21 @@ func (s *Service) GetAllProjectRepositories(ctx context.Context) ([]models.Proje
 	return projRepos, nil
 }
 
-func (s *Service) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
-	projRepos, err := s.repo.GetProjectRepositoriesByProjectID(ctx, projectID)
+func (s *Service) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(projectID)
 	if err != nil {
-		return nil, err
+		return nil, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid project repository id")
+	}
+
+	filter := map[string]any{
+		"project_id": objId,
+	}
+	
+	projRepos, err := s.repo.GetProjectRepositoriesByProjectID(ctx, filter)
+	if err != nil {
+		return nil, werror.NewFromError(err)
 	}
 
 	return projRepos, nil

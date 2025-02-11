@@ -47,14 +47,7 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {	
-	objID, err := bson.ObjectIDFromHex(projectID)
-	if err != nil {
-		log.Println("Invalid Project ID:", err)
-		return nil, err
-	}
-
-	filter := bson.M{"project_id": objID}
+func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, filter map[string]any) ([]models.ProjectRepository, error) {	
 	cur, err := r.projRepo.Find(ctx, filter)
 	if err != nil {
 		log.Println("Error in Find:", err)
