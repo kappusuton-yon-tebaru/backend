@@ -47,8 +47,8 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
-	objID, err := primitive.ObjectIDFromHex(projectID)
+func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {	
+	objID, err := bson.ObjectIDFromHex(projectID)
 	if err != nil {
 		log.Println("Invalid Project ID:", err)
 		return nil, err
