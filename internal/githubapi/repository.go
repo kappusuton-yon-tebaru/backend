@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -52,7 +53,7 @@ func (r *Repository) GetUserRepos(ctx context.Context, token string) ([]models.R
     return repos, nil
 }
 
-func (r *Repository) GetRepoContents(fullname string, path string, token string) ([]models.File, error) {
+func (r *Repository) GetRepoContents(ctx context.Context, fullname string, path string, token string) ([]models.File, error) {
     if token == "" {
         return nil, errors.New("No access token found")
     }
@@ -87,7 +88,7 @@ func (r *Repository) GetRepoContents(fullname string, path string, token string)
 }
 
 // GetRepoBranches fetches the branches of a GitHub repository
-func (r *Repository) GetRepoBranches(fullname string, token string) ([]models.Branch, error) {
+func (r *Repository) GetRepoBranches(ctx context.Context, fullname string, token string) ([]models.Branch, error) {
     if token == "" {
         return nil, errors.New("No access token found")
     }
@@ -122,7 +123,7 @@ func (r *Repository) GetRepoBranches(fullname string, token string) ([]models.Br
 }
 
 // GetCommitMetadata fetches the commit metadata for a file in a specific branch
-func (r *Repository) GetCommitMetadata(path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
+func (r *Repository) GetCommitMetadata(ctx context.Context,path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
     if token == "" {
         return nil, errors.New("No access token found")
     }
@@ -293,7 +294,7 @@ func (r *Repository) CreateBranch(ctx context.Context, fullname, branchName, bas
 }
 
 // UpdateFileContent updates the file content on GitHub
-func (r *Repository) UpdateFileContent(fullname, path, commitMsg, base64Content, sha, branch, token string) error {
+func (r *Repository) UpdateFileContent(ctx context.Context, fullname, path, commitMsg, base64Content, sha, branch, token string) error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s", fullname, path)
 
 	body := map[string]interface{}{
@@ -328,4 +329,44 @@ func (r *Repository) UpdateFileContent(fullname, path, commitMsg, base64Content,
 	}
 
 	return nil
+}
+
+func (r *Repository) ListFiles(ctx context.Context, fullname, token string) ([]string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/git/trees/main?recursive=1",fullname)
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GitHub API request failed with status: %d", resp.StatusCode)
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+
+	var result struct {
+		Tree []struct {
+			Path string `json:"path"`
+		} `json:"tree"`
+	}
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract all file paths
+	var paths []string
+	for _, item := range result.Tree {
+		paths = append(paths, item.Path)
+	}
+
+	return paths, nil
 }

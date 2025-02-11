@@ -28,22 +28,13 @@ func (s *Service) GetAllProjectRepositories(ctx context.Context) ([]models.Proje
 	return projRepos, nil
 }
 
-func (s *Service) GetProjectRepositoryByProjectId(ctx context.Context, projectId string) (models.ProjectRepository, *werror.WError) {
-	id, err := bson.ObjectIDFromHex(projectId)
+func (s *Service) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
+	projRepos, err := s.repo.GetProjectRepositoriesByProjectID(ctx, projectID)
 	if err != nil {
-		return models.ProjectRepository{}, werror.NewFromError(err).SetMessage("invalid project id").SetCode(400)
+		return nil, err
 	}
 
-	dto, err := s.repo.GetProjectRepositoryByProjectId(ctx, id)
-	if err != nil && err.Error() == "not found" {
-		return models.ProjectRepository{}, werror.NewFromError(err).SetCode(http.StatusNotFound).SetMessage("project repository not found")
-	} else if err != nil {
-		return models.ProjectRepository{}, werror.NewFromError(err)
-	}
-
-	projRepo := DTOToProjectRepository(dto)
-
-	return projRepo, nil
+	return projRepos, nil
 }
 
 func (s *Service) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {

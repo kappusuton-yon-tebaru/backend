@@ -1,20 +1,27 @@
 package githubapi
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 )
 
 type Handler struct {
     service *githubapi.Service
+	projectRepoService *projectrepository.Service
 }
 
 // NewHandler creates a new Handler instance
-func NewHandler(service *githubapi.Service) *Handler {
+func NewHandler(service *githubapi.Service, projectRepoService *projectrepository.Service) *Handler {
     return &Handler{
 		service,
+		projectRepoService,
 	}
 }
 
@@ -200,4 +207,67 @@ func (h *Handler) UpdateFileContent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "File successfully updated"})
+}
+
+func ExtractFullName(gitURL string) (string, error) {
+	parsedURL, err := url.Parse(gitURL)
+	if err != nil {
+		return "", err
+	}
+
+	// Ensure it's a GitHub URL
+	if parsedURL.Host != "github.com" {
+		return "", fmt.Errorf("invalid GitHub URL")
+	}
+
+	// Trim leading and trailing slashes
+	parts := strings.Split(strings.Trim(parsedURL.Path, "/"), "/")
+
+	// Ensure we have exactly "owner/repo"
+	if len(parts) < 2 {
+		return "", fmt.Errorf("invalid repository URL format")
+	}
+
+	return fmt.Sprintf("%s/%s", parts[0], parts[1]), nil
+}
+
+func (h *Handler) GetServices(c *gin.Context) {
+
+	projectID := c.Param("id")
+	if projectID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "project_id is required"})
+		return
+	}
+
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
+	// Remove "Bearer " prefix from the token
+	token = token[len("Bearer "):] 
+
+	projRepos, err := h.projectRepoService.GetProjectRepositoriesByProjectID(c, projectID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+		return
+	}
+	var all_services []models.Service
+	for _, projRepos := range projRepos{
+		fullname, err := ExtractFullName(projRepos.GitRepoUrl)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+			return
+		}
+
+		services, err := h.service.FindServices(c,fullname,token)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
+			return
+		}
+
+		all_services = append(all_services, services...)
+	}
+
+	c.JSON(http.StatusOK, all_services)
 }

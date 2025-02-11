@@ -8,6 +8,9 @@ package backend
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
+	githubapi2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -132,7 +135,10 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler, reverseProxy)
+	githubapiRepository := githubapi.NewRepository()
+	githubapiService := githubapi.NewService(githubapiRepository)
+	githubapiHandler := githubapi2.NewHandler(githubapiService, projectrepositoryService)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
 	return app, nil
 }
 

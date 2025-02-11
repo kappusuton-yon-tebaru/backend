@@ -2,7 +2,6 @@ package projectrepository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -48,54 +47,41 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoryByProjectId(ctx context.Context, projectId bson.ObjectID) (ProjectRepositoryDTO, error) {
-	pipeline := []map[string]any{
-		{
-			"$match": map[string]any{
-				"project_id": projectId,
-			},
-		},
-		{
-			"$lookup": map[string]any{
-				"from":         "registry_providers",
-				"localField":   "registry_provider_id",
-				"foreignField": "_id",
-				"as":           "registry_provider",
-			},
-		},
-		{
-			"$unwind": map[string]any{
-				"path": "$registry_provider",
-			},
-		},
-		{
-			"$project": map[string]any{
-				"registry_provider_id": false,
-			},
-		},
-		{
-			"$limit": 1,
-		},
-	}
-
-	cur, err := r.projRepo.Aggregate(ctx, pipeline)
+func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, projectID string) ([]models.ProjectRepository, error) {
+	objID, err := primitive.ObjectIDFromHex(projectID)
 	if err != nil {
-		return ProjectRepositoryDTO{}, err
+		log.Println("Invalid Project ID:", err)
+		return nil, err
 	}
 
+	filter := bson.M{"project_id": objID}
+	cur, err := r.projRepo.Find(ctx, filter)
+	if err != nil {
+		log.Println("Error in Find:", err)
+		return nil, err
+	}
 	defer cur.Close(ctx)
 
-	if !cur.Next(ctx) {
-		return ProjectRepositoryDTO{}, errors.New("not found")
+	projRepos := make([]models.ProjectRepository, 0)
+
+	for cur.Next(ctx) {
+		var projrepo ProjectRepositoryDTO
+
+		err = cur.Decode(&projrepo)
+		if err != nil {
+			log.Println("Error in Decode:", err)
+			return nil, err
+		}
+
+		projRepos = append(projRepos, DTOToProjectRepository(projrepo))
 	}
 
-	var projectRepo ProjectRepositoryDTO
-	err = cur.Decode(&projectRepo)
-	if err != nil {
-		return ProjectRepositoryDTO{}, err
+	if err := cur.Err(); err != nil {
+		log.Println("Cursor error:", err)
+		return nil, err
 	}
 
-	return projectRepo, nil
+	return projRepos, nil
 }
 
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {

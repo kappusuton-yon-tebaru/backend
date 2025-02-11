@@ -3,6 +3,7 @@ package githubapi
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 )
@@ -26,7 +27,7 @@ func (s *Service) GetRepoContents(ctx context.Context, fullname string, path str
         return nil, errors.New("Repository fullname is required")
     }
 
-    return s.repo.GetRepoContents(fullname, path, token)
+    return s.repo.GetRepoContents(ctx, fullname, path, token)
 }
 
 // GetRepoBranches fetches the branches of a repository
@@ -35,7 +36,7 @@ func (s *Service) GetRepoBranches(ctx context.Context, fullname string, token st
         return nil, errors.New("Repository fullname is required")
     }
 
-    return s.repo.GetRepoBranches(fullname, token)
+    return s.repo.GetRepoBranches(ctx, fullname, token)
 }
 
 // GetCommitMetadata fetches the commit metadata for a file in a repository
@@ -44,7 +45,7 @@ func (s *Service) GetCommitMetadata(ctx context.Context, path string, branch str
         return nil, errors.New("Repository fullname, path, and branch are required")
     }
 
-    return s.repo.GetCommitMetadata(path, branch, fullname, token)
+    return s.repo.GetCommitMetadata(ctx, path, branch, fullname, token)
 }
 
 func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, branch, token string) (string, string, error) {
@@ -73,5 +74,36 @@ func (s *Service) CreateBranch(ctx context.Context, fullname, branchName, baseBr
 }
 
 func (s *Service) UpdateFileContent(ctx context.Context, fullname, path, commitMsg, base64Content, sha, branch, token string) error {
-	return s.repo.UpdateFileContent(fullname, path, commitMsg, base64Content, sha, branch, token)
+	return s.repo.UpdateFileContent(ctx, fullname, path, commitMsg, base64Content, sha, branch, token)
+}
+
+func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]models.Service, error) {
+	files, err := s.repo.ListFiles(ctx, fullname, token)
+	if err != nil {
+		return nil, err
+	}
+
+	var services []models.Service
+	seen := make(map[string]bool)
+
+	for _, filePath := range files {
+		if strings.HasPrefix(filePath, "apps/") && strings.HasSuffix(filePath, "/Dockerfile") {
+			parts := strings.Split(filePath, "/")
+			if len(parts) >= 2 {
+				serviceName := parts[1]
+
+				// Ensure no duplicates
+				if _, exists := seen[serviceName]; !exists {
+					services = append(services, models.Service{
+						Name:           serviceName,
+						DockerfilePath: filePath,
+						OwnerRepo: 		fullname,
+					})
+					seen[serviceName] = true
+				}
+			}
+		}
+	}
+
+	return services, nil
 }
