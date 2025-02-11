@@ -22,12 +22,12 @@ func (s *Service) GetUserRepos(ctx context.Context, token string) ([]models.Repo
 	return s.repo.GetUserRepos(ctx, token)
 }
 
-func (s *Service) GetRepoContents(ctx context.Context, fullname string, path string, token string) ([]models.File, error) {
+func (s *Service) GetRepoContents(ctx context.Context, fullname string, path string, branch string, token string) ([]models.File, error) {
     if fullname == "" {
         return nil, errors.New("Repository fullname is required")
     }
 
-    return s.repo.GetRepoContents(ctx, fullname, path, token)
+    return s.repo.GetRepoContents(ctx, fullname, path, branch, token)
 }
 
 // GetRepoBranches fetches the branches of a repository

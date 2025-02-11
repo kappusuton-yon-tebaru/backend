@@ -49,7 +49,8 @@ func (h *Handler) GetUserRepos(c *gin.Context) {
 func (h *Handler) GetRepoContents(c *gin.Context) {
     fullname := c.Param("owner")+"/"+c.Param("repo")
     path := c.DefaultQuery("path", "") // Default to an empty string if no path is provided
-	//! add branch too
+	branch := c.DefaultQuery("branch", "")
+
     token := c.GetHeader("Authorization")
     if token == "" {
         c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
@@ -58,7 +59,7 @@ func (h *Handler) GetRepoContents(c *gin.Context) {
 
     // Remove "Bearer " prefix from the token
     token = token[len("Bearer "):]
-    contents, err := h.service.GetRepoContents(c.Request.Context(),fullname, path, token)
+    contents, err := h.service.GetRepoContents(c.Request.Context(),fullname, path, branch, token)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
