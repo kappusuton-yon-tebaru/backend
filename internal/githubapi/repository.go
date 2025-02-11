@@ -53,12 +53,12 @@ func (r *Repository) GetUserRepos(ctx context.Context, token string) ([]models.R
     return repos, nil
 }
 
-func (r *Repository) GetRepoContents(ctx context.Context, fullname string, path string, token string) ([]models.File, error) {
+func (r *Repository) GetRepoContents(ctx context.Context, fullname string, path string, branch string, token string) ([]models.File, error) {
     if token == "" {
         return nil, errors.New("No access token found")
     }
 
-    url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s", fullname, path)
+    url := fmt.Sprintf("https://api.github.com/repos/%s/contents/%s?ref=%s", fullname, path, branch)
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
         return nil, err
