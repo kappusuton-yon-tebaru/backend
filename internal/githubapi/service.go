@@ -107,3 +107,7 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]mo
 
 	return services, nil
 }
+
+func (s *Service) CreateRepository(ctx context.Context, token string, repo models.CreateRepoRequest) (*models.CreateRepoResponse, error) {
+	return s.repo.CreateRepository(ctx, token, repo)
+}

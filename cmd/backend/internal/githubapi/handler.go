@@ -273,3 +273,28 @@ func (h *Handler) GetServices(c *gin.Context) {
 
 	c.JSON(http.StatusOK, all_services)
 }
+
+func (h *Handler) CreateRepository(c *gin.Context) {
+	var req models.CreateRepoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
+
+	// Remove "Bearer " prefix from the token
+	token = token[len("Bearer "):]
+
+	repo, err := h.service.CreateRepository(c.Request.Context(), token, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, repo)
+}

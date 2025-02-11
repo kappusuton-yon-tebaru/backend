@@ -330,7 +330,7 @@ func (r *Repository) UpdateFileContent(ctx context.Context, fullname, path, comm
 
 	return nil
 }
-
+// list all files and folders path in a repo on branch main
 func (r *Repository) ListFiles(ctx context.Context, fullname, token string) ([]string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/git/trees/main?recursive=1",fullname)
 
@@ -369,4 +369,41 @@ func (r *Repository) ListFiles(ctx context.Context, fullname, token string) ([]s
 	}
 
 	return paths, nil
+}
+// create repo for the current user
+func (r *Repository) CreateRepository(ctx context.Context, token string, repo models.CreateRepoRequest) (*models.CreateRepoResponse, error) {
+	url := "https://api.github.com/user/repos"
+
+	payload, err := json.Marshal(repo)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, errors.New(fmt.Sprintf("GitHub API error: %s", string(body)))
+	}
+
+	var response models.CreateRepoResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
