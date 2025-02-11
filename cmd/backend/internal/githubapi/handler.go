@@ -25,7 +25,7 @@ func NewHandler(service *githubapi.Service, projectRepoService *projectrepositor
 	}
 }
 
-// GetUserRepos handles the HTTP request to fetch GitHub user repositories
+// fetch GitHub user repositories
 func (h *Handler) GetUserRepos(c *gin.Context) {
     token := c.GetHeader("Authorization")
     if token == "" {
@@ -45,11 +45,11 @@ func (h *Handler) GetUserRepos(c *gin.Context) {
 
     c.JSON(http.StatusOK, repos)
 }
-
+// Get repo files and folders, add ?path={foldername} to get folder contents  (can be use for updating file tree)
 func (h *Handler) GetRepoContents(c *gin.Context) {
     fullname := c.Param("owner")+"/"+c.Param("repo")
     path := c.DefaultQuery("path", "") // Default to an empty string if no path is provided
-
+	//! add branch too
     token := c.GetHeader("Authorization")
     if token == "" {
         c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
@@ -67,7 +67,7 @@ func (h *Handler) GetRepoContents(c *gin.Context) {
     c.JSON(http.StatusOK, contents)
 }
 
-// GetRepoBranches handles requests to fetch branches of a GitHub repository
+// get all branch in that repo
 func (h *Handler) GetRepoBranches(c *gin.Context) {
     fullname := c.Param("owner")+"/"+c.Param("repo")
 
@@ -89,7 +89,7 @@ func (h *Handler) GetRepoBranches(c *gin.Context) {
     c.JSON(http.StatusOK, branches)
 }
 
-// GetCommitMetadata handles requests to fetch commit metadata for a file in a GitHub repository
+// Get "lastEditTime" and  "commitMessage" of a file in ... repo on ... branch
 func (h *Handler) GetCommitMetadata(c *gin.Context) {
     fullname := c.Param("owner")+"/"+c.Param("repo")
 
@@ -114,6 +114,7 @@ func (h *Handler) GetCommitMetadata(c *gin.Context) {
     c.JSON(http.StatusOK, metadata)
 }
 
+// Get content in that file return "content", "sha"
 func (h *Handler) FetchFileContent(c *gin.Context) {
 	fullname := c.Param("owner") + "/" + c.Param("repo")
 	filePath := c.Query("path")
@@ -143,8 +144,8 @@ func (h *Handler) FetchFileContent(c *gin.Context) {
 // CreateBranch handles requests to create a new branch.
 func (h *Handler) CreateBranch(c *gin.Context) {
 	fullname := c.Param("owner") + "/" + c.Param("repo")
-	branchName := c.DefaultQuery("branch_name", "")
-	selectedBranchName := c.DefaultQuery("selected_branch", "")
+	branchName := c.DefaultQuery("branch_name", "") // new branch name
+	selectedBranchName := c.DefaultQuery("selected_branch", "") // create from branch
 	token := c.GetHeader("Authorization")
 
 	if token == "" {
@@ -172,7 +173,7 @@ func (h *Handler) CreateBranch(c *gin.Context) {
 	c.JSON(http.StatusOK, branch)
 }
 
-// UpdateFileContent handles the file content update route using JSON payload
+// push commit
 func (h *Handler) UpdateFileContent(c *gin.Context) {
 	fullname := c.Param("owner") + "/" + c.Param("repo")
 	token := c.GetHeader("Authorization")
