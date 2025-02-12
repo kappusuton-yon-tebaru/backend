@@ -1,6 +1,6 @@
 module github.com/kappusuton-yon-tebaru/backend
 
-go 1.23.5
+go 1.23.0
 
 require (
 	github.com/gin-contrib/cors v1.7.3
