@@ -28,3 +28,6 @@ apply:
 
 delete:
 	@kubectl delete -f deployment/master.yaml
+
+manifest:
+	@go run ./tools/manifest/main.go

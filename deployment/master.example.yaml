@@ -99,23 +99,23 @@ spec:
             - containerPort: 3000
           env:
             - name: DEVELOPMENT
-              value: "<development>"
+              value: "<@DEVELOPMENT>"
             - name: IN_CLUSTER
-              value: "<in_cluster>"
+              value: "<@IN_CLUSTER>"
             - name: AGENT_PORT
-              value: "<agent_port>"
+              value: "<@AGENT_PORT>"
             - name: BACKEND_PORT
-              value: "<backend_port>"
+              value: "<@BACKEND_PORT>"
             - name: MONGO_URI
-              value: "<mongo_uri>"
+              value: "<@MONGO_URI>"
             - name: BUILDER_QUEUE_URI
-              value: "<builder_queue_uri>"
+              value: "<@BUILDER_QUEUE_URI>"
             - name: BUILDER_QUEUE_NAME
-              value: "<builder_queue_name>"
+              value: "<@BUILDER_QUEUE_NAME>"
             - name: WORKER_IMAGE_URI
-              value: "<worker_image_uri>"
+              value: "<@WORKER_IMAGE_URI>"
             - name: KUBE_NAMESPACE
-              value: "<kube_namespace>"
+              value: "<@KUBE_NAMESPACE>"
 ---
 apiVersion: v1
 kind: Service
@@ -153,19 +153,19 @@ spec:
           image: <image>
           env:
             - name: DEVELOPMENT
-              value: "<development>"
+              value: "<@DEVELOPMENT>"
             - name: IN_CLUSTER
-              value: "<in_cluster>"
+              value: "<@IN_CLUSTER>"
             - name: AGENT_PORT
-              value: "<agent_port>"
+              value: "<@AGENT_PORT>"
             - name: BACKEND_PORT
-              value: "<backend_port>"
+              value: "<@BACKEND_PORT>"
             - name: MONGO_URI
-              value: "<mongo_uri>"
+              value: "<@MONGO_URI>"
             - name: BUILDER_QUEUE_URI
-              value: "<builder_queue_uri>"
+              value: "<@BUILDER_QUEUE_URI>"
             - name: BUILDER_QUEUE_NAME
-              value: "<builder_queue_name>"
+              value: "<@BUILDER_QUEUE_NAME>"
             - name: KUBE_NAMESPACE
-              value: "<kube_namespace>"
+              value: "<@KUBE_NAMESPACE>"
 
