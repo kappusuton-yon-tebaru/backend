@@ -24,10 +24,10 @@ lint:
 	@golangci-lint run
 
 apply:
-	@kubectl apply --server-side --field-manager=system -f deployment/master.yaml
+	@kubectl apply --server-side --field-manager=system -f deployment/master.local.yaml
 
 delete:
-	@kubectl delete -f deployment/master.yaml
+	@kubectl delete -f deployment/master.local.yaml
 
 manifest:
 	@go run ./tools/manifest/main.go
