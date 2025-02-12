@@ -88,5 +88,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/build", app.BuildHandler.Build)
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
+	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
 	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
 }

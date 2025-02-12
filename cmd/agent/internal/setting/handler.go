@@ -47,3 +47,17 @@ func (h *Handler) SetMaxWorker(ctx *gin.Context) {
 		"max_worker": req.MaxWorker,
 	})
 }
+
+func (h *Handler) GetMaxWorker(ctx *gin.Context) {
+	maxWorker, werr := h.service.GetMaxWorker(ctx)
+	if werr != nil {
+		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
+			"message": werr.GetMessageOr("internal server error"),
+		})
+		return
+	}
+
+	ctx.JSON(200, map[string]any{
+		"max_worker": maxWorker,
+	})
+}
