@@ -16,7 +16,8 @@ type AgentConfig struct {
 }
 
 type BackendConfig struct {
-	Port int `mapstructure:"BACKEND_PORT"`
+	Port          int    `mapstructure:"BACKEND_PORT"`
+	AgentEndpoint string `mapstructure:"AGENT_ENDPOINT"`
 }
 
 type BuilderConfig struct {

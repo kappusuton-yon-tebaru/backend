@@ -16,6 +16,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
@@ -68,6 +69,7 @@ type App struct {
 	ProjectEnvironmentHandler   *projectenv.Handler
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
+	ReverseProxyHandler         *reverseproxy.ReverseProxy
 }
 
 func New(
@@ -92,6 +94,7 @@ func New(
 	ProjectEnvironmentHandler *projectenv.Handler,
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
+	ReverseProxyHandler *reverseproxy.ReverseProxy,
 ) *App {
 	return &App{
 		Logger,
@@ -115,6 +118,7 @@ func New(
 		ProjectEnvironmentHandler,
 		BuildHandler,
 		MonitoringHandler,
+		ReverseProxyHandler,
 	}
 }
 
@@ -174,6 +178,7 @@ func Initialize() (*App, error) {
 		build.NewService,
 		build.NewHandler,
 		monitoring.NewHandler,
+		reverseproxy.New,
 		New,
 	)
 

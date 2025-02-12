@@ -18,6 +18,7 @@ import (
 	regproviders2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	rolepermission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	roleusergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
@@ -120,7 +121,11 @@ func Initialize() (*App, error) {
 	buildService := build.NewService(builderRmq, jobService, loggerLogger)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
 	monitoringHandler := monitoring.NewHandler(loggerLogger)
-	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler)
+	reverseProxy, err := reverseproxy.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler, reverseProxy)
 	return app, nil
 }
 
@@ -148,6 +153,7 @@ type App struct {
 	ProjectEnvironmentHandler   *projectenv2.Handler
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
+	ReverseProxyHandler         *reverseproxy.ReverseProxy
 }
 
 func New(
@@ -172,6 +178,7 @@ func New(
 	ProjectEnvironmentHandler *projectenv2.Handler,
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
+	ReverseProxyHandler *reverseproxy.ReverseProxy,
 ) *App {
 	return &App{
 		Logger,
@@ -195,5 +202,6 @@ func New(
 		ProjectEnvironmentHandler,
 		BuildHandler,
 		MonitoringHandler,
+		ReverseProxyHandler,
 	}
 }
