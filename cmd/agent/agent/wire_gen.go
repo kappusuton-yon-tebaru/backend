@@ -35,7 +35,10 @@ func Initialize() (*App, error) {
 	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub, loggerLogger)
 	handler := monitoring.NewHandler(service, loggerLogger)
 	settingService := setting.NewService(configConfig, kubernetesKubernetes, loggerLogger)
-	validatorValidator := validator.New()
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
 	settingHandler := setting.NewHandler(settingService, validatorValidator)
 	app := New(loggerLogger, configConfig, handler, settingHandler)
 	return app, nil

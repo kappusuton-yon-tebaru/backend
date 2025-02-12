@@ -14,14 +14,15 @@ type Validator struct {
 	translator ut.Translator
 }
 
-func New() *Validator {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-
+func New() (*Validator, error) {
 	en := en.New()
 	translator, _ := ut.New(en, en).GetTranslator("en")
 
-	validate = validator.New()
-	en_translations.RegisterDefaultTranslations(validate, translator)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := en_translations.RegisterDefaultTranslations(validate, translator)
+	if err != nil {
+		return nil, err
+	}
 
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
 		return field.Tag.Get("json")
@@ -30,7 +31,7 @@ func New() *Validator {
 	return &Validator{
 		validate,
 		translator,
-	}
+	}, nil
 }
 
 func (v *Validator) Translate(err error) []string {

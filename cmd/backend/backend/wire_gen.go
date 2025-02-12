@@ -109,7 +109,10 @@ func Initialize() (*App, error) {
 	projectenvRepository := projectenv.NewRepository(client)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
-	validatorValidator := validator.New()
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
 	builderRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
