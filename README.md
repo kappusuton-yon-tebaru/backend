@@ -4,7 +4,7 @@
 
 Make sure you have the following tools installed to get *QUALITY OF LIFE*
 
-- go v1.22.11
+- go v1.23.5
 - wire (dependency injection tool)
 ```bash
 go install github.com/google/wire/cmd/wire@latest
