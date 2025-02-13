@@ -1,5 +1,5 @@
 # ==================== builder ====================
-FROM golang:1.22.11-alpine AS builder
+FROM golang:1.23.0-alpine AS builder
 WORKDIR /app
 
 COPY go.* ./

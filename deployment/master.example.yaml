@@ -1,0 +1,171 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-modifier
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["create", "delete", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-modifier
+  namespace: default
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "create", "delete", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: service-modifier
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "delete", "patch"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-pod
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: system
+    namespace: default
+roleRef:
+  kind: Role
+  name: pod-modifier
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-deployment
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: system
+    namespace: default
+roleRef:
+  kind: Role
+  name: deployment-modifier
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: modify-service
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: system
+    namespace: default
+roleRef:
+  kind: Role
+  name: service-modifier
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-deployment
+  labels:
+    app: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      serviceAccountName: system
+      containers:
+        - name: agent
+          image: <@AGENT_IMAGE_URI>
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DEVELOPMENT
+              value: "false"
+            - name: IN_CLUSTER
+              value: "true"
+            - name: AGENT_PORT
+              value: "<@AGENT_PORT>"
+            - name: BACKEND_PORT
+              value: "<@BACKEND_PORT>"
+            - name: MONGO_URI
+              value: "<@MONGO_URI>"
+            - name: BUILDER_QUEUE_URI
+              value: "<@BUILDER_QUEUE_URI>"
+            - name: BUILDER_QUEUE_NAME
+              value: "<@BUILDER_QUEUE_NAME>"
+            - name: WORKER_IMAGE_URI
+              value: "<@WORKER_IMAGE_URI>"
+            - name: KUBE_NAMESPACE
+              value: "<@KUBE_NAMESPACE>"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-service
+spec:
+  selector:
+    app: agent
+  type: NodePort # temporaly fix, so we dont have to port-forward everytime
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: builder-consumer-deployment
+  labels:
+    app: builder-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: builder-consumer
+  template:
+    metadata:
+      labels:
+        app: builder-consumer
+    spec:
+      serviceAccountName: system
+      containers:
+        - name: builder-consumer
+          image: <@WORKER_IMAGE_URI>
+          env:
+            - name: DEVELOPMENT
+              value: "false"
+            - name: IN_CLUSTER
+              value: "true"
+            - name: AGENT_PORT
+              value: "<@AGENT_PORT>"
+            - name: BACKEND_PORT
+              value: "<@BACKEND_PORT>"
+            - name: MONGO_URI
+              value: "<@MONGO_URI>"
+            - name: BUILDER_QUEUE_URI
+              value: "<@BUILDER_QUEUE_URI>"
+            - name: BUILDER_QUEUE_NAME
+              value: "<@BUILDER_QUEUE_NAME>"
+            - name: KUBE_NAMESPACE
+              value: "<@KUBE_NAMESPACE>"
+

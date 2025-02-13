@@ -8,5 +8,3 @@ type RegistryProviders struct {
 	JsonCredential	string	`json:"json_credential"`
 	OrganizationId	string	`json:"organization_id"`
 }
-
-

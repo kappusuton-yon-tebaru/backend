@@ -5,12 +5,21 @@ package backend
 
 import (
 	"github.com/google/wire"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
@@ -21,31 +30,29 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
+	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
+	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	sharedResource "github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
+	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
+	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
-	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
-	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
-	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
-	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
-	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
-	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 )
 
 type App struct {
+	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
 	MongoClient                 *mongo.Client
@@ -66,9 +73,13 @@ type App struct {
 	ProjectEnvironmentHandler	*projectenv.Handler
 	ECRHandler					*ecr.Handler
 	DockerHubHandler			*dockerhub.Handler
+	BuildHandler                *build.Handler
+	MonitoringHandler           *monitoring.Handler
+	ReverseProxyHandler         *reverseproxy.ReverseProxy
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
@@ -89,8 +100,12 @@ func New(
 	ProjectEnvironmentHandler *projectenv.Handler,
 	ECRHandler *ecr.Handler,
 	DockerHubHandler *dockerhub.Handler,
+	BuildHandler *build.Handler,
+	MonitoringHandler *monitoring.Handler,
+	ReverseProxyHandler *reverseproxy.ReverseProxy,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		GreetingHandler,
 		MongoClient,
@@ -111,12 +126,16 @@ func New(
 		ProjectEnvironmentHandler,
 		ECRHandler,
 		DockerHubHandler,
+		BuildHandler,
+		MonitoringHandler,
+		ReverseProxyHandler,
 	}
 }
 
 func Initialize() (*App, error) {
 	wire.Build(
 		config.Load,
+		logger.New,
 		greeting.New,
 		mongodb.New,
 		sharedImage.NewRepository,
@@ -170,6 +189,12 @@ func Initialize() (*App, error) {
 		dockerhub.NewDockerHubRepository,
 		dockerhub.NewService,
 		dockerhub.NewHandler,
+		validator.New,
+		rmq.New,
+		build.NewService,
+		build.NewHandler,
+		monitoring.NewHandler,
+		reverseproxy.New,
 		New,
 	)
 

@@ -49,7 +49,7 @@ func (h *Handler) CreateProjectEnv(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "project env created successfully",
-		"id": id,
+		"id":      id,
 	})
 }
 
