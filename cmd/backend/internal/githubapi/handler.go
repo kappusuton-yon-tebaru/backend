@@ -249,29 +249,24 @@ func (h *Handler) GetServices(c *gin.Context) {
 	// Remove "Bearer " prefix from the token
 	token = token[len("Bearer "):] 
 
-	projRepos, err := h.projectRepoService.GetProjectRepositoriesByProjectID(c, projectID)
+	projRepo, err := h.projectRepoService.GetProjectRepositorieByProjectID(c, projectID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
 		return
 	}
-	var all_services []models.Service
-	for _, projRepos := range projRepos{
-		fullname, err := ExtractFullName(projRepos.GitRepoUrl)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error":err})
-			return
-		}
-
-		services, err := h.service.FindServices(c,fullname,token)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
-			return
-		}
-
-		all_services = append(all_services, services...)
+	fullname, err2 := ExtractFullName(projRepo.GitRepoUrl)
+	if err2 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+		return
 	}
 
-	c.JSON(http.StatusOK, all_services)
+	services, err3 := h.service.FindServices(c,fullname,token)
+	if err3 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
+		return
+	}
+
+	c.JSON(http.StatusOK, services)
 }
 
 func (h *Handler) CreateRepository(c *gin.Context) {

@@ -70,9 +70,8 @@ type CreateBranchRequest struct {
 }
 
 type Service struct {
-	Name           string `json:"name"`
-	DockerfilePath string `json:"dockerfile_path"`
-	OwnerRepo 	   string `json:"owner_repo"`
+	Name           string `json:"service_name"`
+	DockerfilePath string `json:"dockerfile"`
 }
 // CreateRepoRequest represents the request payload for creating a GitHub repository
 type CreateRepoRequest struct {
