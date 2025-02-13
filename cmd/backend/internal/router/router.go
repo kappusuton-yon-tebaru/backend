@@ -3,15 +3,25 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 )
 
 type Router struct {
 	*gin.Engine
 }
 
-func New() *Router {
+func New(cfg *config.Config) *Router {
+	if cfg.Development {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	r := gin.New()
+	r.Use(gin.Recovery())
+
 	return &Router{
-		gin.Default(),
+		r,
 	}
 }
 
@@ -49,7 +59,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
 	r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
 	r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
-	
+
 	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
 	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
 	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)
@@ -62,7 +72,8 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
-	r.GET("/jobs", app.JobHandler.GetAllJobs)
+	r.GET("/jobs", app.JobHandler.GetAllJobParents)
+	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
 	r.POST("/jobs", app.JobHandler.CreateJob)
 	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
@@ -73,4 +84,10 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/projectenvs", app.ProjectEnvironmentHandler.GetAllProjectEnvs)
 	r.POST("/projectenvs", app.ProjectEnvironmentHandler.CreateProjectEnv)
 	r.DELETE("/projectenvs/:id", app.ProjectEnvironmentHandler.DeleteProjectEnv)
+
+	r.POST("/build", app.BuildHandler.Build)
+	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
+
+	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
+	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
 }

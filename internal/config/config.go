@@ -11,17 +11,28 @@ import (
 )
 
 type AgentConfig struct {
-	Port int `mapstructure:"AGENT_PORT"`
+	Port           int    `mapstructure:"AGENT_PORT"`
+	WorkerImageUri string `mapstructure:"WORKER_IMAGE_URI"`
 }
 
 type BackendConfig struct {
-	Port int `mapstructure:"BACKEND_PORT"`
+	Port          int    `mapstructure:"BACKEND_PORT"`
+	AgentEndpoint string `mapstructure:"AGENT_ENDPOINT"`
+}
+
+type BuilderConfig struct {
+	QueueUri  string `mapstructure:"BUILDER_QUEUE_URI"`
+	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
 }
 
 type Config struct {
-	Agent    AgentConfig   `mapstructure:",squash"`
-	Backend  BackendConfig `mapstructure:",squash"`
-	MongoUri string        `mapstructure:"MONGO_URI"`
+	InCluster     bool          `mapstructure:"IN_CLUSTER"`
+	Development   bool          `mapstructure:"DEVELOPMENT"`
+	Agent         AgentConfig   `mapstructure:",squash"`
+	Backend       BackendConfig `mapstructure:",squash"`
+	MongoUri      string        `mapstructure:"MONGO_URI"`
+	BuilderConfig BuilderConfig `mapstructure:",squash"`
+	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
 }
 
 func Load() (*Config, error) {

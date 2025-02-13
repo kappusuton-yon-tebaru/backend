@@ -7,9 +7,13 @@
 package agent
 
 import (
-	greeting2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	"github.com/kappusuton-yon-tebaru/backend/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
+	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 // Injectors from wire.go:
@@ -19,25 +23,46 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	service := greeting.New()
-	handler := greeting2.New(service)
-	app := New(configConfig, handler)
+	loggerLogger, err := logger.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	kubernetesKubernetes, err := kubernetes.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	hubHub := hub.New()
+	service := monitoring.NewService(configConfig, kubernetesKubernetes, hubHub, loggerLogger)
+	handler := monitoring.NewHandler(service, loggerLogger)
+	settingService := setting.NewService(configConfig, kubernetesKubernetes, loggerLogger)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	settingHandler := setting.NewHandler(settingService, validatorValidator)
+	app := New(loggerLogger, configConfig, handler, settingHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Config          *config.Config
-	GreetingHandler *greeting2.Handler
+	Logger            *logger.Logger
+	Config            *config.Config
+	MonitoringHandler *monitoring.Handler
+	SettingHandler    *setting.Handler
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
-	GreetingHandler *greeting2.Handler,
+	MonitoringHandler *monitoring.Handler,
+	SettingHandler *setting.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
-		GreetingHandler,
+		MonitoringHandler,
+		SettingHandler,
 	}
 }

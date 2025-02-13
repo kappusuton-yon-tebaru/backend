@@ -5,31 +5,47 @@ package agent
 
 import (
 	"github.com/google/wire"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	shared_greeting "github.com/kappusuton-yon-tebaru/backend/internal/greeting"
+	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
+	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type App struct {
-	Config          *config.Config
-	GreetingHandler *greeting.Handler
+	Logger            *logger.Logger
+	Config            *config.Config
+	MonitoringHandler *monitoring.Handler
+	SettingHandler    *setting.Handler
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
-	GreetingHandler *greeting.Handler,
+	MonitoringHandler *monitoring.Handler,
+	SettingHandler *setting.Handler,
 ) *App {
 	return &App{
+		Logger,
 		Config,
-		GreetingHandler,
+		MonitoringHandler,
+		SettingHandler,
 	}
 }
 
 func Initialize() (*App, error) {
 	wire.Build(
 		config.Load,
-		greeting.New,
-		shared_greeting.New,
+		logger.New,
+		kubernetes.New,
+		hub.New,
+		monitoring.NewService,
+		monitoring.NewHandler,
+		validator.New,
+		setting.NewService,
+		setting.NewHandler,
 		New,
 	)
 

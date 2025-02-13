@@ -7,8 +7,8 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Repository struct {
@@ -49,8 +49,8 @@ func (r *Repository) GetAllRolePermissions(ctx context.Context) ([]models.RolePe
 
 func (r *Repository) CreateRolePermission(ctx context.Context, dto CreateRolePermissionDTO) (string, error) {
 	rolepermission := bson.M{
-		"role_id": dto.Role_id,
-		"permission_id":dto.Permission_id,
+		"role_id":       dto.Role_id,
+		"permission_id": dto.Permission_id,
 	}
 
 	result, err := r.rolepermission.InsertOne(ctx, rolepermission)

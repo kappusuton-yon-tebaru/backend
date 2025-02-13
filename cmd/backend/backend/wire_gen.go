@@ -7,15 +7,18 @@
 package backend
 
 import (
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	permission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	projectenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	regproviders2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
 	rolepermission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	roleusergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
@@ -26,6 +29,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
@@ -33,6 +37,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
@@ -40,6 +45,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -47,6 +53,10 @@ import (
 
 func Initialize() (*App, error) {
 	configConfig, err := config.Load()
+	if err != nil {
+		return nil, err
+	}
+	loggerLogger, err := logger.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -100,13 +110,29 @@ func Initialize() (*App, error) {
 	projectenvRepository := projectenv.NewRepository(client)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
-	app := New(configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	builderRmq, err := rmq.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	buildService := build.NewService(builderRmq, jobService, loggerLogger)
+	buildHandler := build.NewHandler(validatorValidator, buildService)
+	monitoringHandler := monitoring.NewHandler(loggerLogger)
+	reverseProxy, err := reverseproxy.New(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler, reverseProxy)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
+	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
 	MongoClient                 *mongo.Client
@@ -125,9 +151,13 @@ type App struct {
 	JobHandler                  *job2.Handler
 	RegisterProviderHandler     *regproviders2.Handler
 	ProjectEnvironmentHandler   *projectenv2.Handler
+	BuildHandler                *build.Handler
+	MonitoringHandler           *monitoring.Handler
+	ReverseProxyHandler         *reverseproxy.ReverseProxy
 }
 
 func New(
+	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
 	MongoClient *mongo.Client,
@@ -146,8 +176,12 @@ func New(
 	JobHandler *job2.Handler,
 	RegisterProviderHandler *regproviders2.Handler,
 	ProjectEnvironmentHandler *projectenv2.Handler,
+	BuildHandler *build.Handler,
+	MonitoringHandler *monitoring.Handler,
+	ReverseProxyHandler *reverseproxy.ReverseProxy,
 ) *App {
 	return &App{
+		Logger,
 		Config,
 		GreetingHandler,
 		MongoClient,
@@ -166,5 +200,8 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		BuildHandler,
+		MonitoringHandler,
+		ReverseProxyHandler,
 	}
 }

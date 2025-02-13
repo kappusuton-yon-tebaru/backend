@@ -7,8 +7,8 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Repository struct {
@@ -50,9 +50,9 @@ func (r *Repository) GetAllPermissions(ctx context.Context) ([]models.Permission
 func (r *Repository) CreatePermission(ctx context.Context, dto CreatePermissionDTO) (string, error) {
 	permission := bson.M{
 		"permission_name": dto.Permission_name,
-		"action": dto.Action,
-		"resource_id": dto.Resource_id,
-		"resource_type": dto.Resource_type,
+		"action":          dto.Action,
+		"resource_id":     dto.Resource_id,
+		"resource_type":   dto.Resource_type,
 	}
 
 	result, err := r.permission.InsertOne(ctx, permission)

@@ -7,18 +7,18 @@ import (
 )
 
 type ProjectEnvDTO struct {
-	Id        bson.ObjectID	`bson:"id"`
-	ProjectId bson.ObjectID	`bson:"project_id"`
-	EnvType   enum.EnvType 	`bson:"env_type"`
-	Key       string       	`bson:"key"`
-	Value     string       	`bson:"value"`
+	Id        bson.ObjectID `bson:"id"`
+	ProjectId bson.ObjectID `bson:"project_id"`
+	EnvType   enum.EnvType  `bson:"env_type"`
+	Key       string        `bson:"key"`
+	Value     string        `bson:"value"`
 }
 
 type CreateProjectEnvDTO struct {
-	ProjectId bson.ObjectID	`bson:"project_id"`
-	EnvType   enum.EnvType 	`bson:"env_type"`
-	Key       string       	`bson:"key"`
-	Value     string       	`bson:"value"`
+	ProjectId bson.ObjectID `bson:"project_id"`
+	EnvType   enum.EnvType  `bson:"env_type"`
+	Key       string        `bson:"key"`
+	Value     string        `bson:"value"`
 }
 
 func DTOToProjectEnv(projectEnv ProjectEnvDTO) models.ProjectEnv {
