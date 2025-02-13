@@ -44,6 +44,23 @@ func (h *Handler) GetResourceByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resource)
 }
 
+func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
+	id := ctx.Param("parent_id")
+
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
+		return
+	}
+
+	resources, err := h.service.GetChildrenResourcesByParentID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resources)
+}
+
 func (h *Handler) CreateResource(ctx *gin.Context) {
 	var resourceDTO resource.CreateResourceDTO
 

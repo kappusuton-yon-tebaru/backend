@@ -5,20 +5,17 @@ import (
 	"net/http"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
-	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
 	repo *Repository
-	resourceRepo *resource.Repository
 }
 
-func NewService(repo *Repository, resourceRepo *resource.Repository) *Service {
+func NewService(repo *Repository) *Service {
 	return &Service{
 		repo,
-		resourceRepo,
 	}
 }
 
@@ -31,7 +28,7 @@ func (s *Service) GetAllResourceRelationships(ctx context.Context) ([]models.Res
 	return resourceRelas, nil
 }
 
-func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string) ([]models.Resource, *werror.WError) {
+func (s *Service) GetChildrenResourceRelationshipByParentID(ctx context.Context, parentID string) ([]models.ResourceRelationship, *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(parentID)
 	if err != nil {
 		return nil, werror.NewFromError(err).
@@ -43,32 +40,12 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 		"parent_resource_id": objId,
 	}
 	
-	childrenResourceRelas, err := s.repo.GetChildrenResourcesByParentID(ctx, filter)
+	childrenResourceRelas, err := s.repo.GetChildrenResourceRelationshipByParentID(ctx, filter)
 	if err != nil {
 		return nil, werror.NewFromError(err)
 	}
-
-	var childrenResources []models.Resource
-
-	for _, childrenResourceRela := range childrenResourceRelas{
-		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
-		if err != nil {
-			return nil, werror.NewFromError(err).
-				SetCode(http.StatusBadRequest).
-				SetMessage("invalid id")
-		}
-
-		filter := map[string]any{
-			"_id": objId,
-		}
-		childrenResource, err := s.resourceRepo.GetResourceByID(ctx,filter)
-		if err != nil {
-			return nil, werror.NewFromError(err)
-		}
-		childrenResources = append(childrenResources, childrenResource )
-	}
-
-	return childrenResources, nil
+	
+	return childrenResourceRelas, nil
 }
 
 func (s *Service) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {

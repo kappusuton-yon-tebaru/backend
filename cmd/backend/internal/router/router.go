@@ -46,6 +46,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
+	r.GET("/resources/:parent_id/children", app.ResourceHandler.GetChildrenResourcesByParentID)
 	r.POST("/resources", app.ResourceHandler.CreateResource)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
 
@@ -71,7 +72,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
 	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
-	r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourcesByParentID)
+	r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourceRelationshipByParentID)
 	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
