@@ -77,7 +77,7 @@ func (s *Service) UpdateFileContent(ctx context.Context, fullname, path, commitM
 	return s.repo.UpdateFileContent(ctx, fullname, path, commitMsg, base64Content, sha, branch, token)
 }
 
-func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]models.Service, error) {
+func (s *Service) FindServices(ctx context.Context,fullname, token string) (map[string]interface{}, error) {
 	files, err := s.repo.ListFiles(ctx, fullname, token)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,6 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]mo
 					services = append(services, models.Service{
 						Name:           serviceName,
 						DockerfilePath: filePath,
-						OwnerRepo: 		fullname,
 					})
 					seen[serviceName] = true
 				}
@@ -105,7 +104,12 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) ([]mo
 		}
 	}
 
-	return services, nil
+	response := map[string]interface{}{
+		"repo_url": fullname,
+		"services": services,
+	}
+
+	return response, nil
 }
 
 func (s *Service) CreateRepository(ctx context.Context, token string, repo models.CreateRepoRequest) (*models.CreateRepoResponse, error) {

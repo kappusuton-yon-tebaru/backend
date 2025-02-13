@@ -47,34 +47,20 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoriesByProjectID(ctx context.Context, filter map[string]any) ([]models.ProjectRepository, error) {	
-	cur, err := r.projRepo.Find(ctx, filter)
+func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (models.ProjectRepository, error) {
+	var projRepoDTO ProjectRepositoryDTO
+
+	err := r.projRepo.FindOne(ctx, filter).Decode(&projRepoDTO)
 	if err != nil {
-		log.Println("Error in Find:", err)
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
-	projRepos := make([]models.ProjectRepository, 0)
-
-	for cur.Next(ctx) {
-		var projrepo ProjectRepositoryDTO
-
-		err = cur.Decode(&projrepo)
-		if err != nil {
-			log.Println("Error in Decode:", err)
-			return nil, err
+		if err == mongo.ErrNoDocuments {
+			// No document found, return an empty Resource
+			return models.ProjectRepository{}, nil
 		}
-
-		projRepos = append(projRepos, DTOToProjectRepository(projrepo))
+		log.Println("Error finding project repository:", err)
+		return models.ProjectRepository{}, err
 	}
 
-	if err := cur.Err(); err != nil {
-		log.Println("Cursor error:", err)
-		return nil, err
-	}
-
-	return projRepos, nil
+	return DTOToProjectRepository(projRepoDTO), nil
 }
 
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {

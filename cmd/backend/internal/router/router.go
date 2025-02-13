@@ -66,7 +66,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
-	r.GET("/projrepos/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoriesByProjectID)
+	r.GET("/projrepos/:project_id", app.ProjectRepositoryHandler.GetProjectRepositorieByProjectID)
 	r.POST("/projrepos", app.ProjectRepositoryHandler.CreateProjectRepository)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
