@@ -402,7 +402,7 @@ func (r *Repository) CreateRepository(ctx context.Context, token string, repo mo
 
 	if resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, errors.New(fmt.Sprintf("GitHub API error: %s", string(body)))
+		return nil, fmt.Errorf("GitHub API error: %s", string(body))
 	}
 
 	var response models.CreateRepoResponse
