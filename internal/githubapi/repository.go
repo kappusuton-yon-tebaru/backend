@@ -11,13 +11,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 )
 
-type Repository struct{}
+type Repository struct{
+	cfg *config.Config
+}
 
-func NewRepository() *Repository {
-    return &Repository{}
+func NewRepository(cfg *config.Config) *Repository {
+    return &Repository{
+		cfg ,
+	}
 }
 
 func (r *Repository) GetUserRepos(ctx context.Context, token string) ([]models.Repository, error) {
@@ -406,4 +411,55 @@ func (r *Repository) CreateRepository(ctx context.Context, token string, repo mo
 	}
 
 	return &response, nil
+}
+
+// GetAccessToken exchanges the authorization code for an access token
+func (r *Repository) GetAccessToken(ctx context.Context, code string) (string, error) {
+	clientID := r.cfg.ClientID
+	clientSecret := r.cfg.ClientSecret
+	if clientID == "" || clientSecret == "" {
+		return "", fmt.Errorf("GitHub OAuth credentials are missing")
+	}
+
+	reqBody := map[string]string{
+		"client_id":     clientID,
+		"client_secret": clientSecret,
+		"code":          code,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://github.com/login/oauth/access_token", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", err
+	}
+
+	if token, ok := result["access_token"].(string); ok {
+		return token, nil
+	}
+
+	return "", fmt.Errorf("failed to retrieve access token: %v", result)
 }

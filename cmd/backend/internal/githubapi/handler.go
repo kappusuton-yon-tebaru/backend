@@ -1,25 +1,30 @@
 package githubapi
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 )
 
 type Handler struct {
+	cfg *config.Config
     service *githubapi.Service
 	projectRepoService *projectrepository.Service
 }
 
 // NewHandler creates a new Handler instance
-func NewHandler(service *githubapi.Service, projectRepoService *projectrepository.Service) *Handler {
+func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service) *Handler {
     return &Handler{
+		cfg,
 		service,
 		projectRepoService,
 	}
@@ -292,4 +297,34 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, repo)
+}
+
+// Redirects user to GitHub OAuth authorization page
+func (h *Handler) RedirectToGitHub(c *gin.Context) {
+
+	if h.cfg.ClientID == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "GitHub Client ID missing"})
+		return
+	}
+
+	redirectURL := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&scope=repo", h.cfg.ClientID)
+	c.Redirect(http.StatusFound, redirectURL)
+}
+
+// Handles the callback from GitHub, exchanges code for token, and stores it
+func (h *Handler) GitHubCallback(c *gin.Context) {
+	code := c.Query("code")
+	log.Println("code",code);
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization code is missing"})
+		return
+	}
+
+	err := h.service.AuthenticateUser(context.Background(), code, c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Authentication successful"})
 }

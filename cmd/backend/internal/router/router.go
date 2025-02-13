@@ -103,7 +103,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/github/:owner/:repo/commit-metadata", app.GithubAPIHandler.GetCommitMetadata) // ?path={filePath}&branch={branchName}
 	r.GET("/github/:owner/:repo/file-content", app.GithubAPIHandler.FetchFileContent) // ?path={filePath}&branch={branchName}
 	r.POST("/github/create-repo", app.GithubAPIHandler.CreateRepository) // might need some changes 
-	
+	r.GET("/github/login", app.GithubAPIHandler.RedirectToGitHub)
+	r.GET("/github/callback", app.GithubAPIHandler.GitHubCallback) // ?code={code got from the above api in search bar}
+
 	r.GET("/project/:id/services", app.GithubAPIHandler.GetServices) 
 
 }
