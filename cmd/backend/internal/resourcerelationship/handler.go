@@ -27,7 +27,7 @@ func (h *Handler) GetAllResourceRelationships(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resourceRelas)
 }
 
-func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
+func (h *Handler) GetChildrenResourceRelationshipByParentID(ctx *gin.Context) {
 	parentID := ctx.Param("parent_id")
 
 	if parentID == "" {
@@ -35,7 +35,7 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 		return
 	}
 
-	projRepo, err := h.service.GetChildrenResourcesByParentID(ctx, parentID)
+	projRepo, err := h.service.GetChildrenResourceRelationshipByParentID(ctx, parentID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -47,7 +47,7 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	return resourceRelas, nil
 }
 
-func (r *Repository) GetChildrenResourcesByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {	
+func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {	
 	cur, err := r.resourceRela.Find(ctx, filter)
 	if err != nil {
 		log.Println("Error in Find:", err)

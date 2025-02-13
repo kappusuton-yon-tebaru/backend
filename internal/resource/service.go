@@ -5,17 +5,20 @@ import (
 	"net/http"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
-
 type Service struct {
 	repo *Repository
+	resourceRelaRepo *resourcerelationship.Repository
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository,resourceRelaRepo *resourcerelationship.Repository) *Service {
 	return &Service{
 		repo,
+		resourceRelaRepo,
 	}
 }
 
@@ -46,6 +49,45 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	}
 
 	return resource, nil
+}
+
+func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string) ([]models.Resource, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(parentID)
+	if err != nil {
+		return nil, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid parent id")
+	}
+
+	filter := map[string]any{
+		"parent_resource_id": objId,
+	}
+	
+	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx,filter)
+	if err != nil {
+		return nil, werror.NewFromError(err)
+	}
+	var childrenResources []models.Resource
+
+	for _, childrenResourceRela := range childrenResourceRelas{
+		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
+		if err != nil {
+			return nil, werror.NewFromError(err).
+				SetCode(http.StatusBadRequest).
+				SetMessage("invalid id")
+		}
+
+		filter := map[string]any{
+			"_id": objId,
+		}
+		childrenResource, err := s.repo.GetResourceByID(ctx,filter)
+		if err != nil {
+			return nil, werror.NewFromError(err)
+		}
+		childrenResources = append(childrenResources, childrenResource )
+	}
+
+	return childrenResources, nil
 }
 
 func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
