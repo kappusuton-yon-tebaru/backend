@@ -46,7 +46,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
-	r.GET("/resources/:parent_id/children", app.ResourceHandler.GetChildrenResourcesByParentID)
+	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
 	r.POST("/resources", app.ResourceHandler.CreateResource)
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
 
@@ -104,6 +104,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/github/:owner/:repo/file-content", app.GithubAPIHandler.FetchFileContent) // ?path={filePath}&branch={branchName}
 	r.POST("/github/create-repo", app.GithubAPIHandler.CreateRepository) // might need some changes 
 	
-	r.GET("/project/:id/services ", app.GithubAPIHandler.GetServices) 
+	r.GET("/project/:id/services", app.GithubAPIHandler.GetServices) 
 
 }
