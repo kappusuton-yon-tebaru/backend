@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 )
 
@@ -114,4 +115,17 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) (map[
 
 func (s *Service) CreateRepository(ctx context.Context, token string, repo models.CreateRepoRequest) (*models.CreateRepoResponse, error) {
 	return s.repo.CreateRepository(ctx, token, repo)
+}
+
+// AuthenticateUser retrieves the GitHub access token and stores it
+func (s *Service) AuthenticateUser(ctx context.Context, code string, c *gin.Context) error {
+	token, err := s.repo.GetAccessToken(ctx, code)
+	if err != nil {
+		return err
+	}
+
+	// Store token securely in an HTTP-only cookie
+	c.SetCookie("github_token", token, 3600, "/", "", false, true)
+
+	return nil
 }
