@@ -63,13 +63,13 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 	filter := map[string]any{
 		"parent_resource_id": objId,
 	}
-	
+	// get children rela
 	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx,filter)
 	if err != nil {
 		return nil, werror.NewFromError(err)
 	}
-	var childrenResources []models.Resource
-
+	childrenResources := []models.Resource{}
+	//get children resource
 	for _, childrenResourceRela := range childrenResourceRelas{
 		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
 		if err != nil {
