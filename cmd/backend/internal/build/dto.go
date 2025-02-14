@@ -7,6 +7,6 @@ type BuildRequest struct {
 }
 
 type ServiceInfo struct {
-	Dockerfile string `json:"dockerfile"   validate:"required,filepath"`
-	Tag        string `json:"tag"          validate:"required,ascii"`
+	ServiceRoot string `json:"service_root" validate:"required,filepath"`
+	Tag         string `json:"tag"          validate:"required,ascii"`
 }
