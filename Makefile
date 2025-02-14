@@ -20,6 +20,14 @@ dev-backend:
 dev-builder-consumer:
 	@air -c ./cmd/builder-consumer/.air.toml
 
+build:
+	@docker build -t public.ecr.aws/r2n4f6g5/agent -f cmd/agent/Dockerfile .
+	@docker build -t public.ecr.aws/r2n4f6g5/builder-consumer -f cmd/builder-consumer/Dockerfile .
+
+push:
+	@docker push public.ecr.aws/r2n4f6g5/agent
+	@docker push public.ecr.aws/r2n4f6g5/builder-consumer
+
 lint:
 	@golangci-lint run
 
