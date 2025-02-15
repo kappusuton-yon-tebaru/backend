@@ -12,8 +12,8 @@ func NewService(repo *ECRRepository) *Service {
 	}
 }
 
-func (s *Service) GetECRImages(repoName string, serviceName string) ([]ECRImageResponse, error) {
-	images, err := s.repo.GetImages(repoName, serviceName)
+func (s *Service) GetECRImages(repoURI string, serviceName string) ([]ECRImageResponse, error) {
+	images, err := s.repo.GetImages(repoURI)
 	if err != nil {
 		return nil, err
 	}

@@ -26,7 +26,7 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	images, err := h.service.GetECRImages(req.RepositoryName, req.ServiceName)
+	images, err := h.service.GetECRImages(req.RepositoryURI, req.ServiceName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
