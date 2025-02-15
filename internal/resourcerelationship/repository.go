@@ -47,7 +47,7 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	return resourceRelas, nil
 }
 
-func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {	
+func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {
 	cur, err := r.resourceRela.Find(ctx, filter)
 	if err != nil {
 		log.Println("Error in Find:", err)
@@ -79,8 +79,8 @@ func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Conte
 
 func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
 	resourceRela := bson.M{
-		"parent_resource_id": dto.Parent_Resource_Id,
-		"child_resource_id":  dto.Child_Resource_Id,
+		"parent_resource_id": dto.ParentResourceId,
+		"child_resource_id":  dto.ChildResourceId,
 	}
 
 	result, err := r.resourceRela.InsertOne(ctx, resourceRela)

@@ -12,8 +12,8 @@ type ResourceRelationshipDTO struct {
 }
 
 type CreateResourceRelationshipDTO struct {
-	Parent_Resource_Id bson.ObjectID `bson:"parent_resource_id"`
-	Child_Resource_Id  bson.ObjectID `bson:"child_resource_id"`
+	ParentResourceId bson.ObjectID `bson:"parent_resource_id"`
+	ChildResourceId  bson.ObjectID `bson:"child_resource_id"`
 }
 
 func DTOToResourceRelationship(resourceRela ResourceRelationshipDTO) models.ResourceRelationship {
