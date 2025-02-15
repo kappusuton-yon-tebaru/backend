@@ -20,7 +20,7 @@ type BackendConfig struct {
 
 type ECRConfig struct {
 	Region 		string `mapstructure:"AWS_REGION"`
-	AccessKey 	string `mapstructure:"AWS_ACCESS_KEY"`
+	AccessKey 	string `mapstructure:"AWS_ACCESS_KEY_ID"`
 	SecretKey 	string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
 }
 
