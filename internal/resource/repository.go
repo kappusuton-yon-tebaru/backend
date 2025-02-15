@@ -65,16 +65,8 @@ func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any)
 	return DTOToResource(resource), nil
 }
 
-
 func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
-	if !enum.IsValidResourceType(dto.Resource_Type) {
-		return "", fmt.Errorf("invalid resource type: %v", dto.Resource_Type)
-	}
-	
-	resource := bson.M{
-		"resource_name": dto.Resource_Name,
-		"resource_type": dto.Resource_Type,
-	}
+	resource := dto
 
 	result, err := r.resource.InsertOne(ctx, resource)
 	if err != nil {
