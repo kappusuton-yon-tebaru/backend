@@ -11,12 +11,13 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
+
 type Service struct {
-	repo *Repository
+	repo             *Repository
 	resourceRelaRepo *resourcerelationship.Repository
 }
 
-func NewService(repo *Repository,resourceRelaRepo *resourcerelationship.Repository) *Service {
+func NewService(repo *Repository, resourceRelaRepo *resourcerelationship.Repository) *Service {
 	return &Service{
 		repo,
 		resourceRelaRepo,
@@ -43,7 +44,7 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	filter := map[string]any{
 		"_id": objId,
 	}
-	
+
 	resource, err := s.repo.GetResourceByID(ctx, filter)
 	if err != nil {
 		return models.Resource{}, werror.NewFromError(err)
@@ -64,13 +65,13 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 		"parent_resource_id": objId,
 	}
 	// get children rela
-	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx,filter)
+	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx, filter)
 	if err != nil {
 		return nil, werror.NewFromError(err)
 	}
 	childrenResources := []models.Resource{}
 	//get children resource
-	for _, childrenResourceRela := range childrenResourceRelas{
+	for _, childrenResourceRela := range childrenResourceRelas {
 		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
 		if err != nil {
 			return nil, werror.NewFromError(err).
@@ -81,11 +82,11 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 		filter := map[string]any{
 			"_id": objId,
 		}
-		childrenResource, err := s.repo.GetResourceByID(ctx,filter)
+		childrenResource, err := s.repo.GetResourceByID(ctx, filter)
 		if err != nil {
 			return nil, werror.NewFromError(err)
 		}
-		childrenResources = append(childrenResources, childrenResource )
+		childrenResources = append(childrenResources, childrenResource)
 	}
 
 	return childrenResources, nil
@@ -100,30 +101,30 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, id 
 	if id == "" {
 		return resource_id, nil
 	}
-	
+
 	parentID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		fmt.Println("Invalid parent ID:", err)
-		return  "", err
+		return "", err
 	}
 
 	childID, err := bson.ObjectIDFromHex(resource_id)
 	if err != nil {
 		fmt.Println("Invalid child ID:", err)
-		return  "", err
+		return "", err
 	}
 
 	// Create DTO instance
 	relationship := resourcerelationship.CreateResourceRelationshipDTO{
-		Parent_Resource_Id: parentID,
-		Child_Resource_Id:  childID,
+		ParentResourceId: parentID,
+		ChildResourceId:  childID,
 	}
 
-	resource_rela_id, err := s.resourceRelaRepo.CreateResourceRelationship(ctx,relationship)
+	resource_rela_id, err := s.resourceRelaRepo.CreateResourceRelationship(ctx, relationship)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return resource_rela_id, nil
 }
 
