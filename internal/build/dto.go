@@ -5,4 +5,5 @@ type BuildContext struct {
 	RepoUrl     string `json:"repo_url"`
 	Destination string `json:"destination"`
 	Dockerfile  string `json:"dockerfile"`
+	RepoRoot    string `json:"repo_root"`
 }

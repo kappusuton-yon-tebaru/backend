@@ -38,6 +38,7 @@ func (h *Handler) BuildImageHandler(msg amqp091.Delivery) {
 		Id:           body.Id,
 		Dockerfile:   body.Dockerfile,
 		RepoUrl:      body.RepoUrl,
+		RepoRoot:     body.RepoRoot,
 		Destinations: []string{body.Destination},
 	}
 

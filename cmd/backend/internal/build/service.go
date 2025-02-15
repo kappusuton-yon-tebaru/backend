@@ -50,8 +50,9 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 		buildCtx := sharedBuild.BuildContext{
 			Id:          jobId,
 			RepoUrl:     req.RepoUrl,
+			RepoRoot:    service.ServiceRoot,
 			Destination: fmt.Sprintf("%s:%s", req.RegistryUrl, service.Tag),
-			Dockerfile:  service.Dockerfile,
+			Dockerfile:  "Dockerfile",
 		}
 
 		bs, err := json.Marshal(buildCtx)

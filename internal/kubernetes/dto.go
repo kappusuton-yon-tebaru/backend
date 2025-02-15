@@ -4,6 +4,7 @@ type BuildImageDTO struct {
 	Id           string
 	Dockerfile   string
 	RepoUrl      string
+	RepoRoot     string
 	Destinations []string
 }
 
