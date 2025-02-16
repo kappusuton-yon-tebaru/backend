@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -48,7 +47,7 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	return resources, nil
 }
 
-func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any) (models.Resource, error) {	
+func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any) (models.Resource, error) {
 	var resource ResourceDTO
 
 	err := r.resource.FindOne(ctx, filter).Decode(&resource)
