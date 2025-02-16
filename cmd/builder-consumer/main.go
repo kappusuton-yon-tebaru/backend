@@ -15,7 +15,7 @@ func main() {
 	app.Logger.Info("builder consumer initalizing")
 
 	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.BuilderConfig.QueueName), zap.String("queue_uri", app.Config.BuilderConfig.QueueUri))
-	msgs, err := app.RmqClient.Ch.Consume(app.Config.BuilderConfig.QueueName, "agent-builder-consumer", true, false, false, false, nil)
+	msgs, err := app.RmqClient.Ch.Consume(app.Config.BuilderConfig.QueueName, "agent-builder-consumer", false, false, false, false, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -32,6 +32,10 @@ func main() {
 
 				app.BuildHandler.BuildImageHandler(msg)
 			}()
+
+			if err := msg.Ack(false); err != nil {
+				app.Logger.Error("error occured while acking", zap.Error(err))
+			}
 		}
 	}()
 
