@@ -15,9 +15,9 @@ type Repository struct {
 	projRepo *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		projRepo: client.Database("Capstone").Collection("project_repositories"),
+		projRepo: db.Collection("project_repositories"),
 	}
 }
 

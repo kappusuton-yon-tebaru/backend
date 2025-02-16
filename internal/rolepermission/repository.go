@@ -15,9 +15,9 @@ type Repository struct {
 	rolepermission *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		rolepermission: client.Database("Capstone").Collection("role_permissions"),
+		rolepermission: db.Collection("role_permissions"),
 	}
 }
 

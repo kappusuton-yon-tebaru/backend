@@ -12,12 +12,12 @@ import (
 
 type AgentConfig struct {
 	Port           int    `mapstructure:"AGENT_PORT"`
-	WorkerImageUri string `mapstructure:"WORKER_IMAGE_URI"`
+	WorkerImageUri string `mapstructure:"AGENT_WORKER_IMAGE_URI"`
 }
 
 type BackendConfig struct {
 	Port          int    `mapstructure:"BACKEND_PORT"`
-	AgentEndpoint string `mapstructure:"AGENT_ENDPOINT"`
+	AgentEndpoint string `mapstructure:"BACKEND_AGENT_ENDPOINT"`
 }
 
 type BuilderConfig struct {
@@ -26,13 +26,14 @@ type BuilderConfig struct {
 }
 
 type Config struct {
-	InCluster     bool          `mapstructure:"IN_CLUSTER"`
-	Development   bool          `mapstructure:"DEVELOPMENT"`
-	Agent         AgentConfig   `mapstructure:",squash"`
-	Backend       BackendConfig `mapstructure:",squash"`
-	MongoUri      string        `mapstructure:"MONGO_URI"`
-	BuilderConfig BuilderConfig `mapstructure:",squash"`
-	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
+	Agent             AgentConfig   `mapstructure:",squash"`
+	Backend           BackendConfig `mapstructure:",squash"`
+	BuilderConfig     BuilderConfig `mapstructure:",squash"`
+	InCluster         bool          `mapstructure:"IN_CLUSTER"`
+	Development       bool          `mapstructure:"DEVELOPMENT"`
+	KubeNamespace     string        `mapstructure:"KUBE_NAMESPACE"`
+	MongoUri          string        `mapstructure:"MONGO_URI"`
+	MongoDatabaseName string        `mapstructure:"MONGO_DATABASE_NAME"`
 }
 
 func Load() (*Config, error) {

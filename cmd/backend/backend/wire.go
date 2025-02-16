@@ -51,7 +51,7 @@ type App struct {
 	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
-	MongoClient                 *mongo.Client
+	MongoDatabase               *mongo.Database
 	ImageHandler                *image.Handler
 	ServiceDeployment           *svcdeploy.Handler
 	ServiceDeploymentEnv        *svcdeployenv.Handler
@@ -76,7 +76,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
-	MongoClient *mongo.Client,
+	MongoDatabase *mongo.Database,
 	ImageHandler *image.Handler,
 	ServiceDeployment *svcdeploy.Handler,
 	ServiceDeploymentEnv *svcdeployenv.Handler,
@@ -100,7 +100,7 @@ func New(
 		Logger,
 		Config,
 		GreetingHandler,
-		MongoClient,
+		MongoDatabase,
 		ImageHandler,
 		ServiceDeployment,
 		ServiceDeploymentEnv,
@@ -127,7 +127,7 @@ func Initialize() (*App, error) {
 		config.Load,
 		logger.New,
 		greeting.New,
-		mongodb.New,
+		mongodb.NewMongoDB,
 		sharedImage.NewRepository,
 		sharedImage.NewService,
 		image.NewHandler,

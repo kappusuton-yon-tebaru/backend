@@ -16,10 +16,10 @@ type Repository struct {
 	usergroupMembership *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		usergroup:           client.Database("Capstone").Collection("user_groups"),
-		usergroupMembership: client.Database("Capstone").Collection("user_group_memberships"),
+		usergroup:           db.Collection("user_groups"),
+		usergroupMembership: db.Collection("user_group_memberships"),
 	}
 }
 
