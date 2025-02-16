@@ -118,7 +118,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	buildService := build.NewService(builderRmq, jobService, loggerLogger)
+	buildService := build.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
 	monitoringHandler := monitoring.NewHandler(loggerLogger)
 	reverseProxy, err := reverseproxy.New(configConfig)
