@@ -24,29 +24,25 @@ func (s *Service) GetUserRepos(ctx context.Context, token string) ([]models.Repo
 }
 
 func (s *Service) GetRepoContents(ctx context.Context, fullname string, path string, branch string, token string) ([]models.File, error) {
-    if fullname == "" {
-        return nil, errors.New("Repository fullname is required")
-    }
-
-    return s.repo.GetRepoContents(ctx, fullname, path, branch, token)
+	return s.repo.GetRepoContents(ctx, fullname, path, branch, token)
 }
 
 // GetRepoBranches fetches the branches of a repository
 func (s *Service) GetRepoBranches(ctx context.Context, fullname string, token string) ([]models.Branch, error) {
-    if fullname == "" {
-        return nil, errors.New("Repository fullname is required")
-    }
+	if fullname == "" {
+		return nil, errors.New("Repository fullname is required")
+	}
 
-    return s.repo.GetRepoBranches(ctx, fullname, token)
+	return s.repo.GetRepoBranches(ctx, fullname, token)
 }
 
 // GetCommitMetadata fetches the commit metadata for a file in a repository
 func (s *Service) GetCommitMetadata(ctx context.Context, path string, branch string, fullname string, token string) (*models.CommitMetadata, error) {
-    if fullname == "" || path == "" || branch == "" {
-        return nil, errors.New("Repository fullname, path, and branch are required")
-    }
+	if fullname == "" || path == "" || branch == "" {
+		return nil, errors.New("Repository fullname, path, and branch are required")
+	}
 
-    return s.repo.GetCommitMetadata(ctx, path, branch, fullname, token)
+	return s.repo.GetCommitMetadata(ctx, path, branch, fullname, token)
 }
 
 func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, branch, token string) (string, string, error) {
@@ -56,6 +52,7 @@ func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, bran
 
 	return s.repo.FetchFileContent(ctx, fullname, filePath, branch, token)
 }
+
 // GetBaseBranchSHA calls the repository to get the SHA of the base branch.
 func (s *Service) GetBaseBranchSHA(ctx context.Context, fullname, branchName, token string) (string, error) {
 	if fullname == "" || branchName == "" || token == "" {
@@ -78,7 +75,7 @@ func (s *Service) UpdateFileContent(ctx context.Context, fullname, path, commitM
 	return s.repo.UpdateFileContent(ctx, fullname, path, commitMsg, base64Content, sha, branch, token)
 }
 
-func (s *Service) FindServices(ctx context.Context,fullname, token string) (map[string]interface{}, error) {
+func (s *Service) FindServices(ctx context.Context, fullname, token string) (map[string]interface{}, error) {
 	files, err := s.repo.ListFiles(ctx, fullname, token)
 	if err != nil {
 		return nil, err
@@ -88,7 +85,7 @@ func (s *Service) FindServices(ctx context.Context,fullname, token string) (map[
 
 	for _, filePath := range files {
 
-		if strings.HasPrefix(filePath, "apps/") && strings.HasSuffix(strings.ToLower(filePath), "/dockerfile"){
+		if strings.HasPrefix(filePath, "apps/") && strings.HasSuffix(strings.ToLower(filePath), "/dockerfile") {
 			parts := strings.Split(filePath, "/")
 			if len(parts) >= 2 {
 				serviceName := parts[1]

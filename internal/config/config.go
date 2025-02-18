@@ -33,8 +33,8 @@ type Config struct {
 	MongoUri      string        `mapstructure:"MONGO_URI"`
 	BuilderConfig BuilderConfig `mapstructure:",squash"`
 	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
-	ClientID string        `mapstructure:"GITHUB_CLIENT_ID"`
-	ClientSecret string    `mapstructure:"GITHUB_CLIENT_SECRET"`
+	ClientID      string        `mapstructure:"GITHUB_CLIENT_ID"`
+	ClientSecret  string        `mapstructure:"GITHUB_CLIENT_SECRET"`
 }
 
 func Load() (*Config, error) {

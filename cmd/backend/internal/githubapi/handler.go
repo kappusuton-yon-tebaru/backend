@@ -3,7 +3,6 @@ package githubapi
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,129 +12,199 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
-	cfg *config.Config
-    service *githubapi.Service
+	cfg                *config.Config
+	service            *githubapi.Service
 	projectRepoService *projectrepository.Service
+	validator          *validator.Validator
 }
 
 // NewHandler creates a new Handler instance
-func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service) *Handler {
-    return &Handler{
+func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service, validator *validator.Validator) *Handler {
+	return &Handler{
 		cfg,
 		service,
 		projectRepoService,
+		validator,
 	}
 }
 
 // fetch GitHub user repositories
 func (h *Handler) GetUserRepos(c *gin.Context) {
-    token := c.GetHeader("Authorization")
-    if token == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
-        return
-    }
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
 
-    // Remove "Bearer " prefix from the token
-    token = token[len("Bearer "):]
+	// Remove "Bearer " prefix from the token
+	token, found := strings.CutPrefix(token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
 
-    ctx := c.Request.Context() // Get context from the Gin request
-    repos, err := h.service.GetUserRepos(ctx, token)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	ctx := c.Request.Context() // Get context from the Gin request
+	repos, err := h.service.GetUserRepos(ctx, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, repos)
+	c.JSON(http.StatusOK, repos)
 }
+
 // Get repo files and folders, add ?path={foldername} to get folder contents  (can be use for updating file tree)
 func (h *Handler) GetRepoContents(c *gin.Context) {
-    fullname := c.Param("owner")+"/"+c.Param("repo")
-    path := c.DefaultQuery("path", "") // Default to an empty string if no path is provided
-	branch := c.DefaultQuery("branch", "")
+	req := GetRepoContentsRequest{
+		Owner:  c.Param("owner"),
+		Repo:   c.Param("repo"),
+		Path:   c.DefaultQuery("path", ""),
+		Branch: c.DefaultQuery("branch", ""),
+		Token:  c.GetHeader("Authorization"),
+	}
+	if req.Token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
 
-    token := c.GetHeader("Authorization")
-    if token == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
-        return
-    }
+	// Remove "Bearer " prefix from the token
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	req.Token = token
 
-    // Remove "Bearer " prefix from the token
-    token = token[len("Bearer "):]
-    contents, err := h.service.GetRepoContents(c.Request.Context(),fullname, path, branch, token)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
 
-    c.JSON(http.StatusOK, contents)
+	contents, err := h.service.GetRepoContents(c.Request.Context(), req.Owner+"/"+req.Repo, req.Path, req.Branch, req.Token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, contents)
 }
 
 // get all branch in that repo
 func (h *Handler) GetRepoBranches(c *gin.Context) {
-    fullname := c.Param("owner")+"/"+c.Param("repo")
+	req := GetRepoBranchesRequest{
+		Owner: c.Param("owner"),
+		Repo:  c.Param("repo"),
+		Token: c.GetHeader("Authorization"),
+	}
 
-    token := c.GetHeader("Authorization")
-    if token == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
-        return
-    }
+	if req.Token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
 
-    // Remove "Bearer " prefix from the token
-    token = token[len("Bearer "):]
+	// Remove "Bearer " prefix from the token
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	req.Token = token
 
-    branches, err := h.service.GetRepoBranches(c.Request.Context(), fullname, token)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
 
-    c.JSON(http.StatusOK, branches)
+	fullname := req.Owner + "/" + req.Repo
+	branches, err := h.service.GetRepoBranches(c.Request.Context(), fullname, req.Token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, branches)
 }
 
 // Get "lastEditTime" and  "commitMessage" of a file in ... repo on ... branch
 func (h *Handler) GetCommitMetadata(c *gin.Context) {
-    fullname := c.Param("owner")+"/"+c.Param("repo")
+	req := GetCommitMetadataRequest{
+		Owner:  c.Param("owner"),
+		Repo:   c.Param("repo"),
+		Path:   c.DefaultQuery("path", ""),
+		Branch: c.DefaultQuery("branch", ""),
+		Token:  c.GetHeader("Authorization"),
+	}
 
-    path := c.DefaultQuery("path", "") // Get the path query parameter (e.g., "README.md")
-    branch := c.DefaultQuery("branch", "") // Get the branch query parameter (e.g., "main")
+	if req.Token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
 
-    token := c.GetHeader("Authorization")
-    if token == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
-        return
-    }
+	// Remove "Bearer " prefix
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	req.Token = token
 
-    // Remove "Bearer " prefix from the token
-    token = token[len("Bearer "):]
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
 
-    metadata, err := h.service.GetCommitMetadata(c.Request.Context(), path, branch, fullname, token)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	fullname := req.Owner + "/" + req.Repo
+	metadata, err := h.service.GetCommitMetadata(c.Request.Context(), req.Path, req.Branch, fullname, req.Token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, metadata)
+	c.JSON(http.StatusOK, metadata)
 }
 
 // Get content in that file return "content", "sha"
 func (h *Handler) FetchFileContent(c *gin.Context) {
-	fullname := c.Param("owner") + "/" + c.Param("repo")
-	filePath := c.Query("path")
-	branch := c.Query("branch")
-	token := c.GetHeader("Authorization")
+	req := FetchFileContentRequest{
+		Owner:    c.Param("owner"),
+		Repo:     c.Param("repo"),
+		FilePath: c.Query("path"),
+		Branch:   c.Query("branch"),
+		Token:    c.GetHeader("Authorization"),
+	}
 
-    if token == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
-        return
-    }
+	if req.Token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
+		return
+	}
 
-    // Remove "Bearer " prefix from the token
-    token = token[len("Bearer "):]
+	// Remove "Bearer " prefix
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	req.Token = token
 
-	content, sha, err := h.service.FetchFileContent(c.Request.Context(), fullname, filePath, branch, token)
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
+	fullname := req.Owner + "/" + req.Repo
+	content, sha, err := h.service.FetchFileContent(c.Request.Context(), fullname, req.FilePath, req.Branch, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -149,28 +218,45 @@ func (h *Handler) FetchFileContent(c *gin.Context) {
 
 // CreateBranch handles requests to create a new branch.
 func (h *Handler) CreateBranch(c *gin.Context) {
-	fullname := c.Param("owner") + "/" + c.Param("repo")
-	branchName := c.DefaultQuery("branch_name", "") // new branch name
-	selectedBranchName := c.DefaultQuery("selected_branch", "") // create from branch
-	token := c.GetHeader("Authorization")
+	req := CreateBranchRequest{
+		Owner:          c.Param("owner"),
+		Repo:           c.Param("repo"),
+		BranchName:     c.DefaultQuery("branch_name", ""),
+		SelectedBranch: c.DefaultQuery("selected_branch", ""),
+		Token:          c.GetHeader("Authorization"),
+	}
 
-	if token == "" {
+	if req.Token == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
 		return
 	}
 
-	// Remove "Bearer " prefix from the token
-	token = token[len("Bearer "):]
+	// Remove "Bearer " prefix
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	req.Token = token
+
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
+	fullname := req.Owner + "/" + req.Repo
 
 	// Step 1: Get the base branch SHA (the selected branch)
-	baseBranchSHA, err := h.service.GetBaseBranchSHA(c.Request.Context(), fullname, selectedBranchName, token)
+	baseBranchSHA, err := h.service.GetBaseBranchSHA(c.Request.Context(), fullname, req.SelectedBranch, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Step 2: Create the new branch
-	branch, err := h.service.CreateBranch(c.Request.Context(), fullname, branchName, baseBranchSHA, token)
+	branch, err := h.service.CreateBranch(c.Request.Context(), fullname, req.BranchName, baseBranchSHA, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -181,33 +267,42 @@ func (h *Handler) CreateBranch(c *gin.Context) {
 
 // push commit
 func (h *Handler) UpdateFileContent(c *gin.Context) {
-	fullname := c.Param("owner") + "/" + c.Param("repo")
-	token := c.GetHeader("Authorization")
+	req := UpdateFileContentRequest{
+		Owner: c.Param("owner"),
+		Repo:  c.Param("repo"),
+		Token: c.GetHeader("Authorization"),
+	}
 
-	if token == "" {
+	if req.Token == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
 		return
 	}
 
-	// Remove "Bearer " prefix from the token
-	token = token[len("Bearer "):]
-
-	// Bind JSON payload to struct
-	var req struct {
-		Path      string `json:"path"`
-		Message   string `json:"message"`
-		Base64Content   string `json:"base64Content"`
-		Sha       string `json:"sha"`
-		Branch    string `json:"branch"`
+	// Remove "Bearer " prefix
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
 	}
+	req.Token = token
 
+	// Bind JSON payload
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
+	fullname := req.Owner + "/" + req.Repo
+
 	// Call service to update file content
-	err := h.service.UpdateFileContent(c.Request.Context(), fullname, req.Path, req.Message, req.Base64Content, req.Sha, req.Branch, token)
+	err := h.service.UpdateFileContent(c.Request.Context(), fullname, req.Path, req.Message, req.Base64Content, req.Sha, req.Branch, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -239,38 +334,54 @@ func ExtractFullName(gitURL string) (string, error) {
 }
 
 func (h *Handler) GetServices(c *gin.Context) {
-
-	projectID := c.Param("id")
-	if projectID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "project_id is required"})
-		return
+	// Initialize request struct
+	req := GetServicesRequest{
+		ProjectID: c.Param("id"),
+		Token:     c.GetHeader("Authorization"),
 	}
 
-	token := c.GetHeader("Authorization")
-	if token == "" {
+	if req.Token == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
 		return
 	}
-	// Remove "Bearer " prefix from the token
-	token = token[len("Bearer "):] 
 
-	projRepo, err := h.projectRepoService.GetProjectRepositorieByProjectID(c, projectID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+	// Remove "Bearer " prefix
+	token, found := strings.CutPrefix(req.Token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
 		return
 	}
+	req.Token = token
+
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
+	// Fetch project repository information by projectID
+	projRepo, err := h.projectRepoService.GetProjectRepositorieByProjectID(c, req.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract the full repo name from the Git repo URL
 	fullname, err2 := ExtractFullName(projRepo.GitRepoUrl)
 	if err2 != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
 		return
 	}
 
-	services, err3 := h.service.FindServices(c,fullname,token)
+	// Retrieve the services from the repository
+	services, err3 := h.service.FindServices(c, fullname, token)
 	if err3 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
 		return
 	}
 
+	// Return the services as a JSON response
 	c.JSON(http.StatusOK, services)
 }
 
@@ -281,6 +392,13 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		return
 	}
 
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
 	token := c.GetHeader("Authorization")
 	if token == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No access token found"})
@@ -288,7 +406,11 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 
 	// Remove "Bearer " prefix from the token
-	token = token[len("Bearer "):]
+	token, found := strings.CutPrefix(token, "Bearer ")
+	if !found || token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
 
 	repo, err := h.service.CreateRepository(c.Request.Context(), token, req)
 	if err != nil {
@@ -314,7 +436,6 @@ func (h *Handler) RedirectToGitHub(c *gin.Context) {
 // Handles the callback from GitHub, exchanges code for token, and stores it
 func (h *Handler) GitHubCallback(c *gin.Context) {
 	code := c.Query("code")
-	log.Println("code",code);
 	if code == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization code is missing"})
 		return

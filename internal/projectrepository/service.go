@@ -39,7 +39,7 @@ func (s *Service) GetProjectRepositorieByProjectID(ctx context.Context, projectI
 	filter := map[string]any{
 		"project_id": objId,
 	}
-	
+
 	projRepo, err := s.repo.GetProjectRepositoryByFilter(ctx, filter)
 	if err != nil {
 		return models.ProjectRepository{}, werror.NewFromError(err)

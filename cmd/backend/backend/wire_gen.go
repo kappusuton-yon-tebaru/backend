@@ -129,7 +129,7 @@ func Initialize() (*App, error) {
 	}
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
-	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService)
+	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, validatorValidator)
 	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
 	return app, nil
 }

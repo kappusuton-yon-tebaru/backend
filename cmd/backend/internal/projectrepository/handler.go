@@ -1,7 +1,6 @@
 package projectrepository
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,10 +40,8 @@ func (h *Handler) GetProjectRepositorieByProjectID(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	log.Println("test")
 	ctx.JSON(http.StatusOK, projRepo)
 }
-
 
 func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
 	var projRepoDTO projectrepository.CreateProjectRepositoryDTO
