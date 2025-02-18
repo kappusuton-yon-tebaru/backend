@@ -6,6 +6,7 @@ package backend
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -29,6 +30,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
+	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -49,9 +51,6 @@ import (
 	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
-	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
-
 )
 
 type App struct {
@@ -79,8 +78,7 @@ type App struct {
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
-	GithubAPIHandler				*githubapi.Handler
-
+	GithubAPIHandler            *githubapi.Handler
 }
 
 func New(

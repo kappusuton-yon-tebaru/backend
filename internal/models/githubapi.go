@@ -32,7 +32,7 @@ type Branch struct {
 			Name string `json:"name"`
 			Date string `json:"date"`
 		} `json:"committer"`
-	} `json:"commit,omitempty"`  // optional field if needed for other GitHub API responses
+	} `json:"commit,omitempty"` // optional field if needed for other GitHub API responses
 }
 
 // CommitMetadata represents metadata for a commit
@@ -73,10 +73,11 @@ type Service struct {
 	Name           string `json:"service_name"`
 	DockerfilePath string `json:"dockerfile"`
 }
+
 // CreateRepoRequest represents the request payload for creating a GitHub repository
 type CreateRepoRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description,omitempty"`
+	Name        string `json:"name" validate:"required,min=3,max=100"`
+	Description string `json:"description,omitempty" validate:"max=255"`
 	Private     bool   `json:"private"`
 }
 

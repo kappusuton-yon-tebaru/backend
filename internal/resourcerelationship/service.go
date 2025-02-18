@@ -39,12 +39,12 @@ func (s *Service) GetChildrenResourceRelationshipByParentID(ctx context.Context,
 	filter := map[string]any{
 		"parent_resource_id": objId,
 	}
-	
+
 	childrenResourceRelas, err := s.repo.GetChildrenResourceRelationshipByParentID(ctx, filter)
 	if err != nil {
 		return nil, werror.NewFromError(err)
 	}
-	
+
 	return childrenResourceRelas, nil
 }
 
