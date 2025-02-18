@@ -12,14 +12,14 @@ import (
 )
 
 type Repository struct {
-	client *mongo.Client
-	job    *mongo.Collection
+	db  *mongo.Database
+	job *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		client: client,
-		job:    client.Database("Capstone").Collection("jobs"),
+		db:  db,
+		job: db.Collection("jobs"),
 	}
 }
 
@@ -119,7 +119,7 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 }
 
 func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, error) {
-	session, err := r.client.StartSession()
+	session, err := r.db.Client().StartSession()
 	if err != nil {
 		return CreateGroupJobsResponse{}, err
 	}

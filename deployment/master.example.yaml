@@ -98,24 +98,28 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: DEVELOPMENT
-              value: "false"
             - name: IN_CLUSTER
               value: "true"
-            - name: AGENT_PORT
-              value: "<@AGENT_PORT>"
-            - name: BACKEND_PORT
-              value: "<@BACKEND_PORT>"
+            - name: DEVELOPMENT
+              value: "false"
+            - name: KUBE_NAMESPACE
+              value: "<@KUBE_NAMESPACE>"
             - name: MONGO_URI
               value: "<@MONGO_URI>"
+            - name: MONGO_DATABASE_NAME
+              value: "<@MONGO_DATABASE_NAME>"
+            - name: AGENT_PORT
+              value: "<@AGENT_PORT>"
+            - name: AGENT_WORKER_IMAGE_URI
+              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: BACKEND_PORT
+              value: "<@BACKEND_PORT>"
+            - name: BACKEND_AGENT_ENDPOINT
+              value: "<@BACKEND_AGENT_ENDPOINT>"
             - name: BUILDER_QUEUE_URI
               value: "<@BUILDER_QUEUE_URI>"
             - name: BUILDER_QUEUE_NAME
               value: "<@BUILDER_QUEUE_NAME>"
-            - name: WORKER_IMAGE_URI
-              value: "<@WORKER_IMAGE_URI>"
-            - name: KUBE_NAMESPACE
-              value: "<@KUBE_NAMESPACE>"
 ---
 apiVersion: v1
 kind: Service
@@ -152,20 +156,25 @@ spec:
         - name: builder-consumer
           image: <@WORKER_IMAGE_URI>
           env:
-            - name: DEVELOPMENT
-              value: "false"
             - name: IN_CLUSTER
               value: "true"
-            - name: AGENT_PORT
-              value: "<@AGENT_PORT>"
-            - name: BACKEND_PORT
-              value: "<@BACKEND_PORT>"
+            - name: DEVELOPMENT
+              value: "false"
+            - name: KUBE_NAMESPACE
+              value: "<@KUBE_NAMESPACE>"
             - name: MONGO_URI
               value: "<@MONGO_URI>"
+            - name: MONGO_DATABASE_NAME
+              value: "<@MONGO_DATABASE_NAME>"
+            - name: AGENT_PORT
+              value: "<@AGENT_PORT>"
+            - name: AGENT_WORKER_IMAGE_URI
+              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: BACKEND_PORT
+              value: "<@BACKEND_PORT>"
+            - name: BACKEND_AGENT_ENDPOINT
+              value: "<@BACKEND_AGENT_ENDPOINT>"
             - name: BUILDER_QUEUE_URI
               value: "<@BUILDER_QUEUE_URI>"
             - name: BUILDER_QUEUE_NAME
               value: "<@BUILDER_QUEUE_NAME>"
-            - name: KUBE_NAMESPACE
-              value: "<@KUBE_NAMESPACE>"
-

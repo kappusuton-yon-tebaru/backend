@@ -12,9 +12,9 @@ type Repository struct {
 	image *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		image: client.Database("Capstone").Collection("images"),
+		image: db.Collection("images"),
 	}
 }
 

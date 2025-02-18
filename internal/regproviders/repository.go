@@ -13,9 +13,9 @@ type Repository struct {
 	regProviders *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		regProviders: client.Database("Capstone").Collection("registry_providers"),
+		regProviders: db.Collection("registry_providers"),
 	}
 }
 

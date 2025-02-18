@@ -24,7 +24,9 @@ func main() {
 	for _, env := range strings.Split(string(bs), "\n") {
 		if len(strings.TrimSpace(env)) > 0 {
 			splitted := strings.SplitN(env, "=", 2)
-			envs[splitted[0]] = splitted[1]
+			key := strings.TrimSpace(splitted[0])
+			value := strings.TrimSpace(splitted[1])
+			envs[key] = value
 		}
 	}
 

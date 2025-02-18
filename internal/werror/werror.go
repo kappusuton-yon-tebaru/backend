@@ -23,7 +23,7 @@ func (err *WError) Error() string {
 		return *err.Message
 	}
 
-	return err.Error()
+	return err.Err.Error()
 }
 
 func (err *WError) SetMessage(msg string) *WError {

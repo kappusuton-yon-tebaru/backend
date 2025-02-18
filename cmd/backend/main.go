@@ -57,7 +57,7 @@ func main() {
 	}()
 
 	<-utils.WaitForTermination(app.Logger, func() {
-		if err := app.MongoClient.Disconnect(context.Background()); err != nil {
+		if err := app.MongoDatabase.Client().Disconnect(context.Background()); err != nil {
 			app.Logger.Error("error occured while disconnecting from mongodb", zap.Error(err))
 		}
 	})

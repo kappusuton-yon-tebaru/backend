@@ -15,9 +15,9 @@ type Repository struct {
 	user *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		user: client.Database("Capstone").Collection("users"),
+		user: db.Collection("users"),
 	}
 }
 

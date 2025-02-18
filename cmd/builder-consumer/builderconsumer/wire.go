@@ -46,7 +46,7 @@ func Initialize() (*App, error) {
 		rmq.New,
 		build.NewService,
 		build.NewHandler,
-		mongodb.New,
+		mongodb.NewMongoDB,
 		job.NewRepository,
 		job.NewService,
 		New,

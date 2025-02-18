@@ -63,53 +63,53 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	handler := greeting.New()
-	client, err := mongodb.New(configConfig)
+	database, err := mongodb.NewMongoDB(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	repository := image.NewRepository(client)
+	repository := image.NewRepository(database)
 	service := image.NewService(repository)
 	imageHandler := image2.NewHandler(service)
-	svcdeployRepository := svcdeploy.NewRepository(client)
+	svcdeployRepository := svcdeploy.NewRepository(database)
 	svcdeployService := svcdeploy.NewService(svcdeployRepository)
 	svcdeployHandler := svcdeploy2.NewHandler(svcdeployService)
-	svcdeployenvRepository := svcdeployenv.NewRepository(client)
+	svcdeployenvRepository := svcdeployenv.NewRepository(database)
 	svcdeployenvService := svcdeployenv.NewService(svcdeployenvRepository)
 	svcdeployenvHandler := svcdeployenv2.NewHandler(svcdeployenvService)
-	userRepository := user.NewRepository(client)
+	userRepository := user.NewRepository(database)
 	userService := user.NewService(userRepository)
 	userHandler := user2.NewHandler(userService)
-	usergroupRepository := usergroup.NewRepository(client)
+	usergroupRepository := usergroup.NewRepository(database)
 	usergroupService := usergroup.NewService(usergroupRepository)
 	usergroupHandler := usergroup2.NewHandler(usergroupService)
-	resourceRepository := resource.NewRepository(client)
+	resourceRepository := resource.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository)
 	resourceHandler := resource2.NewHandler(resourceService)
-	roleRepository := role.NewRepository(client)
+	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
-	permissionRepository := permission.NewRepository(client)
+	permissionRepository := permission.NewRepository(database)
 	permissionService := permission.NewService(permissionRepository)
 	permissionHandler := permission2.NewHandler(permissionService)
-	rolepermissionRepository := rolepermission.NewRepository(client)
+	rolepermissionRepository := rolepermission.NewRepository(database)
 	rolepermissionService := rolepermission.NewService(rolepermissionRepository)
 	rolepermissionHandler := rolepermission2.NewHandler(rolepermissionService)
-	roleusergroupRepository := roleusergroup.NewRepository(client)
+	roleusergroupRepository := roleusergroup.NewRepository(database)
 	roleusergroupService := roleusergroup.NewService(roleusergroupRepository)
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
-	projectrepositoryRepository := projectrepository.NewRepository(client)
+	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
-	resourcerelationshipRepository := resourcerelationship.NewRepository(client)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
-	jobRepository := job.NewRepository(client)
+	jobRepository := job.NewRepository(database)
 	jobService := job.NewService(jobRepository)
 	jobHandler := job2.NewHandler(jobService)
-	regprovidersRepository := regproviders.NewRepository(client)
+	regprovidersRepository := regproviders.NewRepository(database)
 	regprovidersService := regproviders.NewService(regprovidersRepository)
 	regprovidersHandler := regproviders2.NewHandler(regprovidersService)
-	projectenvRepository := projectenv.NewRepository(client)
+	projectenvRepository := projectenv.NewRepository(database)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
 	ecrRepository := ecr.NewECRRepository(configConfig)
@@ -126,14 +126,14 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	buildService := build.NewService(builderRmq, jobService, loggerLogger)
+	buildService := build.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
 	monitoringHandler := monitoring.NewHandler(loggerLogger)
 	reverseProxy, err := reverseproxy.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	app := New(loggerLogger, configConfig, handler, client, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy)
 	return app, nil
 }
 
@@ -143,7 +143,7 @@ type App struct {
 	Logger                      *logger.Logger
 	Config                      *config.Config
 	GreetingHandler             *greeting.Handler
-	MongoClient                 *mongo.Client
+	MongoDatabase               *mongo.Database
 	ImageHandler                *image2.Handler
 	ServiceDeployment           *svcdeploy2.Handler
 	ServiceDeploymentEnv        *svcdeployenv2.Handler
@@ -170,7 +170,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	GreetingHandler *greeting.Handler,
-	MongoClient *mongo.Client,
+	MongoDatabase *mongo.Database,
 	ImageHandler *image2.Handler,
 	ServiceDeployment *svcdeploy2.Handler,
 	ServiceDeploymentEnv *svcdeployenv2.Handler,
@@ -196,7 +196,7 @@ func New(
 		Logger,
 		Config,
 		GreetingHandler,
-		MongoClient,
+		MongoDatabase,
 		ImageHandler,
 		ServiceDeployment,
 		ServiceDeploymentEnv,

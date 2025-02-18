@@ -25,6 +25,11 @@ func New(cfg *config.Config) (*BuilderRmq, error) {
 		return nil, err
 	}
 
+	err = ch.Qos(1, 0, true)
+	if err != nil {
+		return nil, err
+	}
+
 	queue, err := ch.QueueDeclare(cfg.BuilderConfig.QueueName, true, false, false, false, nil)
 	if err != nil {
 		return nil, err

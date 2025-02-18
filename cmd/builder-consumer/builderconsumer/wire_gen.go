@@ -35,11 +35,11 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := mongodb.New(configConfig)
+	database, err := mongodb.NewMongoDB(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	repository := job.NewRepository(client)
+	repository := job.NewRepository(database)
 	service := job.NewService(repository)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
