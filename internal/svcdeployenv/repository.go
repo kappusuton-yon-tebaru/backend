@@ -12,9 +12,9 @@ type Repository struct {
 	deploy *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		deploy: client.Database("Capstone").Collection("service_deployments"),
+		deploy: db.Collection("service_deployments"),
 	}
 }
 

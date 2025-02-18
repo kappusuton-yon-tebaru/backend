@@ -44,9 +44,9 @@ func (s *Service) BuildImage(ctx context.Context, dto kubernetes.BuildImageDTO) 
 		}
 
 		ctx := context.Background()
-		err := s.jobService.UpdateJobStatus(ctx, dto.Id, status)
-		if err != nil {
-			s.logger.Error("error occured while updating job status", zap.Error(err), zap.String("job_id", dto.Id))
+		werr := s.jobService.UpdateJobStatus(ctx, dto.Id, status)
+		if werr != nil {
+			s.logger.Error("error occured while updating job status", zap.Error(werr.Err), zap.String("job_id", dto.Id))
 		}
 	}()
 
@@ -60,7 +60,7 @@ func (s *Service) BuildImage(ctx context.Context, dto kubernetes.BuildImageDTO) 
 
 	werr := s.jobService.UpdateJobStatus(ctx, dto.Id, enum.JobStatusRunning)
 	if werr != nil {
-		s.logger.Error("error occured while updating job status", zap.Error(err), zap.String("job_id", dto.Id))
+		s.logger.Error("error occured while updating job status", zap.Error(werr.Err), zap.String("job_id", dto.Id))
 		return werr
 	}
 

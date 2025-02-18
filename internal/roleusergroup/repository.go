@@ -15,9 +15,9 @@ type Repository struct {
 	roleUsergroup *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		roleUsergroup: client.Database("Capstone").Collection("role_user_groups"),
+		roleUsergroup: db.Collection("role_user_groups"),
 	}
 }
 

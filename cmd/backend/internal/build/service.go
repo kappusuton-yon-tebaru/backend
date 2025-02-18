@@ -4,33 +4,49 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	rmq        *rmq.BuilderRmq
-	jobService *job.Service
-	logger     *logger.Logger
+	rmq                *rmq.BuilderRmq
+	jobService         *job.Service
+	logger             *logger.Logger
+	projectRepoService *projectrepository.Service
 }
 
-func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Logger) *Service {
+func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Logger, projectRepoService *projectrepository.Service) *Service {
 	return &Service{
 		rmq,
 		jobService,
 		logger,
+		projectRepoService,
 	}
 }
 
 func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
-	jobs := []job.CreateJobDTO{}
+	projRepo, werr := s.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId)
+	if werr != nil {
+		return "", werr
+	}
 
+	if len(strings.TrimSpace(projRepo.GitRepoUrl)) == 0 {
+		return "", werror.New().SetMessage("git repository url cannot be empty")
+	}
+
+	if len(strings.TrimSpace(projRepo.RegistryProvider.Uri)) == 0 {
+		return "", werror.New().SetMessage("registry uri cannot be empty")
+	}
+
+	jobs := []job.CreateJobDTO{}
 	for range len(req.Services) {
 		jobs = append(jobs, job.CreateJobDTO{
 			JobType:   string(enum.JobTypeBuild),
@@ -49,9 +65,9 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 
 		buildCtx := sharedBuild.BuildContext{
 			Id:          jobId,
-			RepoUrl:     req.RepoUrl,
-			RepoRoot:    service.ServiceRoot,
-			Destination: fmt.Sprintf("%s:%s", req.RegistryUrl, service.Tag),
+			RepoUrl:     projRepo.GitRepoUrl,
+			RepoRoot:    fmt.Sprintf("apps/%s", service.ServiceName),
+			Destination: fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
 			Dockerfile:  "Dockerfile",
 		}
 

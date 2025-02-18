@@ -6,6 +6,11 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func New(cfg *config.Config) (*mongo.Client, error) {
-	return mongo.Connect(options.Client().ApplyURI(cfg.MongoUri))
+func NewMongoDB(cfg *config.Config) (*mongo.Database, error) {
+	client, err := mongo.Connect(options.Client().ApplyURI(cfg.MongoUri))
+	if err != nil {
+		return nil, err
+	}
+
+	return client.Database(cfg.MongoDatabaseName), nil
 }

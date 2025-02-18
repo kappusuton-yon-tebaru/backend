@@ -2,6 +2,7 @@ package projectrepository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -15,9 +16,9 @@ type Repository struct {
 	projRepo *mongo.Collection
 }
 
-func NewRepository(client *mongo.Client) *Repository {
+func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		projRepo: client.Database("Capstone").Collection("project_repositories"),
+		projRepo: db.Collection("projects_repositories"),
 	}
 }
 
@@ -47,6 +48,56 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
+func (r *Repository) GetProjectRepositoryByProjectId(ctx context.Context, projectId bson.ObjectID) (ProjectRepositoryDTO, error) {
+	pipeline := []map[string]any{
+		{
+			"$match": map[string]any{
+				"project_id": projectId,
+			},
+		},
+		{
+			"$lookup": map[string]any{
+				"from":         "registry_providers",
+				"localField":   "registry_provider_id",
+				"foreignField": "_id",
+				"as":           "registry_provider",
+			},
+		},
+		{
+			"$unwind": map[string]any{
+				"path": "$registry_provider",
+			},
+		},
+		{
+			"$project": map[string]any{
+				"registry_provider_id": false,
+			},
+		},
+		{
+			"$limit": 1,
+		},
+	}
+
+	cur, err := r.projRepo.Aggregate(ctx, pipeline)
+	if err != nil {
+		return ProjectRepositoryDTO{}, err
+	}
+
+	defer cur.Close(ctx)
+
+	if !cur.Next(ctx) {
+		return ProjectRepositoryDTO{}, errors.New("not found")
+	}
+
+	var projectRepo ProjectRepositoryDTO
+	err = cur.Decode(&projectRepo)
+	if err != nil {
+		return ProjectRepositoryDTO{}, err
+	}
+
+	return projectRepo, nil
+}
+
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,
@@ -62,6 +113,25 @@ func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProj
 	id := result.InsertedID.(bson.ObjectID)
 
 	return id.Hex(), nil
+}
+
+func (r *Repository) UpdateProjectRepository(ctx context.Context, projectId bson.ObjectID, registryProviderId bson.ObjectID) (int64, error) {
+	filter := map[string]any{
+		"project_id": projectId,
+	}
+
+	update := map[string]any{
+		"$set": map[string]any{
+			"registry_provider_id": registryProviderId,
+		},
+	}
+
+	result, err := r.projRepo.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
 }
 
 func (r *Repository) DeleteProjectRepository(ctx context.Context, filter map[string]any) (int64, error) {

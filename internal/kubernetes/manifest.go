@@ -72,14 +72,17 @@ func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *c
 							WithName("builder-consumer").
 							WithImage(dto.WorkerImageUri).
 							WithEnv(
+								accorev1.EnvVar().WithName("IN_CLUSTER").WithValue(strconv.FormatBool(config.InCluster)),
 								accorev1.EnvVar().WithName("DEVELOPMENT").WithValue(strconv.FormatBool(config.Development)),
-								accorev1.EnvVar().WithName("IN_CLUSTER").WithValue("true"),
+								accorev1.EnvVar().WithName("KUBE_NAMESPACE").WithValue(config.KubeNamespace),
+								accorev1.EnvVar().WithName("MONGO_URI").WithValue(config.MongoUri),
+								accorev1.EnvVar().WithName("MONGO_DATABASE_NAME").WithValue(config.MongoDatabaseName),
 								accorev1.EnvVar().WithName("AGENT_PORT").WithValue(strconv.FormatInt(int64(config.Agent.Port), 10)),
+								accorev1.EnvVar().WithName("AGENT_WORKER_IMAGE_URI").WithValue(config.Agent.WorkerImageUri),
 								accorev1.EnvVar().WithName("BACKEND_PORT").WithValue(strconv.FormatInt(int64(config.Backend.Port), 10)),
-								accorev1.EnvVar().WithName("MONGO_URI").WithValue("mongodb+srv://kappusutonyontebaru:K%40pPu%24Ut0N_yOnte6arUu@capstone.5t8hk.mongodb.net/?retryWrites=true&w=majority&appName=Capstone"),
-								accorev1.EnvVar().WithName("BUILDER_QUEUE_URI").WithValue("amqps://ctvdziew:ORU88dANQWlvLo6joDUDz13hxXxHNvka@armadillo.rmq.cloudamqp.com/ctvdziew"),
-								accorev1.EnvVar().WithName("BUILDER_QUEUE_NAME").WithValue("org.builder"),
-								accorev1.EnvVar().WithName("KUBE_NAMESPACE").WithValue("default"),
+								accorev1.EnvVar().WithName("BACKEND_AGENT_ENDPOINT").WithValue(config.Backend.AgentEndpoint),
+								accorev1.EnvVar().WithName("BUILDER_QUEUE_URI").WithValue(config.BuilderConfig.QueueUri),
+								accorev1.EnvVar().WithName("BUILDER_QUEUE_NAME").WithValue(config.BuilderConfig.QueueName),
 							),
 					),
 				),
