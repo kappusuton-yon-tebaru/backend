@@ -14,13 +14,13 @@ import (
 )
 
 type ECRRepository struct {
-	client       *ecr.ECR
+	client *ecr.ECR
 	publicClient *ecrpublic.Client
 }
 
 func NewECRRepository(cfg *config.Config) *ECRRepository {
 	privateSession := session.Must(session.NewSession(&aws.Config{
-		Region:      aws.String(cfg.ECR.Region),
+		Region: aws.String(cfg.ECR.Region),
 		Credentials: credentials.NewStaticCredentials(cfg.ECR.AccessKey, cfg.ECR.SecretKey, ""),
 	}))
 	publicConfig, err := awsConfig.LoadDefaultConfig(context.Background(), awsConfig.WithRegion(cfg.ECR.Region))
@@ -29,7 +29,7 @@ func NewECRRepository(cfg *config.Config) *ECRRepository {
 	}
 
 	return &ECRRepository{
-		client:       ecr.New(privateSession),
+		client: ecr.New(privateSession),
 		publicClient: ecrpublic.NewFromConfig(publicConfig),
 	}
 }
@@ -83,3 +83,4 @@ func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
 	}
 
 }
+

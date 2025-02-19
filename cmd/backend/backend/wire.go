@@ -27,9 +27,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
@@ -70,11 +70,11 @@ type App struct {
 	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
-	JobHandler                  *job.Handler
-	RegisterProviderHandler     *regproviders.Handler
-	ProjectEnvironmentHandler   *projectenv.Handler
-	ECRHandler                  *ecr.Handler
-	DockerHubHandler            *dockerhub.Handler
+	JobHandler				  	*job.Handler
+	RegisterProviderHandler		*regproviders.Handler
+	ProjectEnvironmentHandler	*projectenv.Handler
+	ECRHandler					*ecr.Handler
+	DockerHubHandler			*dockerhub.Handler
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy

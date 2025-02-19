@@ -22,7 +22,7 @@ func (s *Service) GetDockerHubImages(namespace string, repoName string, serviceN
 	for _, img := range images {
 		if strings.Contains(img.ImageTag, serviceName) {
 			response = append(response, DockerHubImageResponse{
-				ImageTag:    img.ImageTag,
+				ImageTag: img.ImageTag,
 				LastUpdated: img.LastUpdated,
 			})
 		}

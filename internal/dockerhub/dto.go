@@ -7,6 +7,6 @@ type GetDockerHubImagesRequest struct {
 }
 
 type DockerHubImageResponse struct {
-	ImageTag    string `json:"image_tag"`
+	ImageTag string `json:"image_tag"`
 	LastUpdated string `json:"last_updated"`
 }

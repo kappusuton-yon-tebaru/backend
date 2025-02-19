@@ -8,7 +8,7 @@ import (
 )
 
 type Handler struct {
-	service            *Service
+	service *Service
 	projectRepoService *projectrepository.Service
 }
 
@@ -24,16 +24,16 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
 
-	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId)
+	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId);
 	if projectRepoErr != nil {
 		ctx.JSON(http.StatusNotFound, map[string]any{
 			"message": "project repository not found",
-			"error":   projectRepoErr.Error(),
+			"error": projectRepoErr.Error(),
 		})
 		return
 	}
@@ -42,7 +42,7 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
-			"error":   err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}

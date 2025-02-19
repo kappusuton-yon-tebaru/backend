@@ -38,13 +38,13 @@ func (r *DockerHubRepository) GetImages(namespace string, repoName string) ([]Do
 
 	var result struct {
 		Results []struct {
-			Count    int    `json:"count"`
-			Next     string `json:"next"`
+			Count int    `json:"count"`
+			Next string `json:"next"`
 			Previous string `json:"previous"`
-			Results  struct {
-				Name        string `json:"name"`
+			Results struct {
+				Name string `json:"name"`
 				LastUpdated string `json:"last_updated"`
-				Status      string `json:"status"`
+				Status string `json:"status"`
 			} `json:"results"`
 		} `json:"results"`
 	}
@@ -60,10 +60,10 @@ func (r *DockerHubRepository) GetImages(namespace string, repoName string) ([]Do
 		}
 
 		images = append(images, DockerHubImageResponse{
-			ImageTag:    resp.Results.Name,
+			ImageTag: resp.Results.Name,
 			LastUpdated: resp.Results.LastUpdated,
 		})
 	}
 	return images, nil
-
+	
 }
