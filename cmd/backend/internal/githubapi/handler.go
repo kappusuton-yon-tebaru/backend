@@ -361,7 +361,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 	}
 
 	// Fetch project repository information by projectID
-	projRepo, err := h.projectRepoService.GetProjectRepositorieByProjectID(c, req.ProjectID)
+	projRepo, err := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

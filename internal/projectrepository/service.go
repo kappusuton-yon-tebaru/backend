@@ -28,7 +28,7 @@ func (s *Service) GetAllProjectRepositories(ctx context.Context) ([]models.Proje
 	return projRepos, nil
 }
 
-func (s *Service) GetProjectRepositorieByProjectID(ctx context.Context, projectID string) (models.ProjectRepository, *werror.WError) {
+func (s *Service) GetProjectRepositoryByProjectId(ctx context.Context, projectID string) (models.ProjectRepository, *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(projectID)
 	if err != nil {
 		return models.ProjectRepository{}, werror.NewFromError(err).

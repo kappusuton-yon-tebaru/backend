@@ -27,7 +27,7 @@ func (h *Handler) GetAllProjectRepositories(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, projRepos)
 }
 
-func (h *Handler) GetProjectRepositorieByProjectID(ctx *gin.Context) {
+func (h *Handler) GetProjectRepositoryByProjectId(ctx *gin.Context) {
 	projectID := ctx.Param("project_id")
 
 	if projectID == "" {
@@ -35,7 +35,7 @@ func (h *Handler) GetProjectRepositorieByProjectID(ctx *gin.Context) {
 		return
 	}
 
-	projRepo, err := h.service.GetProjectRepositorieByProjectID(ctx, projectID)
+	projRepo, err := h.service.GetProjectRepositoryByProjectId(ctx, projectID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
