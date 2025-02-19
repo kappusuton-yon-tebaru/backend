@@ -29,7 +29,7 @@ push:
 	@docker push public.ecr.aws/r2n4f6g5/builder-consumer
 
 lint:
-	@golangci-lint run
+	@golangci-lint run --timeout=5m
 
 apply:
 	@kubectl apply --server-side --field-manager=system -f deployment/master.local.yaml

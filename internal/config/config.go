@@ -25,14 +25,26 @@ type BuilderConfig struct {
 	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
 }
 
+type ECRConfig struct {
+	Region 		string `mapstructure:"AWS_REGION"`
+	AccessKey 	string `mapstructure:"AWS_ACCESS_KEY_ID"`
+	SecretKey 	string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+}
+
+type DockerHubConfig struct {
+	Token string `mapstructure:"DOCKERHUB_TOKEN"`
+}
+
 type Config struct {
-	Agent             AgentConfig   `mapstructure:",squash"`
-	Backend           BackendConfig `mapstructure:",squash"`
-	BuilderConfig     BuilderConfig `mapstructure:",squash"`
-	InCluster         bool          `mapstructure:"IN_CLUSTER"`
-	Development       bool          `mapstructure:"DEVELOPMENT"`
-	KubeNamespace     string        `mapstructure:"KUBE_NAMESPACE"`
-	MongoUri          string        `mapstructure:"MONGO_URI"`
+	Agent    	AgentConfig   	`mapstructure:",squash"`
+	Backend  	BackendConfig 	`mapstructure:",squash"`
+	ECR      	ECRConfig     	`mapstructure:",squash"`
+	DockerHub 	DockerHubConfig `mapstructure:",squash"`
+	MongoUri 	string        	`mapstructure:"MONGO_URI"`
+	InCluster     bool          `mapstructure:"IN_CLUSTER"`
+	Development   bool          `mapstructure:"DEVELOPMENT"`
+	BuilderConfig BuilderConfig `mapstructure:",squash"`
+	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
 	MongoDatabaseName string        `mapstructure:"MONGO_DATABASE_NAME"`
 }
 

@@ -27,6 +27,27 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, regProviders)
 }
 
+func (h *Handler) GetRegProviderById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "empty id",
+		})
+		return
+	}
+
+	regProvider, err := h.service.GetRegistryProviderById(ctx, id)
+
+	if err != nil {
+		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]interface{}{
+			"message": err.GetMessageOr("internal server error"),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, regProvider)
+}
+
 func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	var regprovidersDTO regproviders.CreateRegistryProvidersDTO
 

@@ -24,7 +24,11 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
+	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
+	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -64,9 +68,11 @@ type App struct {
 	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
-	JobHandler                  *job.Handler
-	RegisterProviderHandler     *regproviders.Handler
-	ProjectEnvironmentHandler   *projectenv.Handler
+	JobHandler				  	*job.Handler
+	RegisterProviderHandler		*regproviders.Handler
+	ProjectEnvironmentHandler	*projectenv.Handler
+	ECRHandler					*ecr.Handler
+	DockerHubHandler			*dockerhub.Handler
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
@@ -92,6 +98,8 @@ func New(
 	JobHandler *job.Handler,
 	RegisterProviderHandler *regproviders.Handler,
 	ProjectEnvironmentHandler *projectenv.Handler,
+	ECRHandler *ecr.Handler,
+	DockerHubHandler *dockerhub.Handler,
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
@@ -116,6 +124,8 @@ func New(
 		JobHandler,
 		RegisterProviderHandler,
 		ProjectEnvironmentHandler,
+		ECRHandler,
+		DockerHubHandler,
 		BuildHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
@@ -173,6 +183,12 @@ func Initialize() (*App, error) {
 		sharedProjectEnvironment.NewRepository,
 		sharedProjectEnvironment.NewService,
 		projectenv.NewHandler,
+		ecr.NewECRRepository,
+		ecr.NewService,
+		ecr.NewHandler,
+		dockerhub.NewDockerHubRepository,
+		dockerhub.NewService,
+		dockerhub.NewHandler,
 		validator.New,
 		rmq.New,
 		build.NewService,
