@@ -90,7 +90,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/dockerhub/images", app.DockerHubHandler.GetDockerHubImages)
 
-  r.POST("/build", app.BuildHandler.Build)
+	r.POST("/build", app.BuildHandler.Build)
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
 	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
