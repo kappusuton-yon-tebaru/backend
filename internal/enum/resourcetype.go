@@ -3,9 +3,9 @@ package enum
 type ResourceType string
 
 const (
-	ResourceTypeOrganization ResourceType = "organization"
-	ResourceTypeProjectSpace ResourceType = "project_space"
-	ResourceTypeProject      ResourceType = "project"
+	ResourceTypeOrganization ResourceType = "ORGANIZATION"
+	ResourceTypeProjectSpace ResourceType = "PROJECT_SPACE"
+	ResourceTypeProject      ResourceType = "PROJECT"
 )
 
 func IsValidResourceType(t ResourceType) bool {

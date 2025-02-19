@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -65,7 +66,14 @@ func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any)
 }
 
 func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
-	resource := dto
+	if !enum.IsValidResourceType(dto.ResourceType) {
+		return "", fmt.Errorf("invalid resource type: %v", dto.ResourceType)
+	}
+	
+	resource := bson.M{
+		"resource_name": dto.ResourceName,
+		"resource_type": dto.ResourceType,
+	}
 
 	result, err := r.resource.InsertOne(ctx, resource)
 	if err != nil {
