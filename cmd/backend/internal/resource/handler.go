@@ -62,7 +62,7 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 }
 
 func (h *Handler) CreateResource(ctx *gin.Context) {
-	id := ctx.Param("parent_id")
+	id := ctx.DefaultQuery("parent_id", "")
 
 	var resourceDTO resource.CreateResourceDTO
 
