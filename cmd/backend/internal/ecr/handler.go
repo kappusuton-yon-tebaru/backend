@@ -20,29 +20,30 @@ func NewHandler(service *Service, projectRepoService *projectrepository.Service)
 }
 
 func (h *Handler) GetECRImages(ctx *gin.Context) {
-	var req GetECRImagesRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	projectId := ctx.Query("project_id")
+	serviceName := ctx.Query("service_name")
+
+	if projectId == "" || serviceName == "" {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "invalid input",
-			"error": err.Error(),
+			"message": "missing required query parameters",
 		})
 		return
 	}
 
-	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId);
+	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, projectId)
 	if projectRepoErr != nil {
 		ctx.JSON(http.StatusNotFound, map[string]any{
 			"message": "project repository not found",
-			"error": projectRepoErr.Error(),
+			"error":   projectRepoErr.Error(),
 		})
 		return
 	}
 
-	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, req.ServiceName)
+	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 		return
 	}
