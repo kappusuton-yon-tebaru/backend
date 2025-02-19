@@ -78,12 +78,17 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
+	r.GET("/regproviders/:id", app.RegisterProviderHandler.GetRegProviderById)
 	r.POST("/regproviders", app.RegisterProviderHandler.CreateRegProvider)
 	r.DELETE("/regproviders/:id", app.RegisterProviderHandler.DeleteRegProvider)
 
 	r.GET("/projectenvs", app.ProjectEnvironmentHandler.GetAllProjectEnvs)
 	r.POST("/projectenvs", app.ProjectEnvironmentHandler.CreateProjectEnv)
 	r.DELETE("/projectenvs/:id", app.ProjectEnvironmentHandler.DeleteProjectEnv)
+
+	r.GET("/ecr/images", app.ECRHandler.GetECRImages)
+
+	r.GET("/dockerhub/images", app.DockerHubHandler.GetDockerHubImages)
 
 	r.POST("/build", app.BuildHandler.Build)
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)

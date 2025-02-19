@@ -43,6 +43,17 @@ func (r *Repository) GetAllRegistryProviders(ctx context.Context) ([]models.Regi
 	return registryProviders, nil
 }
 
+func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[string]any) (models.RegistryProviders, error) {
+	var dto RegistryProvidersDTO
+
+	err := r.regProviders.FindOne(ctx, filter).Decode(&dto)
+	if err != nil {
+		return models.RegistryProviders{}, err
+	}
+
+	return DTOToRegistryProviders(dto), nil
+}
+
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	result, err := r.regProviders.InsertOne(ctx, dto)
 	if err != nil {
