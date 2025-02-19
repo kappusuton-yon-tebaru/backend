@@ -195,12 +195,6 @@ func Initialize() (*App, error) {
 		build.NewHandler,
 		monitoring.NewHandler,
 		reverseproxy.New,
-		ecr.NewECRRepository,
-		ecr.NewService,
-		ecr.NewHandler,
-		dockerhub.NewDockerHubRepository,
-		dockerhub.NewService,
-		dockerhub.NewHandler,
 		New,
 	)
 

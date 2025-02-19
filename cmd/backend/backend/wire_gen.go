@@ -114,10 +114,10 @@ func Initialize() (*App, error) {
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
 	ecrRepository := ecr.NewECRRepository(configConfig)
 	ecrService := ecr.NewService(ecrRepository)
-	ecrHandler := ecr.NewHandler(ecrService)
+	ecrHandler := ecr.NewHandler(ecrService, projectrepositoryService)
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
-	dockerhubHandler := dockerhub.NewHandler(dockerhubService)
+	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
 	validatorValidator, err := validator.New()
 	if err != nil {
 		return nil, err
@@ -164,8 +164,6 @@ type App struct {
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
-	ECRHandler                  *ecr.Handler
-	DockerHubHandler            *dockerhub.Handler
 }
 
 func New(
@@ -193,8 +191,6 @@ func New(
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
-	ECRHandler *ecr.Handler,
-	DockerHubHandler *dockerhub.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -221,7 +217,5 @@ func New(
 		BuildHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
-		ECRHandler,
-		DockerHubHandler,
 	}
 }
