@@ -49,7 +49,9 @@ func (r *DockerHubRepository) GetImages(namespace string, repoName string) ([]Do
 		} `json:"results"`
 	}
 
-	json.NewDecoder(res.Body).Decode(&result)
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, err
+	}
 
 	var images []DockerHubImageResponse
 	for _, resp := range result.Results {
