@@ -99,7 +99,11 @@ func Initialize() (*App, error) {
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
-	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
@@ -118,10 +122,6 @@ func Initialize() (*App, error) {
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
-	validatorValidator, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
 	builderRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
