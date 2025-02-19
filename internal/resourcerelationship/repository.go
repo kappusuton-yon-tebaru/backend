@@ -47,6 +47,36 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	return resourceRelas, nil
 }
 
+func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {
+	cur, err := r.resourceRela.Find(ctx, filter)
+	if err != nil {
+		log.Println("Error in Find:", err)
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	childrenResources := make([]models.ResourceRelationship, 0)
+
+	for cur.Next(ctx) {
+		var childrenRe ResourceRelationshipDTO
+
+		err = cur.Decode(&childrenRe)
+		if err != nil {
+			log.Println("Error in Decode:", err)
+			return nil, err
+		}
+
+		childrenResources = append(childrenResources, DTOToResourceRelationship(childrenRe))
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Println("Cursor error:", err)
+		return nil, err
+	}
+
+	return childrenResources, nil
+}
+
 func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
 	resourceRela := bson.M{
 		"parent_resource_id": dto.ParentResourceId,

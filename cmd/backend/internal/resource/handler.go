@@ -27,7 +27,43 @@ func (h *Handler) GetAllResources(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resources)
 }
 
+func (h *Handler) GetResourceByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "id is required"})
+		return
+	}
+
+	resource, err := h.service.GetResourceByID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resource)
+}
+
+func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
+	id := ctx.Param("parent_id")
+
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
+		return
+	}
+
+	resources, err := h.service.GetChildrenResourcesByParentID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resources)
+}
+
 func (h *Handler) CreateResource(ctx *gin.Context) {
+	id := ctx.DefaultQuery("parent_id", "")
+
 	var resourceDTO resource.CreateResourceDTO
 
 	if err := ctx.ShouldBindJSON(&resourceDTO); err != nil {
@@ -38,7 +74,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateResource(ctx, resourceDTO)
+	resourceId, err := h.service.CreateResource(ctx, resourceDTO, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create resource",
@@ -48,8 +84,8 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, map[string]any{
-		"message":     "resource created successfully",
-		"resource_id": id,
+		"message":    "resource created successfully",
+		"resourceId": resourceId,
 	})
 }
 

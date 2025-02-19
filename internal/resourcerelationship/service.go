@@ -28,6 +28,26 @@ func (s *Service) GetAllResourceRelationships(ctx context.Context) ([]models.Res
 	return resourceRelas, nil
 }
 
+func (s *Service) GetChildrenResourceRelationshipByParentID(ctx context.Context, parentID string) ([]models.ResourceRelationship, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(parentID)
+	if err != nil {
+		return nil, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid parent id")
+	}
+
+	filter := map[string]any{
+		"parent_resource_id": objId,
+	}
+
+	childrenResourceRelas, err := s.repo.GetChildrenResourceRelationshipByParentID(ctx, filter)
+	if err != nil {
+		return nil, werror.NewFromError(err)
+	}
+
+	return childrenResourceRelas, nil
+}
+
 func (s *Service) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
 	id, err := s.repo.CreateResourceRelationship(ctx, dto)
 	if err != nil {

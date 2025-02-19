@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -47,7 +48,28 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	return resources, nil
 }
 
+func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any) (models.Resource, error) {
+	var resource ResourceDTO
+
+	err := r.resource.FindOne(ctx, filter).Decode(&resource)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// No document found, return an empty Resource
+			return models.Resource{}, nil
+		}
+		log.Println("Error in FindOne:", err)
+		return models.Resource{}, err
+	}
+
+	// Convert DTO to the actual model
+	return DTOToResource(resource), nil
+}
+
 func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {
+	if !enum.IsValidResourceType(dto.ResourceType) {
+		return "", fmt.Errorf("invalid resource type: %v", dto.ResourceType)
+	}
+	
 	resource := bson.M{
 		"resource_name": dto.ResourceName,
 		"resource_type": dto.ResourceType,

@@ -6,6 +6,7 @@ package backend
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -29,6 +30,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
+
+	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
+
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -76,6 +80,7 @@ type App struct {
 	BuildHandler                *build.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
+	GithubAPIHandler            *githubapi.Handler
 }
 
 func New(
@@ -103,6 +108,7 @@ func New(
 	BuildHandler *build.Handler,
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
+	GithubAPIHandler *githubapi.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -129,6 +135,7 @@ func New(
 		BuildHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
+		GithubAPIHandler,
 	}
 }
 
@@ -195,6 +202,9 @@ func Initialize() (*App, error) {
 		build.NewHandler,
 		monitoring.NewHandler,
 		reverseproxy.New,
+		sharedGithubAPI.NewRepository,
+		sharedGithubAPI.NewService,
+		githubapi.NewHandler,
 		New,
 	)
 

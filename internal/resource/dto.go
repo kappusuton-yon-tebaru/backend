@@ -13,8 +13,8 @@ type ResourceDTO struct {
 }
 
 type CreateResourceDTO struct {
-	ResourceName string            `bson:"resource_name"`
-	ResourceType enum.ResourceType `bson:"resource_type"`
+	ResourceName string            `json:"resource_name" bson:"resource_name"`
+	ResourceType enum.ResourceType `json:"resource_type" bson:"resource_type"`
 }
 
 func DTOToResource(resource ResourceDTO) models.Resource {

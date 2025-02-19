@@ -18,13 +18,13 @@ func NewHandler(service *role.Service) *Handler {
 }
 
 func (h *Handler) GetAllRoles(ctx *gin.Context) {
-	images, err := h.service.GetAllRoles(ctx)
+	roles, err := h.service.GetAllRoles(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, images)
+	ctx.JSON(http.StatusOK, roles)
 }
 
 func (h *Handler) CreateRole(ctx *gin.Context) {

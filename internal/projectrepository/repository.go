@@ -48,12 +48,10 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoryByProjectId(ctx context.Context, projectId bson.ObjectID) (ProjectRepositoryDTO, error) {
+func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (ProjectRepositoryDTO, error) {
 	pipeline := []map[string]any{
 		{
-			"$match": map[string]any{
-				"project_id": projectId,
-			},
+			"$match": filter,
 		},
 		{
 			"$lookup": map[string]any{
@@ -99,6 +97,18 @@ func (r *Repository) GetProjectRepositoryByProjectId(ctx context.Context, projec
 }
 
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
+	// Check if project_id already exists
+	filter := bson.M{"project_id": dto.ProjectId}
+	count, err := r.projRepo.CountDocuments(ctx, filter)
+	if err != nil {
+		log.Println("Error checking existing project repository:", err)
+		return "", fmt.Errorf("error checking existing project repository: %v", err)
+	}
+
+	if count > 0 {
+		return "", fmt.Errorf("project repository already exists")
+	}
+
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,
 		"project_id":   dto.ProjectId,
@@ -131,7 +141,7 @@ func (r *Repository) UpdateProjectRepository(ctx context.Context, projectId bson
 		return 0, err
 	}
 
-	return result.ModifiedCount, nil
+	return result.MatchedCount, nil
 }
 
 func (r *Repository) DeleteProjectRepository(ctx context.Context, filter map[string]any) (int64, error) {
