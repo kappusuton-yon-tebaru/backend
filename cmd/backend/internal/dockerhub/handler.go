@@ -4,15 +4,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 )
 
 type Handler struct {
 	service *Service
+	projectRepoService *projectrepository.Service
 }
 
-func NewHandler(service *Service) *Handler {
+func NewHandler(service *Service, projectRepoService *projectrepository.Service) *Handler {
 	return &Handler{
 		service,
+		projectRepoService,
 	}
 }
 
