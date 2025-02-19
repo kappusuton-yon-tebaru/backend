@@ -62,7 +62,7 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 	}
 
 	filter := map[string]any{
-		"parent_resourceId": objId,
+		"parent_resource_id": objId,
 	}
 	// get children rela
 	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx, filter)
