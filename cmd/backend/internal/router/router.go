@@ -47,7 +47,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
 	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
-	r.POST("/resources/:parent_id", app.ResourceHandler.CreateResource)
+	r.POST("/resources", app.ResourceHandler.CreateResource) // ?parent_id={id}
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
