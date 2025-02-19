@@ -39,7 +39,7 @@ func (s *Service) GetRegistryProviderById(ctx context.Context, id string) (model
 	filter := map[string]any{
 		"_id": objId,
 	}
-			
+
 	regProvider, err := s.repo.GetRegistryProviderById(ctx, filter)
 
 	if err != nil {

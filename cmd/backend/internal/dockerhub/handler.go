@@ -8,7 +8,7 @@ import (
 )
 
 type Handler struct {
-	service *Service
+	service            *Service
 	projectRepoService *projectrepository.Service
 }
 
@@ -24,7 +24,7 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 		return
 	}
@@ -33,7 +33,7 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 		return
 	}

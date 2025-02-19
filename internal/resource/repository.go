@@ -69,7 +69,7 @@ func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) 
 	if !enum.IsValidResourceType(dto.ResourceType) {
 		return "", fmt.Errorf("invalid resource type: %v", dto.ResourceType)
 	}
-	
+
 	resource := bson.M{
 		"resource_name": dto.ResourceName,
 		"resource_type": dto.ResourceType,
