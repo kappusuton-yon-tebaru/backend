@@ -2,6 +2,7 @@ package projectrepository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -47,20 +48,52 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (models.ProjectRepository, error) {
-	var projRepoDTO ProjectRepositoryDTO
-
-	err := r.projRepo.FindOne(ctx, filter).Decode(&projRepoDTO)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// No document found, return an empty Resource
-			return models.ProjectRepository{}, nil
-		}
-		log.Println("Error finding project repository:", err)
-		return models.ProjectRepository{}, err
+func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (ProjectRepositoryDTO, error) {
+	pipeline := []map[string]any{
+		{
+			"$match": filter,
+		},
+		{
+			"$lookup": map[string]any{
+				"from":         "registry_providers",
+				"localField":   "registry_provider_id",
+				"foreignField": "_id",
+				"as":           "registry_provider",
+			},
+		},
+		{
+			"$unwind": map[string]any{
+				"path": "$registry_provider",
+			},
+		},
+		{
+			"$project": map[string]any{
+				"registry_provider_id": false,
+			},
+		},
+		{
+			"$limit": 1,
+		},
 	}
 
-	return DTOToProjectRepository(projRepoDTO), nil
+	cur, err := r.projRepo.Aggregate(ctx, pipeline)
+	if err != nil {
+		return ProjectRepositoryDTO{}, err
+	}
+
+	defer cur.Close(ctx)
+
+	if !cur.Next(ctx) {
+		return ProjectRepositoryDTO{}, errors.New("not found")
+	}
+
+	var projectRepo ProjectRepositoryDTO
+	err = cur.Decode(&projectRepo)
+	if err != nil {
+		return ProjectRepositoryDTO{}, err
+	}
+
+	return projectRepo, nil
 }
 
 func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
