@@ -10,7 +10,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
+
 	githubapi2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
+
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
@@ -102,7 +104,13 @@ func Initialize() (*App, error) {
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
-	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService)
+
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
 	jobRepository := job.NewRepository(database)
@@ -120,10 +128,6 @@ func Initialize() (*App, error) {
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
-	validatorValidator, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
 	builderRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
@@ -139,6 +143,7 @@ func Initialize() (*App, error) {
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, validatorValidator)
 	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
+
 	return app, nil
 }
 

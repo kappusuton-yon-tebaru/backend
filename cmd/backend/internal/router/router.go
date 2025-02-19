@@ -69,6 +69,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.GET("/projrepos/project/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoryByProjectId)
 	r.POST("/projrepos", app.ProjectRepositoryHandler.CreateProjectRepository)
+	r.PATCH("/projrepos/:id", app.ProjectRepositoryHandler.UpdateProjectRepositoryRegistryProvider)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
 	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
