@@ -141,7 +141,7 @@ func (r *Repository) UpdateProjectRepository(ctx context.Context, projectId bson
 		return 0, err
 	}
 
-	return result.ModifiedCount, nil
+	return result.MatchedCount, nil
 }
 
 func (r *Repository) DeleteProjectRepository(ctx context.Context, filter map[string]any) (int64, error) {
