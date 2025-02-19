@@ -28,6 +28,27 @@ func (s *Service) GetAllRegistryProviders(ctx context.Context) ([]models.Registr
 	return regProviders, nil
 }
 
+func (s *Service) GetRegistryProviderById(ctx context.Context, id string) (models.RegistryProviders, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return models.RegistryProviders{}, werror.New().
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid registry provider id")
+	}
+
+	filter := map[string]any{
+		"_id": objId,
+	}
+			
+	regProvider, err := s.repo.GetRegistryProviderById(ctx, filter)
+
+	if err != nil {
+		return models.RegistryProviders{}, werror.NewFromError(err)
+	}
+
+	return regProvider, nil
+}
+
 func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	id, err := s.repo.CreateRegistryProviders(ctx, dto)
 	if err != nil {
