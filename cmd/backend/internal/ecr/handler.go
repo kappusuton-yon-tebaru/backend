@@ -8,7 +8,7 @@ import (
 )
 
 type Handler struct {
-	service *Service
+	service            *Service
 	projectRepoService *projectrepository.Service
 }
 
