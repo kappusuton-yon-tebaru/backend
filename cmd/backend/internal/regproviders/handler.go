@@ -5,15 +5,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
-	service *regproviders.Service
+	service   *regproviders.Service
+	validator *validator.Validator
 }
 
-func NewHandler(service *regproviders.Service) *Handler {
+func NewHandler(service *regproviders.Service, validator *validator.Validator) *Handler {
 	return &Handler{
 		service,
+		validator,
 	}
 }
 
@@ -49,14 +52,36 @@ func (h *Handler) GetRegProviderById(ctx *gin.Context) {
 }
 
 func (h *Handler) CreateRegProvider(ctx *gin.Context) {
-	var regprovidersDTO regproviders.CreateRegistryProvidersDTO
+	var req CreateRegistryProvidersRequest
 
-	if err := ctx.ShouldBindJSON(&regprovidersDTO); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": "invalid input",
 			"error":   err.Error(),
 		})
 		return
+	}
+
+	credential, werr := regproviders.ParseCredential(req.ProviderType, req.Credential)
+	if werr != nil {
+		ctx.JSON(werr.GetCodeOr(http.StatusBadRequest), map[string]interface{}{
+			"message": werr.GetMessageOr("bad request"),
+		})
+	}
+
+	if err := h.validator.Struct(credential); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+
+	regprovidersDTO := regproviders.CreateRegistryProvidersDTO{
+		Name:           req.Name,
+		ProviderType:   req.ProviderType,
+		Uri:            req.Uri,
+		Credential:     credential,
+		OrganizationId: req.OrganizationId,
 	}
 
 	id, err := h.service.CreateRegistryProviders(ctx, regprovidersDTO)
