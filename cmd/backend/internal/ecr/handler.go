@@ -2,6 +2,7 @@ package ecr
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
@@ -22,12 +23,27 @@ func NewHandler(service *Service, projectRepoService *projectrepository.Service)
 func (h *Handler) GetECRImages(ctx *gin.Context) {
 	projectId := ctx.Query("project_id")
 	serviceName := ctx.Query("service_name")
+	search := ctx.Query("search")
+	page := ctx.Query("page")
+	limit := ctx.Query("limit")
 
 	if projectId == "" || serviceName == "" {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "missing required query parameters",
 		})
 		return
+	}
+
+	pageNumber := 1;
+
+	if _, err := strconv.Atoi(page); err == nil {
+		pageNumber, _ = strconv.Atoi(page)
+	}
+
+	limitNumber := 10;
+
+	if _, err := strconv.Atoi(limit); err == nil {
+		limitNumber, _ = strconv.Atoi(limit)
 	}
 
 	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, projectId)
@@ -39,7 +55,7 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName)
+	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName, search, limitNumber, pageNumber)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
