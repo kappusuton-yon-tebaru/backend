@@ -6,6 +6,7 @@ type BuildImageDTO struct {
 	RepoUrl      string
 	RepoRoot     string
 	Destinations []string
+	Credential   interface{}
 }
 
 type ConfigureMaxWorkerDTO struct {

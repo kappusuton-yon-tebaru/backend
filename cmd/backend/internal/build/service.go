@@ -64,11 +64,13 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 		jobId := resp.JobIds[i]
 
 		buildCtx := sharedBuild.BuildContext{
-			Id:          jobId,
-			RepoUrl:     projRepo.GitRepoUrl,
-			RepoRoot:    fmt.Sprintf("apps/%s", service.ServiceName),
-			Destination: fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
-			Dockerfile:  "Dockerfile",
+			Id:                 jobId,
+			RepoUrl:            projRepo.GitRepoUrl,
+			RepoRoot:           fmt.Sprintf("apps/%s", service.ServiceName),
+			Destination:        fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
+			Dockerfile:         "Dockerfile",
+			RegistryType:       projRepo.RegistryProvider.ProviderType,
+			RegistryCredential: projRepo.RegistryProvider.Credential,
 		}
 
 		bs, err := json.Marshal(buildCtx)

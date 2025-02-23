@@ -2,24 +2,42 @@ package kubernetes
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	acappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	accorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	acmetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
-	"strconv"
 )
 
 func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
-	args := []string{
+	var setupArgs []string
+	var mountPath string
+
+	switch credential := config.Credential.(type) {
+	case models.ECRCredential:
+		mountPath = "/root/.aws"
+		setupArgs = []string{
+			"mkdir -p /root/.aws && tee /root/.aws/credentials << EOF",
+			"[default]",
+			fmt.Sprintf("aws_access_key_id=%s", credential.AccessKey),
+			fmt.Sprintf("aws_secret_access_key=%s", credential.SecretAccessKey),
+			"EOF",
+		}
+	}
+
+	builderArgs := []string{
 		fmt.Sprintf("--dockerfile=%s", config.Dockerfile),
 		fmt.Sprintf("--context=%s", config.RepoUrl),
 		fmt.Sprintf("--context-sub-path=%s", config.RepoRoot),
 	}
 
 	for _, dest := range config.Destinations {
-		args = append(args, fmt.Sprintf("--destination=%s", dest))
+		builderArgs = append(builderArgs, fmt.Sprintf("--destination=%s", dest))
 	}
 
 	return &apicorev1.Pod{
@@ -29,13 +47,25 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 		Spec: apicorev1.PodSpec{
 			Containers: []apicorev1.Container{
 				{
-					Name:  "kaniko",
-					Image: "gcr.io/kaniko-project/executor:latest",
-					Args:  args,
+					Name:    "setup",
+					Image:   "busybox",
+					Command: []string{"/bin/sh", "-c"},
+					Args:    []string{strings.Join(setupArgs, "\n")},
 					VolumeMounts: []apicorev1.VolumeMount{
 						{
-							Name:      "aws-secret",
-							MountPath: "/root/.aws",
+							Name:      "credentials",
+							MountPath: mountPath,
+						},
+					},
+				},
+				{
+					Name:  "kaniko",
+					Image: "gcr.io/kaniko-project/executor:latest",
+					Args:  builderArgs,
+					VolumeMounts: []apicorev1.VolumeMount{
+						{
+							Name:      "credentials",
+							MountPath: mountPath,
 						},
 					},
 				},
@@ -43,11 +73,9 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 			RestartPolicy: apicorev1.RestartPolicyNever,
 			Volumes: []apicorev1.Volume{
 				{
-					Name: "aws-secret",
+					Name: "credentials",
 					VolumeSource: apicorev1.VolumeSource{
-						Secret: &apicorev1.SecretVolumeSource{
-							SecretName: "aws-secret",
-						},
+						EmptyDir: nil,
 					},
 				},
 			},

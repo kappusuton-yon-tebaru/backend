@@ -48,8 +48,10 @@ func (p Pod) Get(ctx context.Context, name string) (*apicorev1.Pod, error) {
 	return pod, nil
 }
 
-func (p Pod) GetLogString(ctx context.Context, name string) (string, error) {
-	logs := p.client.GetLogs(name, &apicorev1.PodLogOptions{})
+func (p Pod) GetLogString(ctx context.Context, pod, container string) (string, error) {
+	logs := p.client.GetLogs(pod, &apicorev1.PodLogOptions{
+		Container: container,
+	})
 	log, err := logs.Do(ctx).Raw()
 	if err != nil {
 		return "", err
@@ -58,9 +60,10 @@ func (p Pod) GetLogString(ctx context.Context, name string) (string, error) {
 	return string(log), err
 }
 
-func (p Pod) GetLogStream(ctx context.Context, name string) (io.ReadCloser, error) {
-	logs := p.client.GetLogs(name, &apicorev1.PodLogOptions{
-		Follow: true,
+func (p Pod) GetLogStream(ctx context.Context, pod, container string) (io.ReadCloser, error) {
+	logs := p.client.GetLogs(pod, &apicorev1.PodLogOptions{
+		Container: container,
+		Follow:    true,
 	})
 
 	reader, err := logs.Stream(ctx)
