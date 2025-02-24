@@ -53,43 +53,46 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	return resource, nil
 }
 
-func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string) ([]models.Resource, *werror.WError) {
-	objId, err := bson.ObjectIDFromHex(parentID)
-	if err != nil {
-		return nil, werror.NewFromError(err).
-			SetCode(http.StatusBadRequest).
-			SetMessage("invalid parent id")
-	}
+func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string, page, limit int) ([]models.Resource, int, *werror.WError) {
+    objId, err := bson.ObjectIDFromHex(parentID)
+    if err != nil {
+        return nil, 0, werror.NewFromError(err).
+            SetCode(http.StatusBadRequest).
+            SetMessage("invalid parent id")
+    }
 
-	filter := map[string]any{
-		"parent_resource_id": objId,
-	}
-	// get children rela
-	childrenResourceRelas, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx, filter)
-	if err != nil {
-		return nil, werror.NewFromError(err)
-	}
-	childrenResources := []models.Resource{}
-	//get children resource
-	for _, childrenResourceRela := range childrenResourceRelas {
-		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
-		if err != nil {
-			return nil, werror.NewFromError(err).
-				SetCode(http.StatusBadRequest).
-				SetMessage("invalid id")
-		}
+    filter := map[string]any{
+        "parent_resource_id": objId,
+    }
 
-		filter := map[string]any{
-			"_id": objId,
-		}
-		childrenResource, err := s.repo.GetResourceByID(ctx, filter)
-		if err != nil {
-			return nil, werror.NewFromError(err)
-		}
-		childrenResources = append(childrenResources, childrenResource)
-	}
+    skip := (page - 1) * limit
 
-	return childrenResources, nil
+    childrenResourceRelas, total, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx, filter, limit, skip)
+    if err != nil {
+        return nil, 0, werror.NewFromError(err)
+    }
+
+    childrenResources := []models.Resource{}
+    
+    for _, childrenResourceRela := range childrenResourceRelas {
+        objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
+        if err != nil {
+            return nil, 0, werror.NewFromError(err).
+                SetCode(http.StatusBadRequest).
+                SetMessage("invalid id")
+        }
+
+        filter := map[string]any{
+            "_id": objId,
+        }
+        childrenResource, err := s.repo.GetResourceByID(ctx, filter)
+        if err != nil {
+            return nil, 0, werror.NewFromError(err)
+        }
+        childrenResources = append(childrenResources, childrenResource)
+    }
+
+    return childrenResources, total, nil
 }
 
 func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, id string) (string, error) {

@@ -2,6 +2,7 @@ package resourcerelationship
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
@@ -28,21 +29,33 @@ func (h *Handler) GetAllResourceRelationships(ctx *gin.Context) {
 }
 
 func (h *Handler) GetChildrenResourceRelationshipByParentID(ctx *gin.Context) {
-	parentID := ctx.Param("parent_id")
+    parentID := ctx.Param("parent_id")
 
-	if parentID == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
-		return
-	}
+    if parentID == "" {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
+        return
+    }
 
-	projRepo, err := h.service.GetChildrenResourceRelationshipByParentID(ctx, parentID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
+    page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+    limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 
-	ctx.JSON(http.StatusOK, projRepo)
+    projRepo, total, err := h.service.GetChildrenResourceRelationshipByParentID(ctx, parentID, page, limit)
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "data": projRepo,
+        "pagination": gin.H{
+            "page":  page,
+            "limit": limit,
+            "total": total,
+        },
+    })
 }
+
+
 
 func (h *Handler) CreateResourceRelationship(ctx *gin.Context) {
 	var resourceRelaDTO resourcerelationship.CreateResourceRelationshipDTO
