@@ -2,6 +2,7 @@ package resource
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
@@ -46,20 +47,35 @@ func (h *Handler) GetResourceByID(ctx *gin.Context) {
 
 func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 	id := ctx.Param("parent_id")
-
 	if id == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
 		return
 	}
 
-	resources, err := h.service.GetChildrenResourcesByParentID(ctx, id)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	resources, total, err := h.service.GetChildrenResourcesByParentID(ctx, id, page, limit)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, resources)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data":  resources,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
 }
+
 
 func (h *Handler) CreateResource(ctx *gin.Context) {
 	id := ctx.DefaultQuery("parent_id", "")

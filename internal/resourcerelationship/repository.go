@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
@@ -47,34 +48,46 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 	return resourceRelas, nil
 }
 
-func (r *Repository) GetChildrenResourceRelationshipByParentID(ctx context.Context, filter map[string]any) ([]models.ResourceRelationship, error) {
-	cur, err := r.resourceRela.Find(ctx, filter)
-	if err != nil {
-		log.Println("Error in Find:", err)
-		return nil, err
-	}
-	defer cur.Close(ctx)
+func (r *Repository) GetChildrenResourceRelationshipByParentID(
+    ctx context.Context, filter map[string]any, limit int, offset int,
+) ([]models.ResourceRelationship, int, error) {
 
-	childrenResources := make([]models.ResourceRelationship, 0)
+    opts := options.Find()
+    opts.SetLimit(int64(limit))
+    opts.SetSkip(int64(offset))
 
-	for cur.Next(ctx) {
-		var childrenRe ResourceRelationshipDTO
+    cur, err := r.resourceRela.Find(ctx, filter, opts)
+    if err != nil {
+        log.Println("Error in Find:", err)
+        return nil, 0, err
+    }
+    defer cur.Close(ctx) 
 
-		err = cur.Decode(&childrenRe)
-		if err != nil {
-			log.Println("Error in Decode:", err)
-			return nil, err
-		}
+    childrenResources := make([]models.ResourceRelationship, 0)
 
-		childrenResources = append(childrenResources, DTOToResourceRelationship(childrenRe))
-	}
+    for cur.Next(ctx) {
+        var childrenRe ResourceRelationshipDTO
+        err = cur.Decode(&childrenRe)
+        if err != nil {
+            log.Println("Error in Decode:", err)
+            return nil, 0, err
+        }
 
-	if err := cur.Err(); err != nil {
-		log.Println("Cursor error:", err)
-		return nil, err
-	}
+        childrenResources = append(childrenResources, DTOToResourceRelationship(childrenRe))
+    }
 
-	return childrenResources, nil
+    if err := cur.Err(); err != nil {
+        log.Println("Cursor error:", err)
+        return nil, 0, err
+    }
+
+    totalCount, err := r.resourceRela.CountDocuments(ctx, filter)
+    if err != nil {
+        log.Println("Error in CountDocuments:", err)
+        return nil, 0, err
+    }
+
+    return childrenResources, int(totalCount), nil
 }
 
 func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
