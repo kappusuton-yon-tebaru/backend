@@ -53,7 +53,7 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	return resource, nil
 }
 
-func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string) ([]models.Resource, *werror.WError) {
+func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string) (map[string]interface{}, *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(parentID)
 	if err != nil {
 		return nil, werror.NewFromError(err).
@@ -89,7 +89,11 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 		childrenResources = append(childrenResources, childrenResource)
 	}
 
-	return childrenResources, nil
+	response := map[string]interface{}{
+		"data": childrenResources,
+	}
+
+	return response, nil
 }
 
 func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, id string) (string, error) {
