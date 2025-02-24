@@ -204,16 +204,13 @@ func (h *Handler) FetchFileContent(c *gin.Context) {
 	}
 
 	fullname := req.Owner + "/" + req.Repo
-	content, sha, err := h.service.FetchFileContent(c.Request.Context(), fullname, req.FilePath, req.Branch, req.Token)
+	fileContent, err := h.service.FetchFileContent(c.Request.Context(), fullname, req.FilePath, req.Branch, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"sha":     sha,
-		"content": content,
-	})
+	c.JSON(http.StatusOK, fileContent)
 }
 
 // CreateBranch handles requests to create a new branch.
