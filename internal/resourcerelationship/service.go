@@ -28,24 +28,28 @@ func (s *Service) GetAllResourceRelationships(ctx context.Context) ([]models.Res
 	return resourceRelas, nil
 }
 
-func (s *Service) GetChildrenResourceRelationshipByParentID(ctx context.Context, parentID string) ([]models.ResourceRelationship, *werror.WError) {
-	objId, err := bson.ObjectIDFromHex(parentID)
-	if err != nil {
-		return nil, werror.NewFromError(err).
-			SetCode(http.StatusBadRequest).
-			SetMessage("invalid parent id")
-	}
+func (s *Service) GetChildrenResourceRelationshipByParentID(
+    ctx context.Context, parentID string, page, limit int,
+) ([]models.ResourceRelationship, int, *werror.WError) {
 
-	filter := map[string]any{
-		"parent_resource_id": objId,
-	}
+    objId, err := bson.ObjectIDFromHex(parentID)
+    if err != nil {
+        return nil, 0, werror.NewFromError(err).
+            SetCode(http.StatusBadRequest).
+            SetMessage("invalid parent id")
+    }
 
-	childrenResourceRelas, err := s.repo.GetChildrenResourceRelationshipByParentID(ctx, filter)
-	if err != nil {
-		return nil, werror.NewFromError(err)
-	}
+    filter := map[string]any{
+        "parent_resource_id": objId,
+    }
 
-	return childrenResourceRelas, nil
+    offset := (page - 1) * limit
+    childrenResourceRelas, total, err := s.repo.GetChildrenResourceRelationshipByParentID(ctx, filter, limit, offset)
+    if err != nil {
+        return nil, 0, werror.NewFromError(err)
+    }
+
+    return childrenResourceRelas, total, nil
 }
 
 func (s *Service) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {
