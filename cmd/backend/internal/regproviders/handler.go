@@ -24,7 +24,7 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, regProviders)
+	ctx.JSON(http.StatusOK, map[string]any{"data": regProviders})
 }
 
 func (h *Handler) GetRegProviderById(ctx *gin.Context) {
