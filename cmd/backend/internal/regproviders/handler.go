@@ -27,6 +27,16 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, regProviders)
 }
 
+func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
+	regProviders, err := h.service.GetAllRegistryProvidersWithoutProject(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, regProviders)
+}
+
 func (h *Handler) GetRegProviderById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
