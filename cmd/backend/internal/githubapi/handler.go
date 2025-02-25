@@ -385,7 +385,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 	// Return the services as a JSON response
 	c.JSON(http.StatusOK, services)
 }
-
+// create repo in github then project and projectrepo
 func (h *Handler) CreateRepository(c *gin.Context) {
 	project_space_id := c.Param("project_space_id")
 	var req models.CreateRepoRequest
