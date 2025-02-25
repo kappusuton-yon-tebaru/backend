@@ -26,9 +26,9 @@ type BuilderConfig struct {
 }
 
 type ECRConfig struct {
-	Region 		string `mapstructure:"AWS_REGION"`
-	AccessKey 	string `mapstructure:"AWS_ACCESS_KEY_ID"`
-	SecretKey 	string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+	Region    string `mapstructure:"AWS_REGION"`
+	AccessKey string `mapstructure:"AWS_ACCESS_KEY_ID"`
+	SecretKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
 }
 
 type DockerHubConfig struct {
@@ -36,18 +36,18 @@ type DockerHubConfig struct {
 }
 
 type Config struct {
-	Agent    	AgentConfig   	`mapstructure:",squash"`
-	Backend  	BackendConfig 	`mapstructure:",squash"`
-	ECR      	ECRConfig     	`mapstructure:",squash"`
-	DockerHub 	DockerHubConfig `mapstructure:",squash"`
-	MongoUri 	string        	`mapstructure:"MONGO_URI"`
-	InCluster     bool          `mapstructure:"IN_CLUSTER"`
-	Development   bool          `mapstructure:"DEVELOPMENT"`
-	BuilderConfig BuilderConfig `mapstructure:",squash"`
-	KubeNamespace string        `mapstructure:"KUBE_NAMESPACE"`
-	MongoDatabaseName string        `mapstructure:"MONGO_DATABASE_NAME"`
-	ClientID      string        `mapstructure:"GITHUB_CLIENT_ID"`
-	ClientSecret  string        `mapstructure:"GITHUB_CLIENT_SECRET"`
+	Agent             AgentConfig     `mapstructure:",squash"`
+	Backend           BackendConfig   `mapstructure:",squash"`
+	ECR               ECRConfig       `mapstructure:",squash"`
+	DockerHub         DockerHubConfig `mapstructure:",squash"`
+	MongoUri          string          `mapstructure:"MONGO_URI"`
+	InCluster         bool            `mapstructure:"IN_CLUSTER"`
+	Development       bool            `mapstructure:"DEVELOPMENT"`
+	BuilderConfig     BuilderConfig   `mapstructure:",squash"`
+	KubeNamespace     string          `mapstructure:"KUBE_NAMESPACE"`
+	MongoDatabaseName string          `mapstructure:"MONGO_DATABASE_NAME"`
+	ClientID          string          `mapstructure:"GITHUB_CLIENT_ID"`
+	ClientSecret      string          `mapstructure:"GITHUB_CLIENT_SECRET"`
 }
 
 func Load() (*Config, error) {

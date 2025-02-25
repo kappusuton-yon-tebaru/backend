@@ -24,7 +24,9 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, jobs)
+	ctx.JSON(http.StatusOK, map[string]any{
+		"data": jobs,
+	})
 }
 
 func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
@@ -44,7 +46,9 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, jobs)
+	ctx.JSON(http.StatusOK, map[string]any{
+		"data": jobs,
+	})
 }
 
 func (h *Handler) CreateJob(ctx *gin.Context) {

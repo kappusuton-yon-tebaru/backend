@@ -114,7 +114,7 @@ func Initialize() (*App, error) {
 	jobHandler := job2.NewHandler(jobService)
 	regprovidersRepository := regproviders.NewRepository(database)
 	regprovidersService := regproviders.NewService(regprovidersRepository)
-	regprovidersHandler := regproviders2.NewHandler(regprovidersService)
+	regprovidersHandler := regproviders2.NewHandler(regprovidersService, validatorValidator)
 	projectenvRepository := projectenv.NewRepository(database)
 	projectenvService := projectenv.NewService(projectenvRepository)
 	projectenvHandler := projectenv2.NewHandler(projectenvService)

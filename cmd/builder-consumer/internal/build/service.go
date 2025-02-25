@@ -79,7 +79,7 @@ func (s *Service) BuildImage(ctx context.Context, dto kubernetes.BuildImageDTO) 
 		if pod.Status.Phase == apicorev1.PodFailed ||
 			pod.Status.Phase == apicorev1.PodUnknown {
 			s.logger.Error("pod failed to start", zap.String("name", builderPod.Name))
-			log, err := podClient.GetLogString(ctx, builderPod.Name)
+			log, err := podClient.GetLogString(ctx, builderPod.Name, "kaniko")
 			if err != nil {
 				s.logger.Error("error occured while log", zap.String("name", builderPod.Name), zap.Error(err))
 				return werror.NewFromError(err)

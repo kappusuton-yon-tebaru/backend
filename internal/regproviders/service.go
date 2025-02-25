@@ -4,7 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -39,7 +41,7 @@ func (s *Service) GetRegistryProviderById(ctx context.Context, id string) (model
 	filter := map[string]any{
 		"_id": objId,
 	}
-			
+
 	regProvider, err := s.repo.GetRegistryProviderById(ctx, filter)
 
 	if err != nil {
@@ -82,4 +84,22 @@ func (s *Service) DeleteRegistryProviders(ctx context.Context, id string) *werro
 	}
 
 	return nil
+}
+
+func ParseCredential(provider enum.RegistryProviderType, dto map[string]any) (interface{}, *werror.WError) {
+	switch provider {
+	case enum.ECR:
+		var ecr models.ECRCredential
+		if err := utils.MapToStruct(dto, &ecr); err != nil {
+			return nil, werror.NewFromError(err).
+				SetMessage("cannot parse ecr credential").
+				SetCode(http.StatusBadRequest)
+		}
+		return ecr, nil
+
+	default:
+		return nil, werror.New().
+			SetMessage("invalid provider type").
+			SetCode(http.StatusBadRequest)
+	}
 }
