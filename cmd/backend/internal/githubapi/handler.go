@@ -12,22 +12,26 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Handler struct {
 	cfg                *config.Config
 	service            *githubapi.Service
 	projectRepoService *projectrepository.Service
+	resourceService    *resource.Service
 	validator          *validator.Validator
 }
 
 // NewHandler creates a new Handler instance
-func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service, validator *validator.Validator) *Handler {
+func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service, resourceService *resource.Service, validator *validator.Validator) *Handler {
 	return &Handler{
 		cfg,
 		service,
 		projectRepoService,
+		resourceService,
 		validator,
 	}
 }
@@ -383,7 +387,9 @@ func (h *Handler) GetServices(c *gin.Context) {
 }
 
 func (h *Handler) CreateRepository(c *gin.Context) {
+	project_space_id := c.Param("project_space_id")
 	var req models.CreateRepoRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -408,14 +414,45 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
 		return
 	}
-
+	// create repo in github
 	repo, err := h.service.CreateRepository(c.Request.Context(), token, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusCreated, repo)
+	// create project from repo name
+	project := resource.CreateResourceDTO{
+		ResourceName:   repo.FullName,
+		ResourceType:  "PROJECT",
+	}
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(),project,project_space_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// create projectrepo from repo url and resourceId
+	projectID, err := bson.ObjectIDFromHex(resourceId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 
+	}
+	projectRepo := projectrepository.CreateProjectRepositoryDTO{
+		GitRepoUrl: repo.HTMLURL,
+		ProjectId: projectID,
+	}
+	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(),projectRepo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	response := map[string]interface{}{
+		"data": map[string]interface{}{
+			"repo":repo,
+			"resourceId":resourceId,
+			"projectRepoId":projectRepoID,
+		},
+	}
+	c.JSON(http.StatusCreated, response)
 }
 
 // Redirects user to GitHub OAuth authorization page

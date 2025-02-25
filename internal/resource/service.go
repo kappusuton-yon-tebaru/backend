@@ -99,17 +99,17 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
 	return response,total, nil
 }
 
-func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, id string) (string, error) {
+func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, parentID string) (string, error) {
 	resourceId, err := s.repo.CreateResource(ctx, dto)
 	if err != nil {
 		return "", err
 	}
 	// Is an org no need to create rela
-	if id == "" {
+	if parentID == "" {
 		return resourceId, nil
 	}
 
-	parentID, err := bson.ObjectIDFromHex(id)
+	pID, err := bson.ObjectIDFromHex(parentID)
 	if err != nil {
 		fmt.Println("Invalid parent ID:", err)
 		return "", err
@@ -123,7 +123,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, id 
 
 	// Create DTO instance
 	relationship := resourcerelationship.CreateResourceRelationshipDTO{
-		ParentResourceId: parentID,
+		ParentResourceId: pID,
 		ChildResourceId:  childID,
 	}
 
