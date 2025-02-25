@@ -24,7 +24,9 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, regProviders)
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"data": regProviders,
+	})
 }
 
 func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
@@ -34,7 +36,9 @@ func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, regProviders)
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"data": regProviders,
+	})
 }
 
 func (h *Handler) GetRegProviderById(ctx *gin.Context) {
@@ -55,7 +59,9 @@ func (h *Handler) GetRegProviderById(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, regProvider)
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"data": regProvider,
+	})
 }
 
 func (h *Handler) CreateRegProvider(ctx *gin.Context) {
