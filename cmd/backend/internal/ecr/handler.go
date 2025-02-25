@@ -64,5 +64,5 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, images)
+	ctx.JSON(http.StatusOK, map[string]any{"data": images})
 }
