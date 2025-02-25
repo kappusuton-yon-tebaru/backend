@@ -83,6 +83,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
+	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)
 	r.GET("/regproviders/:id", app.RegisterProviderHandler.GetRegProviderById)
 	r.POST("/regproviders", app.RegisterProviderHandler.CreateRegProvider)
 	r.DELETE("/regproviders/:id", app.RegisterProviderHandler.DeleteRegProvider)
