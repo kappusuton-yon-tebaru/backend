@@ -2,9 +2,9 @@ package resourcerelationship
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 )
 
@@ -29,33 +29,42 @@ func (h *Handler) GetAllResourceRelationships(ctx *gin.Context) {
 }
 
 func (h *Handler) GetChildrenResourceRelationshipByParentID(ctx *gin.Context) {
-    parentID := ctx.Param("parent_id")
+	parentID := ctx.Param("parent_id")
 
-    if parentID == "" {
-        ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
-        return
-    }
+	if parentID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
+		return
+	}
 
-    page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
-    limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	pagination := models.Pagination{
+		Limit: 10,
+		Page:  1,
+	}
 
-    projRepo, total, err := h.service.GetChildrenResourceRelationshipByParentID(ctx, parentID, page, limit)
-    if err != nil {
-        ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		return
+	}
 
-    ctx.JSON(http.StatusOK, gin.H{
-        "data": projRepo,
-        "pagination": gin.H{
-            "page":  page,
-            "limit": limit,
-            "total": total,
-        },
-    })
+	pagination.Page = max(pagination.Page, 1)
+	pagination.Limit = max(pagination.Limit, 10)
+
+	projRepo, total, werr := h.service.GetChildrenResourceRelationshipByParentID(ctx, parentID, pagination.Page, pagination.Limit)
+	if werr != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": werr.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": projRepo,
+		"pagination": gin.H{
+			"page":  pagination.Page,
+			"limit": pagination.Limit,
+			"total": total,
+		},
+	})
 }
-
-
 
 func (h *Handler) CreateResourceRelationship(ctx *gin.Context) {
 	var resourceRelaDTO resourcerelationship.CreateResourceRelationshipDTO
