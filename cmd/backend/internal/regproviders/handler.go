@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
@@ -21,7 +22,16 @@ func NewHandler(service *regproviders.Service, validator *validator.Validator) *
 }
 
 func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
-	regProviders, err := h.service.GetAllRegistryProviders(ctx)
+	pagination := models.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "pagination should be integer",
+		})
+		return
+	}
+
+	regProviders, err := h.service.GetAllRegistryProviders(ctx, pagination.WithMinimum(1, 10))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
