@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+type PaginatedJobs = models.Paginated[models.Job]
+
 type Service struct {
 	repo *Repository
 }
@@ -20,14 +22,14 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllJobParents(ctx context.Context) ([]models.Job, error) {
-	dtos, err := s.repo.GetAllJobParents(ctx)
+func (s *Service) GetAllJobParents(ctx context.Context, pagination models.Pagination) (PaginatedJobs, error) {
+	dtos, err := s.repo.GetAllJobParents(ctx, pagination)
 	if err != nil {
-		return nil, err
+		return PaginatedJobs{}, err
 	}
 
 	jobs := make([]models.Job, 0)
-	for _, dto := range dtos {
+	for _, dto := range dtos.Data {
 		numJob := len(dto.Jobs)
 		statusMap := map[enum.JobStatus]int{}
 
@@ -63,23 +65,38 @@ func (s *Service) GetAllJobParents(ctx context.Context) ([]models.Job, error) {
 		jobs = append(jobs, job)
 	}
 
-	return jobs, nil
+	return PaginatedJobs{
+		Page:  dtos.Page,
+		Limit: dtos.Limit,
+		Total: dtos.Total,
+		Data:  jobs,
+	}, nil
 }
 
-func (s *Service) GetAllJobsByParentId(ctx context.Context, id string) ([]models.Job, *werror.WError) {
+func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, pagination models.Pagination) (models.Paginated[models.Job], *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, werror.NewFromError(err).
+		return models.Paginated[models.Job]{}, werror.NewFromError(err).
 			SetCode(http.StatusBadRequest).
 			SetMessage("invalid parent job id")
 	}
 
-	jobs, err := s.repo.GetAllJobsByParentId(ctx, objId)
+	dtos, err := s.repo.GetAllJobsByParentId(ctx, objId, pagination)
 	if err != nil {
-		return nil, werror.NewFromError(err)
+		return models.Paginated[models.Job]{}, werror.NewFromError(err)
 	}
 
-	return jobs, nil
+	jobs := make([]models.Job, 0)
+	for _, dto := range dtos.Data {
+		jobs = append(jobs, DTOToJob(dto))
+	}
+
+	return PaginatedJobs{
+		Page:  dtos.Page,
+		Limit: dtos.Limit,
+		Total: dtos.Total,
+		Data:  jobs,
+	}, nil
 }
 
 func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {

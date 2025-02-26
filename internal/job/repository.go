@@ -2,13 +2,14 @@ package job
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
@@ -23,26 +24,62 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllJobParents(ctx context.Context) ([]JobParentDTO, error) {
-	pipeline := []map[string]any{
-		{
-			"$lookup": map[string]any{
-				"from":         "jobs",
-				"localField":   "_id",
-				"foreignField": "parent_job_id",
-				"as":           "jobs",
+func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pagination) (models.Paginated[JobParentDTO], error) {
+	pipeline := utils.NewPaginationAggregationPipeline(pagination,
+		[]map[string]any{
+			{
+				"$lookup": map[string]any{
+					"from":         "jobs",
+					"localField":   "_id",
+					"foreignField": "parent_job_id",
+					"as":           "jobs",
+				},
+			},
+			{
+				"$match": map[string]any{
+					"parent_job_id": bson.NilObjectID,
+				},
+			},
+			{
+				"$project": map[string]any{
+					"$id":        true,
+					"created_at": true,
+					"jobs":       true,
+				},
+			},
+			{
+				"$sort": map[string]any{
+					"created_at": -1,
+				},
 			},
 		},
+	)
+
+	cur, err := r.job.Aggregate(ctx, pipeline)
+	if err != nil {
+		return models.Paginated[JobParentDTO]{}, err
+	}
+
+	defer cur.Close(ctx)
+
+	if !cur.Next(ctx) {
+		return models.Paginated[JobParentDTO]{}, errors.New("not found")
+	}
+
+	var dto models.Paginated[JobParentDTO]
+	err = cur.Decode(&dto)
+	if err != nil {
+		return models.Paginated[JobParentDTO]{}, err
+	}
+
+	return dto, nil
+}
+
+func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID, pagination models.Pagination) (models.Paginated[JobDTO], error) {
+	pipeline := utils.NewPaginationAggregationPipeline(pagination, []map[string]any{
 		{
 			"$match": map[string]any{
-				"parent_job_id": bson.NilObjectID,
-			},
-		},
-		{
-			"$project": map[string]any{
-				"$id":        true,
-				"created_at": true,
-				"jobs":       true,
+				"parent_job_id": id,
 			},
 		},
 		{
@@ -50,61 +87,26 @@ func (r *Repository) GetAllJobParents(ctx context.Context) ([]JobParentDTO, erro
 				"created_at": -1,
 			},
 		},
-	}
+	})
 
 	cur, err := r.job.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, err
+		return models.Paginated[JobDTO]{}, err
 	}
 
 	defer cur.Close(ctx)
 
-	jobParents := make([]JobParentDTO, 0)
-
-	for cur.Next(ctx) {
-		var dto JobParentDTO
-
-		err := cur.Decode(&dto)
-		if err != nil {
-			return nil, err
-		}
-
-		jobParents = append(jobParents, dto)
+	if !cur.Next(ctx) {
+		return models.Paginated[JobDTO]{}, errors.New("not found")
 	}
 
-	return jobParents, nil
-}
-
-func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID) ([]models.Job, error) {
-	filter := map[string]any{
-		"parent_job_id": id,
-	}
-
-	opt := options.Find().SetSort(map[string]any{
-		"created_at": -1,
-	})
-
-	cur, err := r.job.Find(ctx, filter, opt)
+	var dto models.Paginated[JobDTO]
+	err = cur.Decode(&dto)
 	if err != nil {
-		return nil, err
+		return models.Paginated[JobDTO]{}, err
 	}
 
-	defer cur.Close(ctx)
-
-	jobs := make([]models.Job, 0)
-
-	for cur.Next(ctx) {
-		var dto JobDTO
-
-		err = cur.Decode(&dto)
-		if err != nil {
-			return nil, err
-		}
-
-		jobs = append(jobs, DTOToJob(dto))
-	}
-
-	return jobs, nil
+	return dto, nil
 }
 
 func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
@@ -128,7 +130,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 
 	defer session.EndSession(ctx)
 
-	results, err := session.WithTransaction(ctx, func(ctx context.Context) (interface{}, error) {
+	results, err := session.WithTransaction(ctx, func(ctx context.Context) (any, error) {
 		now := time.Now()
 
 		parentJob := CreateJobDTO{
@@ -161,7 +163,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 	}
 
 	ids := []string{}
-	for _, result := range results.([]interface{}) {
+	for _, result := range results.([]any) {
 		id := result.(bson.ObjectID)
 		ids = append(ids, id.Hex())
 	}

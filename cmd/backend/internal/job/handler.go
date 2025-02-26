@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 )
 
 type Handler struct {
@@ -18,15 +19,20 @@ func NewHandler(service *job.Service) *Handler {
 }
 
 func (h *Handler) GetAllJobParents(ctx *gin.Context) {
-	jobs, err := h.service.GetAllJobParents(ctx)
+	pagination := models.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		return
+	}
+
+	jobs, err := h.service.GetAllJobParents(ctx, pagination.WithMinimum(1, 10))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]any{
-		"data": jobs,
-	})
+	ctx.JSON(http.StatusOK, jobs)
 }
 
 func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
@@ -38,17 +44,22 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
-	jobs, err := h.service.GetAllJobsByParentId(ctx, id)
+	pagination := models.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
 	if err != nil {
-		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
-			"message": err.GetMessageOr("internal server error"),
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		return
+	}
+
+	jobs, werr := h.service.GetAllJobsByParentId(ctx, id, pagination.WithMinimum(1, 10))
+	if werr != nil {
+		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
+			"message": werr.GetMessageOr("internal server error"),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]any{
-		"data": jobs,
-	})
+	ctx.JSON(http.StatusOK, jobs)
 }
 
 func (h *Handler) CreateJob(ctx *gin.Context) {
