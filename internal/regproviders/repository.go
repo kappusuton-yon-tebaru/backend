@@ -3,6 +3,7 @@ package regproviders
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
@@ -104,7 +105,17 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 }
 
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
-	result, err := r.regProviders.InsertOne(ctx, dto)
+	request := RegistryProvidersDTO{
+		Name:           dto.Name,
+		ProviderType:   dto.ProviderType,
+		Uri:            dto.Uri,
+		Credential:     dto.Credential,
+		OrganizationId: dto.OrganizationId,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	
+	result, err := r.regProviders.InsertOne(ctx, request)
 	if err != nil {
 		return primitive.NilObjectID.Hex(), err
 	}
