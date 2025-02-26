@@ -2,8 +2,10 @@ package regproviders
 
 import (
 	"context"
+	"errors"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -19,28 +21,33 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllRegistryProviders(ctx context.Context) ([]models.RegistryProviders, error) {
-	cur, err := r.regProviders.Find(ctx, bson.D{})
+func (r *Repository) GetAllRegistryProviders(ctx context.Context, pagination models.Pagination) (models.Paginated[RegistryProvidersDTO], error) {
+	pipeline := utils.NewPaginationAggregationPipeline(pagination, []map[string]any{
+		{
+			"$sort": map[string]any{
+				"created_at": -1,
+			},
+		},
+	})
+	
+	cur, err := r.regProviders.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, err
+		return models.Paginated[RegistryProvidersDTO]{}, err
 	}
 
 	defer cur.Close(ctx)
 
-	registryProviders := make([]models.RegistryProviders, 0)
-
-	for cur.Next(ctx) {
-		var dto RegistryProvidersDTO
-
-		err = cur.Decode(&dto)
-		if err != nil {
-			return nil, err
-		}
-
-		registryProviders = append(registryProviders, DTOToRegistryProviders(dto))
+	if !cur.Next(ctx) {
+		return models.Paginated[RegistryProvidersDTO]{}, errors.New("not found")
 	}
 
-	return registryProviders, nil
+	var dto models.Paginated[RegistryProvidersDTO]
+	err = cur.Decode(&dto)
+	if err != nil {
+		return models.Paginated[RegistryProvidersDTO]{}, err
+	}
+
+	return dto, nil
 }
 
 func (r *Repository) GetAllRegistryProvidersWithoutProject(ctx context.Context) ([]models.RegistryProviders, error) {
