@@ -360,6 +360,19 @@ func (h *Handler) GetServices(c *gin.Context) {
 		})
 		return
 	}
+	pagination := models.Pagination{
+		Limit: 10,
+		Page:  1,
+	}
+
+	err := c.ShouldBindQuery(&pagination)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		return
+	}
+
+	pagination.Page = max(pagination.Page, 1)
+	pagination.Limit = max(pagination.Limit, 10)
 
 	// Fetch project repository information by projectID
 	projRepo, err := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
@@ -376,7 +389,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 	}
 
 	// Retrieve the services from the repository
-	services, err3 := h.service.FindServices(c, fullname, token)
+	services, err3 := h.service.FindServices(c, fullname, token, pagination.Page, pagination.Limit)
 	if err3 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
 		return
@@ -385,6 +398,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 	// Return the services as a JSON response
 	c.JSON(http.StatusOK, services)
 }
+
 // create repo in github then project and projectrepo
 func (h *Handler) CreateRepository(c *gin.Context) {
 	project_space_id := c.Param("project_space_id")
@@ -422,10 +436,10 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 	// create project from repo name
 	project := resource.CreateResourceDTO{
-		ResourceName:   repo.FullName,
-		ResourceType:  "PROJECT",
+		ResourceName: repo.FullName,
+		ResourceType: "PROJECT",
 	}
-	resourceId, err := h.resourceService.CreateResource(c.Request.Context(),project,project_space_id)
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -434,22 +448,22 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	projectID, err := bson.ObjectIDFromHex(resourceId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 
+		return
 	}
 	projectRepo := projectrepository.CreateProjectRepositoryDTO{
 		GitRepoUrl: repo.HTMLURL,
-		ProjectId: projectID,
+		ProjectId:  projectID,
 	}
-	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(),projectRepo)
+	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(), projectRepo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	response := map[string]interface{}{
 		"data": map[string]interface{}{
-			"repo":repo,
-			"resourceId":resourceId,
-			"projectRepoId":projectRepoID,
+			"repo":          repo,
+			"resourceId":    resourceId,
+			"projectRepoId": projectRepoID,
 		},
 	}
 	c.JSON(http.StatusCreated, response)

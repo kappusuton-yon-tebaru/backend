@@ -22,25 +22,25 @@ func NewService(repo *Repository) *Service {
 func (s *Service) GetUserRepos(ctx context.Context, token string) (map[string]interface{}, error) {
 	repos, err := s.repo.GetUserRepos(ctx, token)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	response := map[string]interface{}{
 		"data": repos,
 	}
 
-	return response,nil
+	return response, nil
 }
 
 func (s *Service) GetRepoContents(ctx context.Context, fullname string, path string, branch string, token string) (map[string]interface{}, error) {
 	contents, err := s.repo.GetRepoContents(ctx, fullname, path, branch, token)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	response := map[string]interface{}{
 		"data": contents,
 	}
 
-	return response,nil
+	return response, nil
 }
 
 // GetRepoBranches fetches the branches of a repository
@@ -52,13 +52,13 @@ func (s *Service) GetRepoBranches(ctx context.Context, fullname string, token st
 	branches, err := s.repo.GetRepoBranches(ctx, fullname, token)
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	response := map[string]interface{}{
 		"data": branches,
 	}
 
-	return response,nil
+	return response, nil
 }
 
 // GetCommitMetadata fetches the commit metadata for a file in a repository
@@ -70,33 +70,33 @@ func (s *Service) GetCommitMetadata(ctx context.Context, path string, branch str
 	commitMetadata, err := s.repo.GetCommitMetadata(ctx, path, branch, fullname, token)
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	response := map[string]interface{}{
 		"data": commitMetadata,
 	}
 
-	return response,nil
+	return response, nil
 }
 
 func (s *Service) FetchFileContent(ctx context.Context, fullname, filePath, branch, token string) (map[string]interface{}, error) {
 	if fullname == "" || filePath == "" || branch == "" || token == "" {
 		return nil, errors.New("missing required parameters")
 	}
-	content, sha,err := s.repo.FetchFileContent(ctx, fullname, filePath, branch, token)
-	
+	content, sha, err := s.repo.FetchFileContent(ctx, fullname, filePath, branch, token)
+
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	response := map[string]interface{}{
-		"data":map[string]interface{}{
+		"data": map[string]interface{}{
 			"sha":     sha,
 			"content": content,
 		},
 	}
 
-	return response,nil 
+	return response, nil
 }
 
 // GetBaseBranchSHA calls the repository to get the SHA of the base branch.
@@ -121,7 +121,7 @@ func (s *Service) UpdateFileContent(ctx context.Context, fullname, path, commitM
 	return s.repo.UpdateFileContent(ctx, fullname, path, commitMsg, base64Content, sha, branch, token)
 }
 
-func (s *Service) FindServices(ctx context.Context, fullname, token string) (map[string]interface{}, error) {
+func (s *Service) FindServices(ctx context.Context, fullname, token string, page, limit int) (map[string]interface{}, error) {
 	files, err := s.repo.ListFiles(ctx, fullname, token)
 	if err != nil {
 		return nil, err
@@ -148,8 +148,31 @@ func (s *Service) FindServices(ctx context.Context, fullname, token string) (map
 		}
 	}
 
+	// Implement manual pagination for services
+	totalServices := len(services)
+	start := (page - 1) * limit
+	end := start + limit
+
+	if start >= totalServices {
+		return map[string]interface{}{
+			"data":  []models.Service{},
+			"total": totalServices,
+			"page":  page,
+			"limit": limit,
+		}, nil
+	}
+	if end > totalServices {
+		end = totalServices
+	}
+
+	paginatedServices := services[start:end]
+
+	// Construct response
 	response := map[string]interface{}{
-		"data": services,
+		"data":  paginatedServices,
+		"total": totalServices,
+		"page":  page,
+		"limit": limit,
 	}
 
 	return response, nil

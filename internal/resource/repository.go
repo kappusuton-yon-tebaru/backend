@@ -15,17 +15,16 @@ import (
 )
 
 type Repository struct {
-	resource *mongo.Collection
+	resource     *mongo.Collection
 	resourceRela *mongo.Collection
-	projectRepo *mongo.Collection
-
+	projectRepo  *mongo.Collection
 }
 
 func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
-		resource: db.Collection("resources"),
+		resource:     db.Collection("resources"),
 		resourceRela: db.Collection("resource_relationships"),
-		projectRepo: db.Collection("projects_repositories"),
+		projectRepo:  db.Collection("projects_repositories"),
 	}
 }
 
@@ -99,7 +98,7 @@ func (r *Repository) UpdateResource(ctx context.Context, dto UpdateResourceDTO, 
 	objID, err := bson.ObjectIDFromHex(resourceID)
 	if err != nil {
 		log.Println("ObjectIDFromHex err")
-		return "",err
+		return "", err
 	}
 	update := map[string]any{
 		"$set": map[string]any{
@@ -144,7 +143,7 @@ func (r *Repository) CascadeDeleteResource(ctx context.Context, resourceID strin
 	findChildFilter := map[string]any{
 		"parent_resource_id": objId,
 	}
-	
+
 	// Find all direct children of this resource
 	cur, err := r.resourceRela.Find(ctx, findChildFilter)
 	if err != nil {
@@ -174,23 +173,23 @@ func (r *Repository) CascadeDeleteResource(ctx context.Context, resourceID strin
 		filter := map[string]any{
 			"_id": rel.ChildResourceId,
 		}
-		childResource,err := r.GetResourceByFilter(ctx,filter)
+		childResource, err := r.GetResourceByFilter(ctx, filter)
 		if err != nil {
 			log.Println("resource.FindOne err")
-			
+
 			return err // Return if the child resource is not found
 		}
 
 		if err := r.CascadeDeleteResource(ctx, rel.ChildResourceId, childResource.ResourceType); err != nil {
 			log.Println("r.CascadeDeleteResource err")
-			
+
 			return err
 		}
 	}
 
 	// If the resource is a PROJECT, delete related repositories
 	if resourceType == enum.ResourceTypeProject {
-		_, err := r.projectRepo.DeleteOne(ctx,  map[string]any{"project_id": objId})
+		_, err := r.projectRepo.DeleteOne(ctx, map[string]any{"project_id": objId})
 		if err != nil {
 			log.Println("projectRepo.DeleteOne err")
 
