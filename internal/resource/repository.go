@@ -95,6 +95,33 @@ func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) 
 	return id.Hex(), nil
 }
 
+func (r *Repository) UpdateResource(ctx context.Context, dto UpdateResourceDTO, resourceID string) (string, error) {
+	objID, err := bson.ObjectIDFromHex(resourceID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err")
+		return "",err
+	}
+	update := map[string]any{
+		"$set": map[string]any{
+			"resource_name": dto.ResourceName,
+			"updated_at":    time.Now(), // Ensure `updated_at` is refreshed
+		},
+	}
+	// Update the resource in MongoDB
+	result, err := r.resource.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		log.Println("Error updating resource:", err)
+		return "", fmt.Errorf("error updating resource: %v", err)
+	}
+
+	// Check if any document was modified
+	if result.MatchedCount == 0 {
+		return "", fmt.Errorf("resource not found")
+	}
+
+	return objID.Hex(), nil
+}
+
 func (r *Repository) DeleteResource(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.resource.DeleteOne(ctx, filter)
 	if err != nil {

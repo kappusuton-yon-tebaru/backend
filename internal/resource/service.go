@@ -135,6 +135,17 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, par
 	return resourceId, nil
 }
 
+func (s *Service) UpdateResource(ctx context.Context, dto UpdateResourceDTO, id string) (string, *werror.WError) {
+	resourceId, err := s.repo.UpdateResource(ctx, dto, id)
+	if err != nil {
+		return "",werror.NewFromError(err).
+				SetCode(http.StatusBadRequest)
+	}
+
+	return resourceId,nil
+}
+
+
 func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
@@ -164,7 +175,9 @@ func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError 
 func (s *Service) CascadeDeleteResource(ctx context.Context, id string) *werror.WError {
 	resource, err := s.GetResourceByID(ctx,id)
 	if err != nil {
-		return werror.NewFromError(err)
+		return werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("resource not found")
 	}
 	
 	err2 := s.repo.CascadeDeleteResource(ctx,id,resource.ResourceType)
