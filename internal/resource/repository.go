@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -79,6 +80,8 @@ func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) 
 	resource := bson.M{
 		"resource_name": dto.ResourceName,
 		"resource_type": dto.ResourceType,
+		"created_at":    time.Now(),
+		"updated_at":    time.Now(),
 	}
 
 	result, err := r.resource.InsertOne(ctx, resource)

@@ -1,6 +1,8 @@
 package resource
 
 import (
+	"time"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -10,6 +12,8 @@ type ResourceDTO struct {
 	Id           bson.ObjectID     `bson:"_id"`
 	ResourceName string            `bson:"resource_name"`
 	ResourceType enum.ResourceType `bson:"resource_type"`
+	CreatedAt    time.Time          `bson:"created_at"`
+	UpdatedAt    time.Time          `bson:"updated_at"`
 }
 
 type CreateResourceDTO struct {
@@ -22,5 +26,7 @@ func DTOToResource(resource ResourceDTO) models.Resource {
 		Id:           resource.Id.Hex(),
 		ResourceName: resource.ResourceName,
 		ResourceType: resource.ResourceType,
+		CreatedAt:    resource.CreatedAt,
+		UpdatedAt:    resource.UpdatedAt,
 	}
 }
