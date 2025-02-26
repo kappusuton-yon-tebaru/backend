@@ -38,7 +38,9 @@ func (s *Service) GetProjectRepositoryByProjectId(ctx context.Context, projectId
 		"project_id": id,
 	}
 
-	dto, err := s.repo.GetProjectRepositoryByFilter(ctx, filter)
+	// dto, err := s.repo.GetProjectRepositoryByFilter(ctx, filter)
+	dto, err := s.repo.GetProjectRepositoryByFilterWithPipeline(ctx, filter)
+
 	if err != nil && err.Error() == "not found" {
 		return models.ProjectRepository{}, werror.NewFromError(err).SetCode(http.StatusNotFound).SetMessage("project repository not found")
 	} else if err != nil {

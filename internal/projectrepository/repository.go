@@ -48,7 +48,24 @@ func (r *Repository) GetAllProjectRepositories(ctx context.Context) ([]models.Pr
 	return projRepos, nil
 }
 
-func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (ProjectRepositoryDTO, error) {
+// func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter map[string]any) (models.ProjectRepository, error) {
+// 	var projectRepo ProjectRepositoryDTO
+
+// 	err := r.projRepo.FindOne(ctx, filter).Decode(&projectRepo)
+// 	if err != nil {
+// 		if err == mongo.ErrNoDocuments {
+// 			// No document found, return an empty Resource
+// 			return models.ProjectRepository{}, nil
+// 		}
+// 		log.Println("Error in FindOne:", err)
+// 		return models.ProjectRepository{}, err
+// 	}
+
+// 	// Convert DTO to the actual model
+// 	return DTOToProjectRepository(projectRepo), nil
+// }
+
+func (r *Repository) GetProjectRepositoryByFilterWithPipeline(ctx context.Context, filter map[string]any) (ProjectRepositoryDTO, error) {
 	pipeline := []map[string]any{
 		{
 			"$match": filter,
@@ -63,7 +80,8 @@ func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter ma
 		},
 		{
 			"$unwind": map[string]any{
-				"path": "$registry_provider",
+				"path":                       "$registry_provider",
+				"preserveNullAndEmptyArrays": true,
 			},
 		},
 		{
@@ -80,10 +98,12 @@ func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter ma
 	if err != nil {
 		return ProjectRepositoryDTO{}, err
 	}
-
-	defer cur.Close(ctx)
+	defer cur.Close(ctx) // Ensure the cursor closes after processing
 
 	if !cur.Next(ctx) {
+		if err := cur.Err(); err != nil {
+			return ProjectRepositoryDTO{}, err
+		}
 		return ProjectRepositoryDTO{}, errors.New("not found")
 	}
 
