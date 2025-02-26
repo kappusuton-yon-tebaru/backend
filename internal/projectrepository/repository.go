@@ -99,7 +99,6 @@ func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter ma
 func (r *Repository) CreateProjectRepository(ctx context.Context, projectId bson.ObjectID, dto CreateProjectRepositoryDTO) (string, error) {
 	// Check if project_id already exists
 	filter := bson.M{"project_id": projectId}
-	log.Println(filter)
 	count, err := r.projRepo.CountDocuments(ctx, filter)
 	if err != nil {
 		log.Println("Error checking existing project repository:", err)
@@ -109,7 +108,6 @@ func (r *Repository) CreateProjectRepository(ctx context.Context, projectId bson
 	if count > 0 {
 		return "", fmt.Errorf("project repository already exists")
 	}
-
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,
 		"project_id":   projectId,
