@@ -2,9 +2,9 @@ package ecr
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 )
 
@@ -40,14 +40,16 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	if projectRepo.RegistryProvider == nil || len(strings.TrimSpace(projectRepo.RegistryProvider.Uri)) == 0 {
+	pagination := models.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "registry provider uri must not be empty",
+			"message": "pagination should be integer",
 		})
 		return
 	}
 
-	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName)
+	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName, pagination.WithMinimum(1, 10))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",
