@@ -25,7 +25,9 @@ func (s *Service) GetECRImages(repoURI string, serviceName string, pagination mo
 	var response []ECRImageResponse
 	for _, img := range images {
 		if strings.Contains(img, serviceName) {
-			response = append(response, img)
+			response = append(response, ECRImageResponse{
+				ImageTag: img,
+			})
 		}
 	}
 
