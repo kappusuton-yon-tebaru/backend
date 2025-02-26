@@ -43,6 +43,48 @@ func (r *Repository) GetAllRegistryProviders(ctx context.Context) ([]models.Regi
 	return registryProviders, nil
 }
 
+func (r *Repository) GetAllRegistryProvidersWithoutProject(ctx context.Context) ([]models.RegistryProviders, error) {
+	pipeline := []map[string]any{
+		{
+			"$lookup": map[string]any{
+				"from":         "projects_repositories",
+				"localField":   "_id",
+				"foreignField": "registry_provider_id",
+				"as":           "projects",
+			},
+		},
+		{
+			"$match": map[string]any{
+				"projects": map[string]any{
+					"$size": 0,
+				},
+			},
+		},
+	}
+
+	cur, err := r.regProviders.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cur.Close(ctx)
+
+	registryProviders := make([]models.RegistryProviders, 0)
+
+	for cur.Next(ctx) {
+		var dto RegistryProvidersDTO
+
+		err = cur.Decode(&dto)
+		if err != nil {
+			return nil, err
+		}
+
+		registryProviders = append(registryProviders, DTOToRegistryProviders(dto))
+	}
+
+	return registryProviders, nil
+}
+
 func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[string]any) (models.RegistryProviders, error) {
 	var dto RegistryProvidersDTO
 

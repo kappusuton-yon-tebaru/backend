@@ -30,6 +30,15 @@ func (s *Service) GetAllRegistryProviders(ctx context.Context) ([]models.Registr
 	return regProviders, nil
 }
 
+func (s *Service) GetAllRegistryProvidersWithoutProject(ctx context.Context) ([]models.RegistryProviders, error) {
+	regProviders, err := s.repo.GetAllRegistryProvidersWithoutProject(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return regProviders, nil
+}
+
 func (s *Service) GetRegistryProviderById(ctx context.Context, id string) (models.RegistryProviders, *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
