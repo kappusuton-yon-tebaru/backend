@@ -49,45 +49,45 @@ func (r *Repository) GetAllResourceRelationships(ctx context.Context) ([]models.
 }
 
 func (r *Repository) GetChildrenResourceRelationshipByParentID(
-    ctx context.Context, filter map[string]any, limit int, offset int,
+	ctx context.Context, filter map[string]any, limit int, offset int,
 ) ([]models.ResourceRelationship, int, error) {
 
-    opts := options.Find()
-    opts.SetLimit(int64(limit))
-    opts.SetSkip(int64(offset))
+	opts := options.Find()
+	opts.SetLimit(int64(limit))
+	opts.SetSkip(int64(offset))
 
-    cur, err := r.resourceRela.Find(ctx, filter, opts)
-    if err != nil {
-        log.Println("Error in Find:", err)
-        return nil, 0, err
-    }
-    defer cur.Close(ctx) 
+	cur, err := r.resourceRela.Find(ctx, filter, opts)
+	if err != nil {
+		log.Println("Error in Find:", err)
+		return nil, 0, err
+	}
+	defer cur.Close(ctx)
 
-    childrenResources := make([]models.ResourceRelationship, 0)
+	childrenResources := make([]models.ResourceRelationship, 0)
 
-    for cur.Next(ctx) {
-        var childrenRe ResourceRelationshipDTO
-        err = cur.Decode(&childrenRe)
-        if err != nil {
-            log.Println("Error in Decode:", err)
-            return nil, 0, err
-        }
+	for cur.Next(ctx) {
+		var childrenRe ResourceRelationshipDTO
+		err = cur.Decode(&childrenRe)
+		if err != nil {
+			log.Println("Error in Decode:", err)
+			return nil, 0, err
+		}
 
-        childrenResources = append(childrenResources, DTOToResourceRelationship(childrenRe))
-    }
+		childrenResources = append(childrenResources, DTOToResourceRelationship(childrenRe))
+	}
 
-    if err := cur.Err(); err != nil {
-        log.Println("Cursor error:", err)
-        return nil, 0, err
-    }
+	if err := cur.Err(); err != nil {
+		log.Println("Cursor error:", err)
+		return nil, 0, err
+	}
 
-    totalCount, err := r.resourceRela.CountDocuments(ctx, filter)
-    if err != nil {
-        log.Println("Error in CountDocuments:", err)
-        return nil, 0, err
-    }
+	totalCount, err := r.resourceRela.CountDocuments(ctx, filter)
+	if err != nil {
+		log.Println("Error in CountDocuments:", err)
+		return nil, 0, err
+	}
 
-    return childrenResources, int(totalCount), nil
+	return childrenResources, int(totalCount), nil
 }
 
 func (r *Repository) CreateResourceRelationship(ctx context.Context, dto CreateResourceRelationshipDTO) (string, error) {

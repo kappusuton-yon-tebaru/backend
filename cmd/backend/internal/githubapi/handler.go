@@ -12,6 +12,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -19,15 +20,17 @@ type Handler struct {
 	cfg                *config.Config
 	service            *githubapi.Service
 	projectRepoService *projectrepository.Service
+	resourceService    *resource.Service
 	validator          *validator.Validator
 }
 
 // NewHandler creates a new Handler instance
-func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service, validator *validator.Validator) *Handler {
+func NewHandler(cfg *config.Config, service *githubapi.Service, projectRepoService *projectrepository.Service, resourceService *resource.Service, validator *validator.Validator) *Handler {
 	return &Handler{
 		cfg,
 		service,
 		projectRepoService,
+		resourceService,
 		validator,
 	}
 }
@@ -204,16 +207,13 @@ func (h *Handler) FetchFileContent(c *gin.Context) {
 	}
 
 	fullname := req.Owner + "/" + req.Repo
-	content, sha, err := h.service.FetchFileContent(c.Request.Context(), fullname, req.FilePath, req.Branch, req.Token)
+	fileContent, err := h.service.FetchFileContent(c.Request.Context(), fullname, req.FilePath, req.Branch, req.Token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"sha":     sha,
-		"content": content,
-	})
+	c.JSON(http.StatusOK, fileContent)
 }
 
 // CreateBranch handles requests to create a new branch.
@@ -359,11 +359,27 @@ func (h *Handler) GetServices(c *gin.Context) {
 		})
 		return
 	}
+	pagination := models.Pagination{
+		Limit: 10,
+		Page:  1,
+	}
+
+	err := c.ShouldBindQuery(&pagination)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		return
+	}
+
+	pagination.Page = max(pagination.Page, 1)
+	pagination.Limit = max(pagination.Limit, 10)
 
 	// Fetch project repository information by projectID
-	projRepo, err := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	projRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
+	if projectRepoErr != nil {
+		c.JSON(http.StatusNotFound, map[string]any{
+			"message": "project repository not found",
+			"error":   projectRepoErr.Error(),
+		})
 		return
 	}
 
@@ -375,7 +391,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 	}
 
 	// Retrieve the services from the repository
-	services, err3 := h.service.FindServices(c, fullname, token)
+	services, err3 := h.service.FindServices(c, fullname, token, pagination.Page, pagination.Limit)
 	if err3 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve services"})
 		return
@@ -385,8 +401,11 @@ func (h *Handler) GetServices(c *gin.Context) {
 	c.JSON(http.StatusOK, services)
 }
 
+// create repo in github then project and projectrepo
 func (h *Handler) CreateRepository(c *gin.Context) {
+	project_space_id := c.Param("project_space_id")
 	var req models.CreateRepoRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -411,14 +430,46 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Authorization header format"})
 		return
 	}
-
+	// create repo in github
 	repo, err := h.service.CreateRepository(c.Request.Context(), token, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// create project from repo name
+	project := resource.CreateResourceDTO{
+		ResourceName: repo.FullName,
+		ResourceType: "PROJECT",
+	}
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// // create projectrepo from repo url and resourceId
+	// projectID, err := bson.ObjectIDFromHex(resourceId)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	projectRepo := projectrepository.CreateProjectRepositoryDTO{
+		GitRepoUrl: repo.HTMLURL,
+		// ProjectId:  projectID,
+	}
 
-	c.JSON(http.StatusCreated, repo)
+	projectRepoID, projectRepoErr := h.projectRepoService.CreateProjectRepository(c.Request.Context(),resourceId, projectRepo)
+	if projectRepoErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": projectRepoErr.Error()})
+		return
+	}
+	response := map[string]interface{}{
+		"data": map[string]interface{}{
+			"repo":          repo,
+			"resourceId":    resourceId,
+			"projectRepoId": projectRepoID,
+		},
+	}
+	c.JSON(http.StatusCreated, response)
 }
 
 // Redirects user to GitHub OAuth authorization page
