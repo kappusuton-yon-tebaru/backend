@@ -101,10 +101,12 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		if err := s.rmq.Publish(ctx, bs); err != nil {
-			s.logger.Error("error occured while publishing build context", zap.Error(err))
-			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
-		}
+		fmt.Println(string(bs))
+
+		// if err := s.rmq.Publish(ctx, bs); err != nil {
+		// 	s.logger.Error("error occured while publishing build context", zap.Error(err))
+		// 	return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
+		// }
 	}
 
 	return resp.ParentId, nil
