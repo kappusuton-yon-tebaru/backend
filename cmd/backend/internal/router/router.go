@@ -49,6 +49,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
 	r.POST("/resources", app.ResourceHandler.CreateResource) // ?parent_id={id}
 	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
+	r.DELETE("/resources/cascade/:id", app.ResourceHandler.CascadeDeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
 	r.POST("/roles", app.RoleHandler.CreateRole)

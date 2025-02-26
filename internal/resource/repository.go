@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,11 +15,16 @@ import (
 
 type Repository struct {
 	resource *mongo.Collection
+	resourceRela *mongo.Collection
+	projectRepo *mongo.Collection
+
 }
 
 func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
 		resource: db.Collection("resources"),
+		resourceRela: db.Collection("resource_relationships"),
+		projectRepo: db.Collection("projects_repositories"),
 	}
 }
 
@@ -48,7 +54,7 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	return resources, nil
 }
 
-func (r *Repository) GetResourceByID(ctx context.Context, filter map[string]any) (models.Resource, error) {
+func (r *Repository) GetResourceByFilter(ctx context.Context, filter map[string]any) (models.Resource, error) {
 	var resource ResourceDTO
 
 	err := r.resource.FindOne(ctx, filter).Decode(&resource)
@@ -93,4 +99,97 @@ func (r *Repository) DeleteResource(ctx context.Context, filter map[string]any) 
 	}
 
 	return result.DeletedCount, nil
+}
+
+// Cascade delete function for organization → project_space → project
+func (r *Repository) CascadeDeleteResource(ctx context.Context, resourceID string, resourceType enum.ResourceType) error {
+
+	objId, err := bson.ObjectIDFromHex(resourceID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err")
+
+		return err
+	}
+
+	findChildFilter := map[string]any{
+		"parent_resource_id": objId,
+	}
+	
+	// Find all direct children of this resource
+	cur, err := r.resourceRela.Find(ctx, findChildFilter)
+	if err != nil {
+		log.Println("Error in Find:", err)
+		return err
+	}
+
+	defer cur.Close(ctx)
+
+	childRelationships := make([]models.ResourceRelationship, 0)
+
+	for cur.Next(ctx) {
+		var resourceRela resourcerelationship.ResourceRelationshipDTO
+
+		err = cur.Decode(&resourceRela)
+		if err != nil {
+			log.Println("Error in Find2:", err)
+			return err
+		}
+
+		childRelationships = append(childRelationships, resourcerelationship.DTOToResourceRelationship(resourceRela))
+	}
+
+	// Recursively delete all child resources
+	for _, rel := range childRelationships {
+		// Get child resource type before deleting (needed for repo deletion)
+		filter := map[string]any{
+			"_id": rel.ChildResourceId,
+		}
+		childResource,err := r.GetResourceByFilter(ctx,filter)
+		if err != nil {
+			log.Println("resource.FindOne err")
+			
+			return err // Return if the child resource is not found
+		}
+
+		if err := r.CascadeDeleteResource(ctx, rel.ChildResourceId, childResource.ResourceType); err != nil {
+			log.Println("r.CascadeDeleteResource err")
+			
+			return err
+		}
+	}
+
+	// If the resource is a PROJECT, delete related repositories
+	if resourceType == enum.ResourceTypeProject {
+		_, err := r.projectRepo.DeleteOne(ctx,  map[string]any{"project_id": objId})
+		if err != nil {
+			log.Println("projectRepo.DeleteOne err")
+
+			return err
+		}
+		log.Println("Deleted repositories for project:", objId)
+	}
+
+	// Delete all relationships where the resource is parent or child
+	_, err = r.resourceRela.DeleteMany(ctx, map[string]any{
+		"$or": []map[string]any{
+			{"parent_resource_id": objId},
+			{"child_resource_id": objId},
+		},
+	})
+	if err != nil {
+		log.Println("r.resourceRela.DeleteMany err")
+
+		return err
+	}
+
+	// Delete the resource itself
+	_, err = r.resource.DeleteOne(ctx, map[string]any{"_id": objId})
+	if err != nil {
+		log.Println("r.resource.DeleteOne err")
+
+		return err
+	}
+
+	log.Println("Deleted resource:", objId)
+	return nil
 }

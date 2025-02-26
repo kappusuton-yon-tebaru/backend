@@ -45,7 +45,7 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 		"_id": objId,
 	}
 
-	resource, err := s.repo.GetResourceByID(ctx, filter)
+	resource, err := s.repo.GetResourceByFilter(ctx, filter)
 	if err != nil {
 		return models.Resource{}, werror.NewFromError(err)
 	}
@@ -85,7 +85,7 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID s
         filter := map[string]any{
             "_id": objId,
         }
-        childrenResource, err := s.repo.GetResourceByID(ctx, filter)
+        childrenResource, err := s.repo.GetResourceByFilter(ctx, filter)
         if err != nil {
             return nil, 0, werror.NewFromError(err)
         }
@@ -143,11 +143,11 @@ func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError 
 			SetMessage("invalid resource id")
 	}
 
-	filter := map[string]any{
+	deleteFilter := map[string]any{
 		"_id": objId,
 	}
 
-	count, err := s.repo.DeleteResource(ctx, filter)
+	count, err := s.repo.DeleteResource(ctx, deleteFilter)
 	if err != nil {
 		return werror.NewFromError(err)
 	}
@@ -156,6 +156,20 @@ func (s *Service) DeleteResource(ctx context.Context, id string) *werror.WError 
 		return werror.New().
 			SetCode(http.StatusNotFound).
 			SetMessage("not found")
+	}
+
+	return nil
+}
+
+func (s *Service) CascadeDeleteResource(ctx context.Context, id string) *werror.WError {
+	resource, err := s.GetResourceByID(ctx,id)
+	if err != nil {
+		return werror.NewFromError(err)
+	}
+	
+	err2 := s.repo.CascadeDeleteResource(ctx,id,resource.ResourceType)
+	if err2!= nil {
+		return werror.NewFromError(err2)
 	}
 
 	return nil

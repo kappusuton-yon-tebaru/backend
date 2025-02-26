@@ -127,3 +127,24 @@ func (h *Handler) DeleteResource(ctx *gin.Context) {
 		"message": "deleted",
 	})
 }
+
+func (h *Handler) CascadeDeleteResource(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	err := h.service.CascadeDeleteResource(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message": "deleted",
+	})
+}
