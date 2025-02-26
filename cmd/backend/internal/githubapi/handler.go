@@ -375,11 +375,11 @@ func (h *Handler) GetServices(c *gin.Context) {
 	pagination.Limit = max(pagination.Limit, 10)
 
 	// Fetch project repository information by projectID
-	projRepo, err := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
-	if err != nil {
+	projRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(c, req.ProjectID)
+	if projectRepoErr != nil {
 		c.JSON(http.StatusNotFound, map[string]any{
 			"message": "project repository not found",
-			"error":   err.Error(),
+			"error":   projectRepoErr.Error(),
 		})
 		return
 	}
