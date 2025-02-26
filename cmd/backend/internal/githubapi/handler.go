@@ -456,9 +456,10 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		GitRepoUrl: repo.HTMLURL,
 		// ProjectId:  projectID,
 	}
-	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(),resourceId, projectRepo)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
+	projectRepoID, projectRepoErr := h.projectRepoService.CreateProjectRepository(c.Request.Context(),resourceId, projectRepo)
+	if projectRepoErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": projectRepoErr.Error()})
 		return
 	}
 	response := map[string]interface{}{
