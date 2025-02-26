@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 )
 
 type ECRRepository struct {
@@ -42,9 +43,12 @@ func GetRepoName(repoURI string) string {
 	return repoURI[strings.LastIndex(repoURI, "/")+1:]
 }
 
-func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
+func (r *ECRRepository) GetImages(repoURI string, pagination models.Pagination) (models.Paginated[ECRImageResponse], error) {
 	isPublic := IsPublicRepo(repoURI)
 	repoName := GetRepoName(repoURI)
+
+	offset := (pagination.Page - 1) * pagination.Limit;
+	end := offset + pagination.Limit;
 
 	if isPublic {
 		input := &ecrpublic.DescribeImageTagsInput{
@@ -53,15 +57,22 @@ func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
 
 		result, err := r.publicClient.DescribeImageTags(context.TODO(), input)
 		if err != nil {
-			return nil, err
+			return models.Paginated[ECRImageResponse]{}, err
 		}
 
-		var images []string
+		var images []ECRImageResponse
 		for _, image := range result.ImageTagDetails {
-			images = append(images, *image.ImageTag)
+			images = append(images, ECRImageResponse{
+				*image.ImageTag,
+			})
 		}
 
-		return images, nil
+		return models.Paginated[ECRImageResponse]{
+			Page:  pagination.Page,
+			Limit: pagination.Limit,
+			Total: len(images),
+			Data:  images[offset : end],
+		}, nil
 	} else {
 		input := &ecr.ListImagesInput{
 			RepositoryName: aws.String(repoName),
@@ -71,15 +82,22 @@ func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
 		}
 		result, err := r.client.ListImages(input)
 		if err != nil {
-			return nil, err
+			return models.Paginated[ECRImageResponse]{}, err
 		}
 
-		var images []string
+		var images []ECRImageResponse
 		for _, image := range result.ImageIds {
-			images = append(images, *image.ImageTag)
+			images = append(images, ECRImageResponse{
+				*image.ImageTag,
+			})
 		}
 
-		return images, nil
+		return models.Paginated[ECRImageResponse]{
+			Page:  pagination.Page,
+			Limit: pagination.Limit,
+			Total: len(images),
+			Data:  images[offset : end],
+		}, nil
 	}
 
 }
