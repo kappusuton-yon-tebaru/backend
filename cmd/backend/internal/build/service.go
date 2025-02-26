@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	sharedBuild "github.com/kappusuton-yon-tebaru/backend/internal/build"
@@ -39,11 +40,15 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 	}
 
 	if len(strings.TrimSpace(projRepo.GitRepoUrl)) == 0 {
-		return "", werror.New().SetMessage("git repository url cannot be empty")
+		return "", werror.New().
+			SetMessage("git repository url cannot be empty").
+			SetCode(http.StatusBadRequest)
 	}
 
-	if len(strings.TrimSpace(projRepo.RegistryProvider.Uri)) == 0 {
-		return "", werror.New().SetMessage("registry uri cannot be empty")
+	if projRepo.RegistryProvider == nil || len(strings.TrimSpace(projRepo.RegistryProvider.Uri)) == 0 {
+		return "", werror.New().
+			SetMessage("registry uri cannot be empty").
+			SetCode(http.StatusBadRequest)
 	}
 
 	jobs := []job.CreateJobDTO{}
@@ -78,10 +83,12 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		if err := s.rmq.Publish(ctx, bs); err != nil {
-			s.logger.Error("error occured while publishing build context", zap.Error(err))
-			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
-		}
+		fmt.Println(string(bs))
+
+		// if err := s.rmq.Publish(ctx, bs); err != nil {
+		// 	s.logger.Error("error occured while publishing build context", zap.Error(err))
+		// 	return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
+		// }
 	}
 
 	return resp.ParentId, nil

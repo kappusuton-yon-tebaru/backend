@@ -2,6 +2,7 @@ package ecr
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
@@ -35,6 +36,13 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, map[string]any{
 			"message": "project repository not found",
 			"error":   projectRepoErr.Error(),
+		})
+		return
+	}
+
+	if projectRepo.RegistryProvider == nil || len(strings.TrimSpace(projectRepo.RegistryProvider.Uri)) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "registry provider uri must not be empty",
 		})
 		return
 	}
