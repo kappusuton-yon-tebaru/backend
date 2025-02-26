@@ -96,9 +96,10 @@ func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter ma
 	return projectRepo, nil
 }
 
-func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProjectRepositoryDTO) (string, error) {
+func (r *Repository) CreateProjectRepository(ctx context.Context, projectId bson.ObjectID, dto CreateProjectRepositoryDTO) (string, error) {
 	// Check if project_id already exists
-	filter := bson.M{"project_id": dto.ProjectId}
+	filter := bson.M{"project_id": projectId}
+	log.Println(filter)
 	count, err := r.projRepo.CountDocuments(ctx, filter)
 	if err != nil {
 		log.Println("Error checking existing project repository:", err)
@@ -111,7 +112,7 @@ func (r *Repository) CreateProjectRepository(ctx context.Context, dto CreateProj
 
 	projRepo := bson.M{
 		"git_repo_url": dto.GitRepoUrl,
-		"project_id":   dto.ProjectId,
+		"project_id":   projectId,
 	}
 
 	result, err := r.projRepo.InsertOne(ctx, projRepo)

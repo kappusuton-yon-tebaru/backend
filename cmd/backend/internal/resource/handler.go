@@ -108,6 +108,40 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 	})
 }
 
+func (h *Handler) UpdateResource(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	var resourceDTO resource.UpdateResourceDTO
+
+	if err := ctx.ShouldBindJSON(&resourceDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	resourceId, err := h.service.UpdateResource(ctx, resourceDTO, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to update resource",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message":    "resource updated successfully",
+		"resourceId": resourceId,
+	})
+}
+
 func (h *Handler) DeleteResource(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -118,6 +152,27 @@ func (h *Handler) DeleteResource(ctx *gin.Context) {
 	}
 
 	err := h.service.DeleteResource(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message": "deleted",
+	})
+}
+
+func (h *Handler) CascadeDeleteResource(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	err := h.service.CascadeDeleteResource(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
