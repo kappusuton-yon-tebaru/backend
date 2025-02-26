@@ -37,9 +37,7 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]interface{}{
-		"data": regProviders,
-	})
+	ctx.JSON(http.StatusOK, regProviders)
 }
 
 func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
