@@ -459,9 +459,6 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 
 	projectRepoID, projectRepoErr := h.projectRepoService.CreateProjectRepository(c.Request.Context(), resourceId, projectRepo)
-	if projectRepoErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": projectRepoErr.Error()})
-		return
 	}
 	response := map[string]interface{}{
 		"data": map[string]interface{}{
