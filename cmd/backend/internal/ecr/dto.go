@@ -7,8 +7,8 @@ type GetECRImagesRequest struct {
 	ServiceName string `json:"service_name"`
 }
 
-// type ECRImageResponse struct {
-// 	ImageTag string `json:"image_tag"`
-// }
+type ECRImageResponse struct {
+	ImageTag string `json:"image_tag"`
+}
 
-type ECRImageResponse = string
+// type ECRImageResponse = string
