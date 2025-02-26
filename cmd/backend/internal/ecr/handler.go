@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 )
 
@@ -39,7 +40,16 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName)
+	pagination := models.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "pagination should be integer",
+		})
+		return
+	}
+
+	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName, pagination.WithMinimum(1, 10))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",

@@ -10,3 +10,5 @@ type GetECRImagesRequest struct {
 type ECRImageResponse struct {
 	ImageTag string `json:"image_tag"`
 }
+
+// type ECRImageResponse = string

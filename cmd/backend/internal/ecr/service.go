@@ -1,6 +1,10 @@
 package ecr
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+)
 
 type Service struct {
 	repo *ECRRepository
@@ -12,10 +16,10 @@ func NewService(repo *ECRRepository) *Service {
 	}
 }
 
-func (s *Service) GetECRImages(repoURI string, serviceName string) ([]ECRImageResponse, error) {
+func (s *Service) GetECRImages(repoURI string, serviceName string, pagination models.Pagination) (models.Paginated[ECRImageResponse], error) {
 	images, err := s.repo.GetImages(repoURI)
 	if err != nil {
-		return nil, err
+		return models.Paginated[ECRImageResponse]{}, err
 	}
 
 	var response []ECRImageResponse
@@ -27,5 +31,10 @@ func (s *Service) GetECRImages(repoURI string, serviceName string) ([]ECRImageRe
 		}
 	}
 
-	return response, nil
+	return models.Paginated[ECRImageResponse]{
+		Page: pagination.Page,
+		Limit: pagination.Limit,
+		Total: len(response),
+		Data: response,
+	} , nil
 }
