@@ -21,13 +21,18 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllRegistryProviders(ctx context.Context) ([]models.RegistryProviders, error) {
+func (s *Service) GetAllRegistryProviders(ctx context.Context, pagination models.Pagination) (models.Paginated[models.RegistryProviders], error) {
 	regProviders, err := s.repo.GetAllRegistryProviders(ctx)
 	if err != nil {
-		return nil, err
+		return models.Paginated[models.RegistryProviders]{}, err
 	}
 
-	return regProviders, nil
+	return models.Paginated[models.RegistryProviders]{
+		Page:  pagination.Page,
+		Limit: pagination.Limit,
+		Total: len(regProviders),
+		Data:  regProviders,
+	}, nil
 }
 
 func (s *Service) GetAllRegistryProvidersWithoutProject(ctx context.Context) ([]models.RegistryProviders, error) {
