@@ -63,7 +63,8 @@ func (r *Repository) GetProjectRepositoryByFilter(ctx context.Context, filter ma
 		},
 		{
 			"$unwind": map[string]any{
-				"path": "$registry_provider",
+				"path":                       "$registry_provider",
+				"preserveNullAndEmptyArrays": true,
 			},
 		},
 		{

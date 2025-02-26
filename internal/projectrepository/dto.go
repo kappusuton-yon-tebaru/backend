@@ -5,6 +5,7 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -25,6 +26,11 @@ type CreateProjectRepositoryDTO struct {
 }
 
 func DTOToProjectRepository(projrepo ProjectRepositoryDTO) models.ProjectRepository {
+	regProvider := (*models.RegistryProviders)(nil)
+	if projrepo.RegistryProvider != nil {
+		regProvider = utils.Pointer(regproviders.DTOToRegistryProviders(*projrepo.RegistryProvider))
+	}
+
 	return models.ProjectRepository{
 		Id:               projrepo.Id.Hex(),
 		GitRepoUrl:       projrepo.GitRepoUrl,
