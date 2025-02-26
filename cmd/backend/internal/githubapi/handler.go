@@ -14,7 +14,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Handler struct {
@@ -447,17 +446,17 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// create projectrepo from repo url and resourceId
-	projectID, err := bson.ObjectIDFromHex(resourceId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// // create projectrepo from repo url and resourceId
+	// projectID, err := bson.ObjectIDFromHex(resourceId)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
 	projectRepo := projectrepository.CreateProjectRepositoryDTO{
 		GitRepoUrl: repo.HTMLURL,
-		ProjectId:  projectID,
+		// ProjectId:  projectID,
 	}
-	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(), projectRepo)
+	projectRepoID, err := h.projectRepoService.CreateProjectRepository(c.Request.Context(),resourceId, projectRepo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

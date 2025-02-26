@@ -47,6 +47,13 @@ func (h *Handler) GetProjectRepositoryByProjectId(ctx *gin.Context) {
 }
 
 func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
+	pid := ctx.Param("id")
+	if len(pid) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
 	var projRepoDTO projectrepository.CreateProjectRepositoryDTO
 
 	if err := ctx.ShouldBindJSON(&projRepoDTO); err != nil {
@@ -57,7 +64,7 @@ func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateProjectRepository(ctx, projRepoDTO)
+	id, err := h.service.CreateProjectRepository(ctx,pid, projRepoDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create project repository",
