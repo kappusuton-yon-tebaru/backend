@@ -30,7 +30,7 @@ func (r *Repository) GetAllRegistryProviders(ctx context.Context, pagination mod
 			},
 		},
 	})
-	
+
 	cur, err := r.regProviders.Aggregate(ctx, pipeline)
 	if err != nil {
 		return models.Paginated[RegistryProvidersDTO]{}, err
@@ -114,7 +114,7 @@ func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegi
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	
+
 	result, err := r.regProviders.InsertOne(ctx, request)
 	if err != nil {
 		return primitive.NilObjectID.Hex(), err
