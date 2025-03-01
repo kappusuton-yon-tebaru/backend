@@ -3,9 +3,11 @@ package job
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -24,8 +26,8 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pagination) (models.Paginated[JobParentDTO], error) {
-	pipeline := utils.NewPaginationAggregationPipeline(pagination,
+func (r *Repository) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (models.Paginated[JobParentDTO], error) {
+	pipeline := utils.NewFilterAggregationPipeline(queryParam,
 		[]map[string]any{
 			{
 				"$lookup": map[string]any{
@@ -47,13 +49,10 @@ func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pag
 					"jobs":       true,
 				},
 			},
-			{
-				"$sort": map[string]any{
-					"created_at": -1,
-				},
-			},
 		},
 	)
+
+	fmt.Println(pipeline)
 
 	cur, err := r.job.Aggregate(ctx, pipeline)
 	if err != nil {
@@ -75,8 +74,8 @@ func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pag
 	return dto, nil
 }
 
-func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID, pagination models.Pagination) (models.Paginated[JobDTO], error) {
-	pipeline := utils.NewPaginationAggregationPipeline(pagination, []map[string]any{
+func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID, queryParam query.QueryParam) (models.Paginated[JobDTO], error) {
+	pipeline := utils.NewFilterAggregationPipeline(queryParam, []map[string]any{
 		{
 			"$match": map[string]any{
 				"parent_job_id": id,

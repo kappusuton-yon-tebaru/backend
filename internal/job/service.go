@@ -6,6 +6,7 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -22,8 +23,8 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllJobParents(ctx context.Context, pagination models.Pagination) (PaginatedJobs, error) {
-	dtos, err := s.repo.GetAllJobParents(ctx, pagination)
+func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (PaginatedJobs, error) {
+	dtos, err := s.repo.GetAllJobParents(ctx, queryParam)
 	if err != nil {
 		return PaginatedJobs{}, err
 	}
@@ -73,7 +74,7 @@ func (s *Service) GetAllJobParents(ctx context.Context, pagination models.Pagina
 	}, nil
 }
 
-func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, pagination models.Pagination) (models.Paginated[models.Job], *werror.WError) {
+func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, queryParam query.QueryParam) (models.Paginated[models.Job], *werror.WError) {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return models.Paginated[models.Job]{}, werror.NewFromError(err).
@@ -81,7 +82,7 @@ func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, paginatio
 			SetMessage("invalid parent job id")
 	}
 
-	dtos, err := s.repo.GetAllJobsByParentId(ctx, objId, pagination)
+	dtos, err := s.repo.GetAllJobsByParentId(ctx, objId, queryParam)
 	if err != nil {
 		return models.Paginated[models.Job]{}, werror.NewFromError(err)
 	}

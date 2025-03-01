@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 )
 
@@ -36,7 +36,7 @@ func (h *Handler) GetChildrenResourceRelationshipByParentID(ctx *gin.Context) {
 		return
 	}
 
-	pagination := models.Pagination{
+	pagination := query.Pagination{
 		Limit: 10,
 		Page:  1,
 	}
