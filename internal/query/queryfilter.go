@@ -23,6 +23,13 @@ func (p Pagination) WithMinimum(minimumPage, minimumLimit int) Pagination {
 
 type QueryFilter struct {
 	Query string `form:"query"`
+	Key   string
+}
+
+func NewQueryFilter(key string) QueryFilter {
+	return QueryFilter{
+		Key: key,
+	}
 }
 
 type SortFilter struct {

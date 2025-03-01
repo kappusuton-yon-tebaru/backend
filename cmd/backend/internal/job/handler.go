@@ -108,7 +108,8 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 	}
 
 	queryParam := query.NewQueryParam().
-		WithPagination(pagination.WithMinimum(1, 10))
+		WithPagination(pagination.WithMinimum(1, 10)).
+		WithSortQuery(sortFilter)
 
 	jobs, werr := h.service.GetAllJobsByParentId(ctx, id, queryParam)
 	if werr != nil {

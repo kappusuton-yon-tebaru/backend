@@ -1,14 +1,16 @@
 package query
 
 type QueryParam struct {
-	Pagination *Pagination
-	SortFilter *SortFilter
+	Pagination  *Pagination
+	SortFilter  *SortFilter
+	QueryFilter *QueryFilter
 }
 
 func NewQueryParam() QueryParam {
 	return QueryParam{
-		Pagination: nil,
-		SortFilter: nil,
+		Pagination:  nil,
+		SortFilter:  nil,
+		QueryFilter: nil,
 	}
 }
 
@@ -19,5 +21,10 @@ func (q QueryParam) WithPagination(p Pagination) QueryParam {
 
 func (q QueryParam) WithSortQuery(s SortFilter) QueryParam {
 	q.SortFilter = &s
+	return q
+}
+
+func (q QueryParam) WithQueryFilter(s QueryFilter) QueryParam {
+	q.QueryFilter = &s
 	return q
 }
