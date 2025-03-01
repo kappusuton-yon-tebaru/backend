@@ -109,8 +109,8 @@ func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, erro
 	return id, nil
 }
 
-func (s *Service) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, *werror.WError) {
-	resp, err := s.repo.CreateGroupJobs(ctx, dtos)
+func (s *Service) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, *werror.WError) {
+	resp, err := s.repo.CreateGroupJobs(ctx, dto)
 	if err != nil {
 		return CreateGroupJobsResponse{}, werror.NewFromError(err).SetMessage("error occured while creating jobs")
 	}

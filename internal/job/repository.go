@@ -119,7 +119,7 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 	return id.Hex(), nil
 }
 
-func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, error) {
+func (r *Repository) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, error) {
 	session, err := r.db.Client().StartSession()
 	if err != nil {
 		return CreateGroupJobsResponse{}, err
@@ -134,6 +134,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 
 		parentJob := CreateJobDTO{
 			JobParentId: bson.NilObjectID,
+			ProjectId:   dto.ProjectId,
 			CreatedAt:   now,
 		}
 
@@ -144,12 +145,12 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 
 		parentId = result.InsertedID.(bson.ObjectID)
 
-		for i := range len(dtos) {
-			dtos[i].JobParentId = parentId
-			dtos[i].CreatedAt = now
+		for i := range len(dto.Jobs) {
+			dto.Jobs[i].JobParentId = parentId
+			dto.Jobs[i].CreatedAt = now
 		}
 
-		results, err := r.job.InsertMany(ctx, dtos)
+		results, err := r.job.InsertMany(ctx, dto.Jobs)
 		if err != nil {
 			return nil, err
 		}

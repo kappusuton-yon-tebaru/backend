@@ -21,7 +21,14 @@ type CreateJobDTO struct {
 	JobParentId bson.ObjectID `bson:"parent_job_id"`
 	JobType     string        `bson:"job_type,omitempty"`
 	JobStatus   string        `bson:"job_status,omitempty"`
+	ProjectId   bson.ObjectID `bson:"project_id"`
+	ServiceName string        `bson:"service_name"`
 	CreatedAt   time.Time     `bson:"created_at"`
+}
+
+type CreateJobGroupDTO struct {
+	ProjectId bson.ObjectID
+	Jobs      []CreateJobDTO
 }
 
 func DTOToJob(job JobDTO) models.Job {
