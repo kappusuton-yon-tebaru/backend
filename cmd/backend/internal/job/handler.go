@@ -1,12 +1,15 @@
 package job
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -41,9 +44,10 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.validator.Var(sortFilter.SortBy, "omitempty,oneof=created_at"); err != nil {
+	availableSortKey := []string{"created_at", "project.name"}
+	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "sort key can only be 'created_at'",
+			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
 		})
 		return
 	}
@@ -103,9 +107,10 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.validator.Var(sortFilter.SortBy, "omitempty,oneof=created_at job_status"); err != nil {
+	availableSortKey := []string{"created_at", "job_status", "service_name", "project.name"}
+	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "sort key can only be 'created_at' or 'job_status'",
+			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
 		})
 		return
 	}
