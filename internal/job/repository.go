@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
@@ -66,10 +65,6 @@ func (r *Repository) GetAllJobParents(ctx context.Context, queryParam query.Quer
 			},
 		},
 	)
-
-	for _, p := range pipeline {
-		fmt.Println(p)
-	}
 
 	cur, err := r.job.Aggregate(ctx, pipeline)
 	if err != nil {
