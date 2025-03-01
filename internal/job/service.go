@@ -61,6 +61,10 @@ func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryPa
 			Id:        dto.Id.Hex(),
 			CreatedAt: dto.CreatedAt,
 			JobStatus: finalStatus,
+			Project: models.JobProject{
+				Id:   dto.Project.Id.Hex(),
+				Name: dto.Project.ResourceName,
+			},
 		}
 
 		jobs = append(jobs, job)

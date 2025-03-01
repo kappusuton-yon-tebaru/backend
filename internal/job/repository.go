@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
@@ -43,16 +42,29 @@ func (r *Repository) GetAllJobParents(ctx context.Context, queryParam query.Quer
 				},
 			},
 			{
+				"$lookup": map[string]any{
+					"from":         "resources",
+					"localField":   "project_id",
+					"foreignField": "_id",
+					"as":           "project",
+				},
+			},
+			{
+				"$unwind": map[string]any{
+					"path":                       "$project",
+					"preserveNullAndEmptyArrays": true,
+				},
+			},
+			{
 				"$project": map[string]any{
 					"$id":        true,
 					"created_at": true,
 					"jobs":       true,
+					"project":    true,
 				},
 			},
 		},
 	)
-
-	fmt.Println(pipeline)
 
 	cur, err := r.job.Aggregate(ctx, pipeline)
 	if err != nil {
@@ -79,6 +91,20 @@ func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID,
 		{
 			"$match": map[string]any{
 				"parent_job_id": id,
+			},
+		},
+		{
+			"$lookup": map[string]any{
+				"from":         "resources",
+				"localField":   "project_id",
+				"foreignField": "_id",
+				"as":           "project",
+			},
+		},
+		{
+			"$unwind": map[string]any{
+				"path":                       "$project",
+				"preserveNullAndEmptyArrays": true,
 			},
 		},
 		{
