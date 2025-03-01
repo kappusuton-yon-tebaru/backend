@@ -8,6 +8,21 @@ import (
 func NewFilterAggregationPipeline(queryParam query.QueryParam, pipelines []map[string]any) []map[string]any {
 	filters := []map[string]any{}
 
+	if queryParam.QueryFilter != nil {
+		query := queryParam.QueryFilter
+
+		filters = append(filters,
+			map[string]any{
+				"$match": map[string]any{
+					query.Key: map[string]any{
+						"$regex":   query.Query,
+						"$options": "i",
+					},
+				},
+			},
+		)
+	}
+
 	if queryParam.SortFilter != nil {
 		sort := queryParam.SortFilter
 
@@ -50,14 +65,30 @@ func NewFilterAggregationPipeline(queryParam query.QueryParam, pipelines []map[s
 				},
 				{
 					"$unwind": map[string]any{
-						"path": "$metadata",
+						"path":                       "$metadata",
+						"preserveNullAndEmptyArrays": true,
 					},
 				}, {
 					"$project": map[string]any{
-						"limit": "$metadata.limit",
-						"page":  "$metadata.page",
-						"total": "$metadata.total",
-						"data":  1,
+						"limit": map[string]any{
+							"$ifNull": []any{
+								"$metadata.limit",
+								pagination.Limit,
+							},
+						},
+						"page": map[string]any{
+							"$ifNull": []any{
+								"$metadata.page",
+								pagination.Page,
+							},
+						},
+						"total": map[string]any{
+							"$ifNull": []any{
+								"$metadata.total",
+								0,
+							},
+						},
+						"data": true,
 					},
 				},
 			}...,

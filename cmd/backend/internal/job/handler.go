@@ -32,7 +32,7 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		return
 	}
 
-	sortFilter := query.NewSortQueryWithDefault(enum.Desc)
+	sortFilter := query.NewSortQueryWithDefault("created_at", enum.Desc)
 	err = ctx.ShouldBindQuery(&sortFilter)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -41,7 +41,7 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.validator.Var(sortFilter.SortBy, "oneof=created_at"); err != nil {
+	if err := h.validator.Var(sortFilter.SortBy, "omitempty,oneof=created_at"); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"error": "sort key can only be 'created_at'",
 		})
@@ -55,9 +55,19 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		return
 	}
 
+	queryFilter := query.NewQueryFilter("project.resource_name")
+	err = ctx.ShouldBindQuery(&queryFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "invalid query",
+		})
+		return
+	}
+
 	queryParam := query.NewQueryParam().
 		WithPagination(pagination.WithMinimum(1, 10)).
-		WithSortQuery(sortFilter)
+		WithSortQuery(sortFilter).
+		WithQueryFilter(queryFilter)
 
 	jobs, err := h.service.GetAllJobParents(ctx, queryParam)
 	if err != nil {
@@ -84,7 +94,7 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
-	sortFilter := query.NewSortQueryWithDefault(enum.Desc)
+	sortFilter := query.NewSortQueryWithDefault("created_at", enum.Desc)
 	err = ctx.ShouldBindQuery(&sortFilter)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -93,7 +103,7 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.validator.Var(sortFilter.SortBy, "oneof=created_at job_status"); err != nil {
+	if err := h.validator.Var(sortFilter.SortBy, "omitempty,oneof=created_at job_status"); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"error": "sort key can only be 'created_at' or 'job_status'",
 		})
@@ -107,9 +117,19 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 		return
 	}
 
+	queryFilter := query.NewQueryFilter("service_name")
+	err = ctx.ShouldBindQuery(&queryFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "invalid query",
+		})
+		return
+	}
+
 	queryParam := query.NewQueryParam().
 		WithPagination(pagination.WithMinimum(1, 10)).
-		WithSortQuery(sortFilter)
+		WithSortQuery(sortFilter).
+		WithQueryFilter(queryFilter)
 
 	jobs, werr := h.service.GetAllJobsByParentId(ctx, id, queryParam)
 	if werr != nil {

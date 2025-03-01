@@ -37,9 +37,9 @@ type SortFilter struct {
 	SortOrder enum.SortOrder `form:"sort_order" validate:"oneof=asc desc"`
 }
 
-func NewSortQueryWithDefault(defaultOrder enum.SortOrder) SortFilter {
+func NewSortQueryWithDefault(defaultKey string, defaultOrder enum.SortOrder) SortFilter {
 	return SortFilter{
-		SortBy:    "",
+		SortBy:    defaultKey,
 		SortOrder: defaultOrder,
 	}
 }
