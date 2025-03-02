@@ -11,9 +11,9 @@ type UserDTO struct {
 	Password string        `bson:"password"`
 }
 
-type RegisterDTO struct {
-	Username string `json:"username" bson:"username" validate:"required"`
-	Password string `json:"password" bson:"password" validate:"required"`
+type UserCredentialDTO struct {
+	Email    string `bson:"email"`
+	Password string `bson:"password"`
 }
 
 func DTOToUser(user UserDTO) models.User {
