@@ -213,6 +213,7 @@ func Initialize() (*App, error) {
 		githubapi.NewHandler,
 		auth.NewHandler,
 		sharedAuth.NewService,
+		sharedAuth.NewRepository,
 		New,
 	)
 
