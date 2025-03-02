@@ -33,6 +33,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/middleware"
 
 	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 
@@ -87,6 +88,7 @@ type App struct {
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi.Handler
 	AuthHandler                 *auth.Handler
+	Middleware                  *middleware.Middleware
 }
 
 func New(
@@ -117,6 +119,7 @@ func New(
 	GithubAPIHandler *githubapi.Handler,
 	DeployHandler *deploy.Handler,
 	AuthHandler *auth.Handler,
+	Middleware *middleware.Middleware,
 ) *App {
 	return &App{
 		Logger,
@@ -146,6 +149,7 @@ func New(
 		ReverseProxyHandler,
 		GithubAPIHandler,
 		AuthHandler,
+		Middleware,
 	}
 }
 
@@ -220,6 +224,7 @@ func Initialize() (*App, error) {
 		auth.NewHandler,
 		sharedAuth.NewService,
 		sharedAuth.NewRepository,
+		middleware.NewMiddleware,
 		New,
 	)
 
