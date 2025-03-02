@@ -20,40 +20,6 @@ func NewHandler(service *user.Service, validator *validator.Validator) *Handler 
 	}
 }
 
-func (h *Handler) Register(ctx *gin.Context) {
-	var req RegisterReq
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "invalid body",
-		})
-		return
-	}
-
-	if err := h.validator.Struct(req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"errors": h.validator.Translate(err),
-		})
-		return
-	}
-
-	credential := user.UserCredentialDTO{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-
-	werr := h.service.Register(ctx, credential)
-	if werr != nil {
-		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
-			"error": werr.GetMessageOr("internal server error"),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "user created",
-	})
-}
-
 func (h *Handler) GetAllUsers(ctx *gin.Context) {
 	images, err := h.service.GetAllUsers(ctx)
 	if err != nil {
