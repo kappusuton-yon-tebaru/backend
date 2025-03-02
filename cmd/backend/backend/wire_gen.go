@@ -78,9 +78,16 @@ func Initialize() (*App, error) {
 	svcdeployenvRepository := svcdeployenv.NewRepository(database)
 	svcdeployenvService := svcdeployenv.NewService(svcdeployenvRepository)
 	svcdeployenvHandler := svcdeployenv2.NewHandler(svcdeployenvService)
-	userRepository := user.NewRepository(database)
-	userService := user.NewService(userRepository)
-	userHandler := user2.NewHandler(userService)
+	userRepository, err := user.NewRepository(database)
+	if err != nil {
+		return nil, err
+	}
+	userService := user.NewService(userRepository, loggerLogger)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	userHandler := user2.NewHandler(userService, validatorValidator)
 	usergroupRepository := usergroup.NewRepository(database)
 	usergroupService := usergroup.NewService(usergroupRepository)
 	usergroupHandler := usergroup2.NewHandler(usergroupService)
@@ -102,10 +109,6 @@ func Initialize() (*App, error) {
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
-	validatorValidator, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
