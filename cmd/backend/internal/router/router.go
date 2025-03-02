@@ -48,6 +48,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.POST("/auth/register", app.AuthHandler.Register)
 	r.POST("/auth/login", app.AuthHandler.Login)
+	r.POST("/auth/logout", app.AuthHandler.Logout)
 
 	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
 	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)
