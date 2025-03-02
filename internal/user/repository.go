@@ -29,7 +29,7 @@ func NewRepository(db *mongo.Database) (*Repository, error) {
 func (r *Repository) ensureIndexes(ctx context.Context) error {
 	index := mongo.IndexModel{
 		Keys: map[string]any{
-			"username": 1,
+			"email": 1,
 		},
 		Options: options.Index().SetUnique(true),
 	}
@@ -68,7 +68,7 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, dto RegisterDTO) (string, error) {
+func (r *Repository) CreateUser(ctx context.Context, dto UserCredentialDTO) (string, error) {
 	result, err := r.user.InsertOne(ctx, dto)
 	if err != nil {
 		return bson.NilObjectID.Hex(), err
