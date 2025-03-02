@@ -12,6 +12,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
@@ -359,7 +360,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 		})
 		return
 	}
-	pagination := models.Pagination{
+	pagination := query.Pagination{
 		Limit: 10,
 		Page:  1,
 	}
@@ -457,7 +458,7 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		// ProjectId:  projectID,
 	}
 
-	projectRepoID, projectRepoErr := h.projectRepoService.CreateProjectRepository(c.Request.Context(),resourceId, projectRepo)
+	projectRepoID, projectRepoErr := h.projectRepoService.CreateProjectRepository(c.Request.Context(), resourceId, projectRepo)
 	if projectRepoErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": projectRepoErr.Error()})
 		return

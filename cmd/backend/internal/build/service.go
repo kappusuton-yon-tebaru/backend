@@ -14,6 +14,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.uber.org/zap"
 )
 
@@ -34,6 +35,11 @@ func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Log
 }
 
 func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
+	projectId, err := bson.ObjectIDFromHex(req.ProjectId)
+	if err != nil {
+		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(400)
+	}
+
 	projRepo, werr := s.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId)
 	if werr != nil {
 		return "", werr
@@ -52,14 +58,21 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 	}
 
 	jobs := []job.CreateJobDTO{}
-	for range len(req.Services) {
+	for _, service := range req.Services {
 		jobs = append(jobs, job.CreateJobDTO{
-			JobType:   string(enum.JobTypeBuild),
-			JobStatus: string(enum.JobStatusPending),
+			JobType:     string(enum.JobTypeBuild),
+			JobStatus:   string(enum.JobStatusPending),
+			ProjectId:   projectId,
+			ServiceName: service.ServiceName,
 		})
 	}
 
-	resp, werr := s.jobService.CreateGroupJobs(ctx, jobs)
+	dto := job.CreateJobGroupDTO{
+		ProjectId: projectId,
+		Jobs:      jobs,
+	}
+
+	resp, werr := s.jobService.CreateGroupJobs(ctx, dto)
 	if werr != nil {
 		s.logger.Error("error occured while creating jobs", zap.Error(werr.Err))
 		return "", werr
@@ -83,12 +96,10 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		fmt.Println(string(bs))
-
-		// if err := s.rmq.Publish(ctx, bs); err != nil {
-		// 	s.logger.Error("error occured while publishing build context", zap.Error(err))
-		// 	return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
-		// }
+		if err := s.rmq.Publish(ctx, bs); err != nil {
+			s.logger.Error("error occured while publishing build context", zap.Error(err))
+			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
+		}
 	}
 
 	return resp.ParentId, nil

@@ -11,7 +11,12 @@ type Job struct {
 	JobParentId string         `json:"job_parent_id,omitempty"`
 	JobType     string         `json:"job_type,omitempty"`
 	JobStatus   enum.JobStatus `json:"job_status"`
-	JobDuration int            `json:"job_duration,omitempty"`
-	JsonLogs    string         `json:"json_logs,omitempty"`
+	ServiceName string         `json:"service_name,omitempty"`
+	Project     JobProject     `json:"project"`
 	CreatedAt   time.Time      `json:"created_at"`
+}
+
+type JobProject struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -24,8 +25,8 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pagination) (models.Paginated[JobParentDTO], error) {
-	pipeline := utils.NewPaginationAggregationPipeline(pagination,
+func (r *Repository) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (models.Paginated[JobParentDTO], error) {
+	pipeline := utils.NewFilterAggregationPipeline(queryParam,
 		[]map[string]any{
 			{
 				"$lookup": map[string]any{
@@ -41,15 +42,25 @@ func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pag
 				},
 			},
 			{
+				"$lookup": map[string]any{
+					"from":         "resources",
+					"localField":   "project_id",
+					"foreignField": "_id",
+					"as":           "project",
+				},
+			},
+			{
+				"$unwind": map[string]any{
+					"path":                       "$project",
+					"preserveNullAndEmptyArrays": true,
+				},
+			},
+			{
 				"$project": map[string]any{
 					"$id":        true,
 					"created_at": true,
 					"jobs":       true,
-				},
-			},
-			{
-				"$sort": map[string]any{
-					"created_at": -1,
+					"project":    true,
 				},
 			},
 		},
@@ -75,16 +86,25 @@ func (r *Repository) GetAllJobParents(ctx context.Context, pagination models.Pag
 	return dto, nil
 }
 
-func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID, pagination models.Pagination) (models.Paginated[JobDTO], error) {
-	pipeline := utils.NewPaginationAggregationPipeline(pagination, []map[string]any{
+func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID, queryParam query.QueryParam) (models.Paginated[JobDTO], error) {
+	pipeline := utils.NewFilterAggregationPipeline(queryParam, []map[string]any{
 		{
 			"$match": map[string]any{
 				"parent_job_id": id,
 			},
 		},
 		{
-			"$sort": map[string]any{
-				"created_at": -1,
+			"$lookup": map[string]any{
+				"from":         "resources",
+				"localField":   "project_id",
+				"foreignField": "_id",
+				"as":           "project",
+			},
+		},
+		{
+			"$unwind": map[string]any{
+				"path":                       "$project",
+				"preserveNullAndEmptyArrays": true,
 			},
 		},
 	})
@@ -120,7 +140,7 @@ func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, e
 	return id.Hex(), nil
 }
 
-func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (CreateGroupJobsResponse, error) {
+func (r *Repository) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, error) {
 	session, err := r.db.Client().StartSession()
 	if err != nil {
 		return CreateGroupJobsResponse{}, err
@@ -135,6 +155,7 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 
 		parentJob := CreateJobDTO{
 			JobParentId: bson.NilObjectID,
+			ProjectId:   dto.ProjectId,
 			CreatedAt:   now,
 		}
 
@@ -145,12 +166,12 @@ func (r *Repository) CreateGroupJobs(ctx context.Context, dtos []CreateJobDTO) (
 
 		parentId = result.InsertedID.(bson.ObjectID)
 
-		for i := range len(dtos) {
-			dtos[i].JobParentId = parentId
-			dtos[i].CreatedAt = now
+		for i := range len(dto.Jobs) {
+			dto.Jobs[i].JobParentId = parentId
+			dto.Jobs[i].CreatedAt = now
 		}
 
-		results, err := r.job.InsertMany(ctx, dtos)
+		results, err := r.job.InsertMany(ctx, dto.Jobs)
 		if err != nil {
 			return nil, err
 		}
