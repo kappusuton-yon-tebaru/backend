@@ -93,3 +93,7 @@ func (h *Handler) Login(ctx *gin.Context) {
 		"message": "logged in",
 	})
 }
+
+func (h *Handler) Logout(ctx *gin.Context) {
+	ctx.SetCookie("session_token", "", -1, "/", "localhost", false, true)
+}
