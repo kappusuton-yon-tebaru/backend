@@ -8,6 +8,7 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
@@ -96,4 +97,20 @@ func (s *Service) CreateSession(ctx context.Context, userId string) (string, *we
 	}
 
 	return sessionId, nil
+}
+
+func (s *Service) GetSession(ctx context.Context, sessionId string) (models.Session, *werror.WError) {
+	id, err := bson.ObjectIDFromHex(sessionId)
+	if err != nil {
+		return models.Session{}, werror.NewFromError(err).SetMessage("invalid session id").SetCode(http.StatusUnauthorized)
+	}
+
+	session, err := s.sessionRepo.GetSessionById(ctx, id)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return models.Session{}, werror.New().SetMessage("session not found").SetCode(http.StatusNotFound)
+	} else if err != nil {
+		return models.Session{}, werror.NewFromError(err)
+	}
+
+	return session, nil
 }

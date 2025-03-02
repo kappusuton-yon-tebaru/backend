@@ -33,7 +33,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 		r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	r.GET("/", app.GreetingHandler.Greeting)
+	authenticated := r.Group("/", app.Middleware.Authentication())
+
+	authenticated.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/images", app.ImageHandler.GetAllImages)
 	r.DELETE("/image/:id", app.ImageHandler.DeleteImage)

@@ -36,6 +36,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/middleware"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
@@ -149,7 +150,8 @@ func Initialize() (*App, error) {
 	}
 	authService := auth.NewService(configConfig, authRepository, userRepository, loggerLogger)
 	authHandler := auth2.NewHandler(configConfig, authService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, authHandler)
+	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, authHandler, middlewareMiddleware)
 	return app, nil
 }
 
@@ -182,6 +184,7 @@ type App struct {
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi2.Handler
 	AuthHandler                 *auth2.Handler
+	Middleware                  *middleware.Middleware
 }
 
 func New(
@@ -211,6 +214,7 @@ func New(
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi2.Handler,
 	AuthHandler *auth2.Handler,
+	Middleware *middleware.Middleware,
 ) *App {
 	return &App{
 		Logger,
@@ -239,5 +243,6 @@ func New(
 		ReverseProxyHandler,
 		GithubAPIHandler,
 		AuthHandler,
+		Middleware,
 	}
 }
