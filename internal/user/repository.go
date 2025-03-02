@@ -87,3 +87,21 @@ func (r *Repository) DeleteUser(ctx context.Context, filter map[string]any) (int
 
 	return result.DeletedCount, nil
 }
+
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	filter := map[string]any{
+		"email": email,
+	}
+
+	result := r.user.FindOne(ctx, filter)
+	if result.Err() != nil {
+		return models.User{}, result.Err()
+	}
+
+	var dto UserDTO
+	if err := result.Decode(&dto); err != nil {
+		return models.User{}, err
+	}
+
+	return DTOToUser(dto), nil
+}
