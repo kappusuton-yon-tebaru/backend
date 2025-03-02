@@ -5,16 +5,48 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
-	service *user.Service
+	service   *user.Service
+	validator *validator.Validator
 }
 
-func NewHandler(service *user.Service) *Handler {
+func NewHandler(service *user.Service, validator *validator.Validator) *Handler {
 	return &Handler{
 		service,
+		validator,
 	}
+}
+
+func (h *Handler) Register(ctx *gin.Context) {
+	var req user.RegisterDTO
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "invalid body",
+		})
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"errors": h.validator.Translate(err),
+		})
+		return
+	}
+
+	werr := h.service.Register(ctx, req)
+	if werr != nil {
+		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
+			"error": werr.GetMessageOr("internal server error"),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, map[string]any{
+		"message": "user created",
+	})
 }
 
 func (h *Handler) GetAllUsers(ctx *gin.Context) {
@@ -25,32 +57,6 @@ func (h *Handler) GetAllUsers(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, images)
-}
-
-func (h *Handler) CreateUser(ctx *gin.Context) {
-	var userDTO user.CreateUserDTO
-
-	if err := ctx.ShouldBindJSON(&userDTO); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "invalid input",
-			"error":   err.Error(),
-		})
-		return
-	}
-
-	id, err := h.service.CreateUser(ctx, userDTO)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]any{
-			"message": "failed to create user",
-			"error":   err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, map[string]any{
-		"message": "user created successfully",
-		"user_id": id,
-	})
 }
 
 func (h *Handler) DeleteUserById(ctx *gin.Context) {

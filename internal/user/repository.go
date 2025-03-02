@@ -2,23 +2,44 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
 	user *mongo.Collection
 }
 
-func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{
+func NewRepository(db *mongo.Database) (*Repository, error) {
+	repo := &Repository{
 		user: db.Collection("users"),
 	}
+
+	if err := repo.ensureIndexes(context.Background()); err != nil {
+		return nil, err
+	}
+
+	return repo, nil
+}
+
+func (r *Repository) ensureIndexes(ctx context.Context) error {
+	index := mongo.IndexModel{
+		Keys: map[string]any{
+			"username": 1,
+		},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := r.user.Indexes().CreateOne(ctx, index)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
@@ -47,21 +68,15 @@ func (r *Repository) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
-func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (string, error) {
-	user := bson.M{
-		"name":     dto.Name,
-		"password": dto.Password,
-	}
-
-	result, err := r.user.InsertOne(ctx, user)
+func (r *Repository) CreateUser(ctx context.Context, dto RegisterDTO) (string, error) {
+	result, err := r.user.InsertOne(ctx, dto)
 	if err != nil {
-		log.Println("Error inserting user:", err)
-		return primitive.NilObjectID.Hex(), fmt.Errorf("error inserting user: %v", err)
+		return bson.NilObjectID.Hex(), err
 	}
 
-	insertedID := result.InsertedID.(bson.ObjectID)
+	userId := result.InsertedID.(bson.ObjectID)
 
-	return insertedID.Hex(), nil
+	return userId.Hex(), nil
 }
 
 func (r *Repository) DeleteUser(ctx context.Context, filter map[string]any) (int64, error) {

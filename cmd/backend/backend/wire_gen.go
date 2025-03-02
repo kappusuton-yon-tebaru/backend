@@ -79,19 +79,22 @@ func Initialize() (*App, error) {
 	svcdeployenvRepository := svcdeployenv.NewRepository(database)
 	svcdeployenvService := svcdeployenv.NewService(svcdeployenvRepository)
 	svcdeployenvHandler := svcdeployenv2.NewHandler(svcdeployenvService)
-	userRepository := user.NewRepository(database)
-	userService := user.NewService(userRepository)
-	userHandler := user2.NewHandler(userService)
+	userRepository, err := user.NewRepository(database)
+	if err != nil {
+		return nil, err
+	}
+	userService := user.NewService(userRepository, loggerLogger)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	userHandler := user2.NewHandler(userService, validatorValidator)
 	usergroupRepository := usergroup.NewRepository(database)
 	usergroupService := usergroup.NewService(usergroupRepository)
 	usergroupHandler := usergroup2.NewHandler(usergroupService)
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
-	validatorValidator, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
 	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository)
