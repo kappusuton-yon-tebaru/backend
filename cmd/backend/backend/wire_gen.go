@@ -147,11 +147,9 @@ func Initialize() (*App, error) {
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
-	deployService := deploy.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
-	deployHandler := deploy.NewHandler(deployService, validatorValidator)
 	authService := auth.NewService(userRepository, loggerLogger)
 	authHandler := auth2.NewHandler(authService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, deployHandler, authHandler)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, authHandler)
 	return app, nil
 }
 

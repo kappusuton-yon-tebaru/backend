@@ -7,7 +7,7 @@ import (
 
 type UserDTO struct {
 	Id       bson.ObjectID `bson:"_id"`
-	Username string        `bson:"username"`
+	Email    string        `bson:"email"`
 	Password string        `bson:"password"`
 }
 
@@ -19,7 +19,7 @@ type UserCredentialDTO struct {
 func DTOToUser(user UserDTO) models.User {
 	return models.User{
 		Id:       user.Id.Hex(),
-		Username: user.Username,
+		Email:    user.Email,
 		Password: user.Password,
 	}
 }

@@ -219,6 +219,7 @@ func Initialize() (*App, error) {
 		deploy.NewService,
 		auth.NewHandler,
 		sharedAuth.NewService,
+		sharedAuth.NewRepository,
 		New,
 	)
 
