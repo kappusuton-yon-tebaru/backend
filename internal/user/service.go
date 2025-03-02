@@ -25,7 +25,7 @@ func NewService(repo *Repository, logger *logger.Logger) *Service {
 	}
 }
 
-func (s *Service) Register(ctx context.Context, dto RegisterDTO) *werror.WError {
+func (s *Service) Register(ctx context.Context, dto UserCredentialDTO) *werror.WError {
 	hashedPassword, err := utils.HashPassword(dto.Password)
 	if err != nil {
 		s.logger.Error("error occured while hashing password", zap.Error(err))

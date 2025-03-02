@@ -21,7 +21,7 @@ func NewHandler(service *user.Service, validator *validator.Validator) *Handler 
 }
 
 func (h *Handler) Register(ctx *gin.Context) {
-	var req user.RegisterDTO
+	var req RegisterReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"error": "invalid body",
@@ -36,7 +36,12 @@ func (h *Handler) Register(ctx *gin.Context) {
 		return
 	}
 
-	werr := h.service.Register(ctx, req)
+	credential := user.UserCredentialDTO{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	werr := h.service.Register(ctx, credential)
 	if werr != nil {
 		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
 			"error": werr.GetMessageOr("internal server error"),
