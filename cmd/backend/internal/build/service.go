@@ -37,7 +37,7 @@ func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Log
 func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
 	projectId, err := bson.ObjectIDFromHex(req.ProjectId)
 	if err != nil {
-		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(http.StatusBadRequest)
+		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(400)
 	}
 
 	projRepo, werr := s.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId)
@@ -101,12 +101,10 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		fmt.Println(string(bs))
-
-		// if err := s.rmq.Publish(ctx, bs); err != nil {
-		// 	s.logger.Error("error occured while publishing build context", zap.Error(err))
-		// 	return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
-		// }
+		if err := s.rmq.Publish(ctx, bs); err != nil {
+			s.logger.Error("error occured while publishing build context", zap.Error(err))
+			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
+		}
 	}
 
 	return resp.ParentId, nil
