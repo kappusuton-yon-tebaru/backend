@@ -7,6 +7,7 @@
 package backend
 
 import (
+	auth2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/auth"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -30,6 +31,7 @@ import (
 	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	usergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
+	"github.com/kappusuton-yon-tebaru/backend/internal/auth"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
@@ -147,7 +149,9 @@ func Initialize() (*App, error) {
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
 	deployService := deploy.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
 	deployHandler := deploy.NewHandler(deployService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, deployHandler)
+	authService := auth.NewService(userRepository, loggerLogger)
+	authHandler := auth2.NewHandler(authService, validatorValidator)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, deployHandler, authHandler)
 	return app, nil
 }
 
@@ -180,6 +184,7 @@ type App struct {
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi2.Handler
+	AuthHandler                 *auth2.Handler
 }
 
 func New(
@@ -209,6 +214,7 @@ func New(
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi2.Handler,
 	DeployHandler *deploy.Handler,
+	AuthHandler *auth2.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -237,5 +243,6 @@ func New(
 		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
+		AuthHandler,
 	}
 }

@@ -5,6 +5,7 @@ package backend
 
 import (
 	"github.com/google/wire"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/auth"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
@@ -26,6 +27,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
+
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -34,6 +36,7 @@ import (
 
 	sharedGithubAPI "github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 
+	sharedAuth "github.com/kappusuton-yon-tebaru/backend/internal/auth"
 	sharedImage "github.com/kappusuton-yon-tebaru/backend/internal/image"
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -83,6 +86,7 @@ type App struct {
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi.Handler
+	AuthHandler                 *auth.Handler
 }
 
 func New(
@@ -112,6 +116,7 @@ func New(
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi.Handler,
 	DeployHandler *deploy.Handler,
+	AuthHandler *auth.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -140,6 +145,7 @@ func New(
 		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
+		AuthHandler,
 	}
 }
 
@@ -211,6 +217,8 @@ func Initialize() (*App, error) {
 		githubapi.NewHandler,
 		deploy.NewHandler,
 		deploy.NewService,
+		auth.NewHandler,
+		sharedAuth.NewService,
 		New,
 	)
 
