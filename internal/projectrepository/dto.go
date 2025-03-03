@@ -19,10 +19,10 @@ type ProjectRepositoryDTO struct {
 }
 
 type CreateProjectRepositoryDTO struct {
-	GitRepoUrl string        `bson:"git_repo_url"`
-	ProjectId  bson.ObjectID `bson:"project_id"`
-	CreatedAt  time.Time     `bson:"created_at"`
-	UpdatedAt  time.Time     `bson:"updated_at"`
+	GitRepoUrl string `bson:"git_repo_url"`
+	// ProjectId  	bson.ObjectID `bson:"project_id"`
+	CreatedAt time.Time `bson:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at"`
 }
 
 func DTOToProjectRepository(projrepo ProjectRepositoryDTO) models.ProjectRepository {

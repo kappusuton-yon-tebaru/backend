@@ -2,7 +2,10 @@ package ecr
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 )
+
+type PaginatedECRImages = models.Paginated[ECRImageResponse]
 
 type Service struct {
 	repo *ECRRepository
@@ -14,10 +17,10 @@ func NewService(repo *ECRRepository) *Service {
 	}
 }
 
-func (s *Service) GetECRImages(repoURI string, serviceName string, pagination models.Pagination) (models.Paginated[ECRImageResponse], error) {
-	images, err := s.repo.GetImages(repoURI, pagination)
+func (s *Service) GetECRImages(repoURI string, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
+	images, err := s.repo.GetImages(repoURI, serviceName, queryParam)
 	if err != nil {
-		return models.Paginated[ECRImageResponse]{}, err
+		return PaginatedECRImages{}, err
 	}
 
 	return images, nil

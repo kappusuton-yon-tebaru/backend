@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -22,14 +23,8 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllRegistryProviders(ctx context.Context, pagination models.Pagination) (models.Paginated[RegistryProvidersDTO], error) {
-	pipeline := utils.NewPaginationAggregationPipeline(pagination, []map[string]any{
-		{
-			"$sort": map[string]any{
-				"created_at": -1,
-			},
-		},
-	})
+func (r *Repository) GetAllRegistryProviders(ctx context.Context, queryParam query.QueryParam) (models.Paginated[RegistryProvidersDTO], error) {
+	pipeline := utils.NewFilterAggregationPipeline(queryParam, []map[string]any{})
 
 	cur, err := r.regProviders.Aggregate(ctx, pipeline)
 	if err != nil {
