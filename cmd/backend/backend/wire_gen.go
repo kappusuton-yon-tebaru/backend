@@ -120,7 +120,7 @@ func Initialize() (*App, error) {
 	projectenvHandler := projectenv2.NewHandler(projectenvService)
 	ecrRepository := ecr.NewECRRepository(configConfig)
 	ecrService := ecr.NewService(ecrRepository)
-	ecrHandler := ecr.NewHandler(ecrService, projectrepositoryService)
+	ecrHandler := ecr.NewHandler(ecrService, projectrepositoryService, validatorValidator)
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
