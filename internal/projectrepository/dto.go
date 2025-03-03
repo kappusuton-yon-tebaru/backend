@@ -13,14 +13,14 @@ type ProjectRepositoryDTO struct {
 	Id               bson.ObjectID                     `bson:"_id"`
 	GitRepoUrl       string                            `bson:"git_repo_url"`
 	ProjectId        bson.ObjectID                     `bson:"project_id"`
-	RegistryProvider regproviders.RegistryProvidersDTO `bson:"registry_provider"`
+	RegistryProvider *regproviders.RegistryProvidersDTO `bson:"registry_provider"`
 	CreatedAt        time.Time                         `bson:"created_at"`
 	UpdatedAt        time.Time                         `bson:"updated_at"`
 }
 
 type CreateProjectRepositoryDTO struct {
 	GitRepoUrl 	string        `bson:"git_repo_url"`
-	ProjectId  	bson.ObjectID `bson:"project_id"`
+	// ProjectId  	bson.ObjectID `bson:"project_id"`
 	CreatedAt 	time.Time     `bson:"created_at"`
 	UpdatedAt 	time.Time     `bson:"updated_at"`
 }
@@ -35,7 +35,7 @@ func DTOToProjectRepository(projrepo ProjectRepositoryDTO) models.ProjectReposit
 		Id:               projrepo.Id.Hex(),
 		GitRepoUrl:       projrepo.GitRepoUrl,
 		ProjectId:        projrepo.ProjectId.Hex(),
-		RegistryProvider: regproviders.DTOToRegistryProviders(projrepo.RegistryProvider),
+		RegistryProvider: regProvider,
 		CreatedAt:        projrepo.CreatedAt,
 		UpdatedAt:        projrepo.UpdatedAt,
 	}

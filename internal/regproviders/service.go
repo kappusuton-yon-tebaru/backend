@@ -6,10 +6,13 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
+
+type PaginatedRegistryProviders = models.Paginated[models.RegistryProviders]
 
 type Service struct {
 	repo *Repository
@@ -21,10 +24,10 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllRegistryProviders(ctx context.Context, pagination models.Pagination) (models.Paginated[models.RegistryProviders], error) {
-	dtos, err := s.repo.GetAllRegistryProviders(ctx, pagination)
+func (s *Service) GetAllRegistryProviders(ctx context.Context, queryParam query.QueryParam) (PaginatedRegistryProviders, error) {
+	dtos, err := s.repo.GetAllRegistryProviders(ctx, queryParam)
 	if err != nil {
-		return models.Paginated[models.RegistryProviders]{}, err
+		return PaginatedRegistryProviders{}, err
 	}
 
 	regProviders := make([]models.RegistryProviders, 0)
@@ -32,7 +35,7 @@ func (s *Service) GetAllRegistryProviders(ctx context.Context, pagination models
 		regProviders = append(regProviders, DTOToRegistryProviders(dto))
 	}
 
-	return models.Paginated[models.RegistryProviders]{
+	return PaginatedRegistryProviders{
 		Limit: dtos.Limit,
 		Page:  dtos.Page,
 		Total: dtos.Total,
