@@ -23,10 +23,10 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (PaginatedJobs, error) {
+func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (PaginatedJobs, *werror.WError) {
 	dtos, err := s.repo.GetAllJobParents(ctx, queryParam)
 	if err != nil {
-		return PaginatedJobs{}, err
+		return PaginatedJobs{}, werror.NewFromError(err)
 	}
 
 	jobs := make([]models.Job, 0)
@@ -104,15 +104,6 @@ func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, queryPara
 	}, nil
 }
 
-func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
-	id, err := s.repo.CreateJob(ctx, dto)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
-}
-
 func (s *Service) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, *werror.WError) {
 	resp, err := s.repo.CreateGroupJobs(ctx, dto)
 	if err != nil {
@@ -126,32 +117,6 @@ func (s *Service) UpdateJobStatus(ctx context.Context, jobId string, jobStatus e
 	err := s.repo.UpdateJobStatus(ctx, jobId, string(jobStatus))
 	if err != nil {
 		return werror.NewFromError(err).SetMessage("error occured while updating job status")
-	}
-
-	return nil
-}
-
-func (s *Service) DeleteJob(ctx context.Context, id string) *werror.WError {
-	objId, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return werror.NewFromError(err).
-			SetCode(http.StatusBadRequest).
-			SetMessage("invalid job id")
-	}
-
-	filter := map[string]any{
-		"_id": objId,
-	}
-
-	count, err := s.repo.DeleteJob(ctx, filter)
-	if err != nil {
-		return werror.NewFromError(err)
-	}
-
-	if count == 0 {
-		return werror.New().
-			SetCode(http.StatusNotFound).
-			SetMessage("not found")
 	}
 
 	return nil

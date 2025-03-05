@@ -8,7 +8,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -129,17 +128,6 @@ func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID,
 	return dto, nil
 }
 
-func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
-	result, err := r.job.InsertOne(ctx, dto)
-	if err != nil {
-		return primitive.NilObjectID.Hex(), err
-	}
-
-	id := result.InsertedID.(bson.ObjectID)
-
-	return id.Hex(), nil
-}
-
 func (r *Repository) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, error) {
 	session, err := r.db.Client().StartSession()
 	if err != nil {
@@ -213,13 +201,4 @@ func (r *Repository) UpdateJobStatus(ctx context.Context, jobId string, jobStatu
 	}
 
 	return nil
-}
-
-func (r *Repository) DeleteJob(ctx context.Context, filter map[string]any) (int64, error) {
-	result, err := r.job.DeleteOne(ctx, filter)
-	if err != nil {
-		return 0, err
-	}
-
-	return result.DeletedCount, nil
 }

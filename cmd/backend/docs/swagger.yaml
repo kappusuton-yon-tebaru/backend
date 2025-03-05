@@ -1,0 +1,196 @@
+basePath: /
+definitions:
+  cmd_backend_internal_build.BuildResponse:
+    properties:
+      parent_id:
+        type: string
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_enum.JobStatus:
+    enum:
+    - pending
+    - running
+    - success
+    - failed
+    type: string
+    x-enum-varnames:
+    - JobStatusPending
+    - JobStatusRunning
+    - JobStatusSuccess
+    - JobStatusFailed
+  github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_job.PaginatedJobs:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Job'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.Job:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      job_parent_id:
+        type: string
+      job_status:
+        $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_enum.JobStatus'
+      job_type:
+        type: string
+      project:
+        $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.JobProject'
+      service_name:
+        type: string
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.JobProject:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Snapping Service API Documentation
+  title: Snapping Service
+  version: "1.0"
+paths:
+  /build:
+    post:
+      description: Build services in project
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_build.BuildResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Build services in project
+      tags:
+      - Build
+  /jobs:
+    get:
+      description: List all job parents
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - created_at
+        - project.name
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Query on project.resource_name
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_job.PaginatedJobs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List all job parents
+      tags:
+      - Jobs
+  /jobs/{jobParentId}:
+    get:
+      parameters:
+      - description: Job Parent Id
+        in: path
+        name: jobParentId
+        required: true
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - created_at
+        - job_status
+        - service_name
+        - project.name
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Query on service_name
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_job.PaginatedJobs'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List jobs by job parent id
+      tags:
+      - Jobs
+swagger: "2.0"

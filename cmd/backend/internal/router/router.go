@@ -3,7 +3,10 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
+	_ "github.com/kappusuton-yon-tebaru/backend/cmd/backend/docs"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router struct {
@@ -26,6 +29,10 @@ func New(cfg *config.Config) *Router {
 }
 
 func (r *Router) RegisterRoutes(app *backend.App) {
+	if app.Config.Development {
+		r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	}
+
 	r.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/images", app.ImageHandler.GetAllImages)
@@ -81,8 +88,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
-	r.POST("/jobs", app.JobHandler.CreateJob)
-	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
 	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)

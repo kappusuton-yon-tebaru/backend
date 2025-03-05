@@ -5,6 +5,10 @@ gen:
 	@wire ./cmd/backend/backend/
 	@wire ./cmd/builder-consumer/builderconsumer/
 
+docs:
+	@swag fmt
+	@swag init --parseDependency -g ./cmd/backend/main.go -o ./cmd/backend/docs
+
 neogen:
 	@go run tools/wire/main.go \
 		./cmd/agent/agent \
