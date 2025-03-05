@@ -47,8 +47,8 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 	isPublic := IsPublicRepo(repoURI)
 	repoName := GetRepoName(repoURI)
 
-	offset := (queryParam.Pagination.Page - 1) * queryParam.Pagination.Limit;
-	end := offset + queryParam.Pagination.Limit;
+	offset := (queryParam.Pagination.Page - 1) * queryParam.Pagination.Limit
+	end := offset + queryParam.Pagination.Limit
 
 	if isPublic {
 		input := &ecrpublic.DescribeImageTagsInput{
@@ -69,11 +69,16 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 			}
 		}
 
+		paginatedImages := []ECRImageResponse{}
+		if offset < len(images) {
+			paginatedImages = images[offset:min(len(images), end)]
+		}
+
 		return PaginatedECRImages{
 			Page:  queryParam.Pagination.Page,
 			Limit: queryParam.Pagination.Limit,
-			Total: len(images),
-			Data:  images[offset : end],
+			Total: len(paginatedImages),
+			Data:  paginatedImages,
 		}, nil
 	} else {
 		input := &ecr.ListImagesInput{
@@ -100,7 +105,7 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 			Page:  queryParam.Pagination.Page,
 			Limit: queryParam.Pagination.Limit,
 			Total: len(images),
-			Data:  images[offset : end],
+			Data:  images[offset:end],
 		}, nil
 	}
 
