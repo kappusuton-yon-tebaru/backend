@@ -88,8 +88,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
-	r.POST("/jobs", app.JobHandler.CreateJob)
-	r.DELETE("/jobs/:id", app.JobHandler.DeleteJob)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
 	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)
