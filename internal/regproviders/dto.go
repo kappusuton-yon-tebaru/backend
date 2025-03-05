@@ -1,6 +1,8 @@
 package regproviders
 
 import (
+	"time"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,6 +15,9 @@ type RegistryProvidersDTO struct {
 	Credential     interface{}               `bson:"credential"`
 	Uri            string                    `bson:"uri"`
 	OrganizationId bson.ObjectID             `bson:"organization_id"`
+	CreatedAt	  	time.Time      	`bson:"created_at"`
+	UpdatedAt	  	time.Time      	`bson:"updated_at"`
+
 }
 
 type CreateRegistryProvidersDTO struct {
@@ -21,6 +26,9 @@ type CreateRegistryProvidersDTO struct {
 	Uri            string                    `bson:"uri"`
 	Credential     interface{}               `bson:"credential"`
 	OrganizationId bson.ObjectID             `bson:"organization_id"`
+	Id             	bson.ObjectID 	`bson:"_id"`
+	CreatedAt	  	time.Time      	`bson:"created_at"`
+	UpdatedAt	  	time.Time      	`bson:"updated_at"`
 }
 
 func DTOToRegistryProviders(regProviders RegistryProvidersDTO) models.RegistryProviders {
@@ -31,5 +39,7 @@ func DTOToRegistryProviders(regProviders RegistryProvidersDTO) models.RegistryPr
 		Credential:     regProviders.Credential,
 		Uri:            regProviders.Uri,
 		OrganizationId: regProviders.OrganizationId.Hex(),
+		CreatedAt:      regProviders.CreatedAt,
+		UpdatedAt:      regProviders.UpdatedAt,
 	}
 }
