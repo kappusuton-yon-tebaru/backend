@@ -1,9 +1,41 @@
 basePath: /
+definitions:
+  cmd_backend_internal_build.BuildResponse:
+    properties:
+      parent_id:
+        type: string
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse:
+    properties:
+      message:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact: {}
   description: Snapping Service API Documentation
   title: Snapping Service
   version: "1.0"
-paths: {}
+paths:
+  /build:
+    post:
+      description: Build services in project
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_build.BuildResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Build services in project
+      tags:
+      - Build
 swagger: "2.0"

@@ -14,7 +14,58 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/build": {
+            "post": {
+                "description": "Build services in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Build"
+                ],
+                "summary": "Build services in project",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_build.BuildResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "cmd_backend_internal_build.BuildResponse": {
+            "type": "object",
+            "properties": {
+                "parent_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

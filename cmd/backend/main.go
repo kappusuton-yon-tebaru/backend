@@ -13,11 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// @title        Snapping Service
-// @description  Snapping Service API Documentation
-// @version      1.0
-// @host         localhost:3000
-// @BasePath     /
+//	@title			Snapping Service
+//	@description	Snapping Service API Documentation
+//	@version		1.0
+//	@host			localhost:3000
+//	@BasePath		/
 func main() {
 	app, err := backend.Initialize()
 	if err != nil {
