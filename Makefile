@@ -4,6 +4,7 @@ gen:
 	@wire ./cmd/agent/agent/
 	@wire ./cmd/backend/backend/
 	@wire ./cmd/builder-consumer/builderconsumer/
+	@swag init -g ./cmd/backend/main.go -o cmd/backend/docs
 
 neogen:
 	@go run tools/wire/main.go \

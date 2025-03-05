@@ -1,0 +1,9 @@
+basePath: /
+host: localhost:3000
+info:
+  contact: {}
+  description: Snapping Service API Documentation
+  title: Snapping Service
+  version: "1.0"
+paths: {}
+swagger: "2.0"
