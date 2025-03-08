@@ -2,8 +2,10 @@ package setting
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -28,27 +30,27 @@ func NewHandler(service *Service, validator *validator.Validator) *Handler {
 //	@Param			request	body	SetWorkerPoolRequest	true	"worker pool setting request"
 //	@Produce		json
 //	@Success		200	{object}	WorkerPoolResponse
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) SetWorkerPoolSetting(ctx *gin.Context) {
 	var req SetWorkerPoolRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "cannot parse json",
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "cannot parse json",
 		})
 		return
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"messages": h.validator.Translate(err),
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: strings.Join(h.validator.Translate(err), ", "),
 		})
 		return
 	}
 
 	werr := h.service.SetMaxWorker(ctx, req.PoolSize)
 	if werr != nil {
-		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
-			"message": werr.GetMessageOr("internal server error"),
-		})
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 
@@ -63,12 +65,11 @@ func (h *Handler) SetWorkerPoolSetting(ctx *gin.Context) {
 //	@Tags			Setting
 //	@Produce		json
 //	@Success		200	{object}	WorkerPoolResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) GetWorkerPoolSetting(ctx *gin.Context) {
 	maxWorker, werr := h.service.GetMaxWorker(ctx)
 	if werr != nil {
-		ctx.JSON(werr.GetCodeOr(http.StatusInternalServerError), map[string]any{
-			"message": werr.GetMessageOr("internal server error"),
-		})
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 

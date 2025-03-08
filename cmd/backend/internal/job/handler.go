@@ -90,7 +90,7 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 		WithQueryFilter(queryFilter)
 
 	jobs, werr := h.service.GetAllJobParents(ctx, queryParam)
-	if err != nil {
+	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
