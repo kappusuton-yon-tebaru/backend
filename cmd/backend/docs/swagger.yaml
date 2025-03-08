@@ -100,6 +100,17 @@ definitions:
       name:
         type: string
     type: object
+  setting.SetWorkerPoolRequest:
+    properties:
+      pool_size:
+        minimum: 0
+        type: integer
+    type: object
+  setting.WorkerPoolResponse:
+    properties:
+      pool_size:
+        type: integer
+    type: object
 host: localhost:3000
 info:
   contact: {}
@@ -259,4 +270,36 @@ paths:
       summary: List jobs by job parent id
       tags:
       - Jobs
+  /setting/workerpool:
+    get:
+      description: Get worker pool setting
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/setting.WorkerPoolResponse'
+      summary: Get worker pool setting
+      tags:
+      - Setting
+    post:
+      description: Set worker pool setting
+      parameters:
+      - description: worker pool setting request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/setting.SetWorkerPoolRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/setting.WorkerPoolResponse'
+      summary: Set worker pool setting
+      tags:
+      - Setting
 swagger: "2.0"

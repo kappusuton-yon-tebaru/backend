@@ -241,6 +241,55 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/setting/workerpool": {
+            "get": {
+                "description": "Get worker pool setting",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Get worker pool setting",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/setting.WorkerPoolResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Set worker pool setting",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting"
+                ],
+                "summary": "Set worker pool setting",
+                "parameters": [
+                    {
+                        "description": "worker pool setting request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/setting.SetWorkerPoolRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/setting.WorkerPoolResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -391,6 +440,23 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "setting.SetWorkerPoolRequest": {
+            "type": "object",
+            "properties": {
+                "pool_size": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "setting.WorkerPoolResponse": {
+            "type": "object",
+            "properties": {
+                "pool_size": {
+                    "type": "integer"
                 }
             }
         }

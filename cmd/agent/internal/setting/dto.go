@@ -1,5 +1,9 @@
 package setting
 
-type SetMaxWorkerDTO struct {
-	MaxWorker int32 `json:"max_worker" validate:"min=0"`
+type SetWorkerPoolRequest struct {
+	PoolSize int32 `json:"pool_size" validate:"omitempty,min=0"`
+}
+
+type WorkerPoolResponse struct {
+	PoolSize int32 `json:"pool_size"`
 }
