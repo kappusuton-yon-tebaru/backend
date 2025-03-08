@@ -44,7 +44,7 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 		return
 	}
 
-	availableSortKey := []string{"created_at", "regproviders.name"}
+	availableSortKey := []string{"created_at", "name"}
 	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
@@ -59,7 +59,7 @@ func (h *Handler) GetAllRegProviders(ctx *gin.Context) {
 		return
 	}
 
-	queryFilter := query.NewQueryFilter("regproviders.name")
+	queryFilter := query.NewQueryFilter("name")
 	err = ctx.ShouldBindQuery(&queryFilter)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
