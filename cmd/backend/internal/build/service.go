@@ -37,7 +37,7 @@ func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Log
 func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *werror.WError) {
 	projectId, err := bson.ObjectIDFromHex(req.ProjectId)
 	if err != nil {
-		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(400)
+		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(http.StatusBadRequest)
 	}
 
 	projRepo, werr := s.projectRepoService.GetProjectRepositoryByProjectId(ctx, req.ProjectId)
@@ -78,12 +78,17 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 		return "", werr
 	}
 
+	repoUrl, err := projRepo.GetGitRepoUrl()
+	if err != nil {
+		return "", werror.NewFromError(err).SetMessage("invalid git repo url").SetCode(http.StatusBadRequest)
+	}
+
 	for i, service := range req.Services {
 		jobId := resp.JobIds[i]
 
 		buildCtx := sharedBuild.BuildContext{
 			Id:                 jobId,
-			RepoUrl:            projRepo.GetGitRepoUri(),
+			RepoUrl:            repoUrl,
 			RepoRoot:           fmt.Sprintf("apps/%s", service.ServiceName),
 			Destination:        fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
 			Dockerfile:         "Dockerfile",
