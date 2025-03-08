@@ -83,7 +83,7 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 
 		buildCtx := sharedBuild.BuildContext{
 			Id:                 jobId,
-			RepoUrl:            projRepo.GitRepoUrl,
+			RepoUrl:            projRepo.GetGitRepoUri(),
 			RepoRoot:           fmt.Sprintf("apps/%s", service.ServiceName),
 			Destination:        fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
 			Dockerfile:         "Dockerfile",
