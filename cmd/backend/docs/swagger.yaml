@@ -1,9 +1,50 @@
 basePath: /
 definitions:
+  cmd_backend_internal_build.BuildRequest:
+    properties:
+      project_id:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/cmd_backend_internal_build.ServiceInfo'
+        type: array
+    required:
+    - project_id
+    - services
+    type: object
   cmd_backend_internal_build.BuildResponse:
     properties:
       parent_id:
         type: string
+    type: object
+  cmd_backend_internal_build.ServiceInfo:
+    properties:
+      service_name:
+        type: string
+      tag:
+        type: string
+    required:
+    - service_name
+    - tag
+    type: object
+  deploy.DeployRequest:
+    properties:
+      project_id:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/deploy.ServiceInfo'
+        type: array
+    required:
+    - project_id
+    - services
+    type: object
+  deploy.ServiceInfo:
+    properties:
+      tag:
+        type: string
+    required:
+    - tag
     type: object
   github_com_kappusuton-yon-tebaru_backend_internal_enum.JobStatus:
     enum:
@@ -69,6 +110,13 @@ paths:
   /build:
     post:
       description: Build services in project
+      parameters:
+      - description: build request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/cmd_backend_internal_build.BuildRequest'
       produces:
       - application/json
       responses:
@@ -85,6 +133,24 @@ paths:
           schema:
             $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
       summary: Build services in project
+      tags:
+      - Build
+  /deploy:
+    post:
+      description: Deploy services in project
+      parameters:
+      - description: deploy request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deploy.DeployRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deploy services in project
       tags:
       - Build
   /jobs:

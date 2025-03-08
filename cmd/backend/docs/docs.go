@@ -25,6 +25,17 @@ const docTemplate = `{
                     "Build"
                 ],
                 "summary": "Build services in project",
+                "parameters": [
+                    {
+                        "description": "build request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_build.BuildRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -43,6 +54,34 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/deploy": {
+            "post": {
+                "description": "Deploy services in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Build"
+                ],
+                "summary": "Deploy services in project",
+                "parameters": [
+                    {
+                        "description": "deploy request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deploy.DeployRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -205,10 +244,72 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "cmd_backend_internal_build.BuildRequest": {
+            "type": "object",
+            "required": [
+                "project_id",
+                "services"
+            ],
+            "properties": {
+                "project_id": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cmd_backend_internal_build.ServiceInfo"
+                    }
+                }
+            }
+        },
         "cmd_backend_internal_build.BuildResponse": {
             "type": "object",
             "properties": {
                 "parent_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "cmd_backend_internal_build.ServiceInfo": {
+            "type": "object",
+            "required": [
+                "service_name",
+                "tag"
+            ],
+            "properties": {
+                "service_name": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "deploy.DeployRequest": {
+            "type": "object",
+            "required": [
+                "project_id",
+                "services"
+            ],
+            "properties": {
+                "project_id": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/deploy.ServiceInfo"
+                    }
+                }
+            }
+        },
+        "deploy.ServiceInfo": {
+            "type": "object",
+            "required": [
+                "tag"
+            ],
+            "properties": {
+                "tag": {
                     "type": "string"
                 }
             }

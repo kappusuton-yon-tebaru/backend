@@ -1,4 +1,4 @@
-package build
+package deploy
 
 import (
 	"net/http"
@@ -10,30 +10,26 @@ import (
 )
 
 type Handler struct {
-	service   *Service
 	validator *validator.Validator
 }
 
-func NewHandler(validator *validator.Validator, service *Service) *Handler {
+func NewHandler(validator *validator.Validator) *Handler {
 	return &Handler{
-		service,
 		validator,
 	}
 }
 
-// Build services in project
+// Deploy services in project
 //
-//	@Router			/build [post]
-//	@Summary		Build services in project
-//	@Description	Build services in project
+//	@Router			/deploy [post]
+//	@Summary		Deploy services in project
+//	@Description	Deploy services in project
 //	@Tags			Build
-//	@Param			request	body	BuildRequest	true "build request"
+//	@Param			request	body	DeployRequest	true "deploy request"
 //	@Produce		json
-//	@Success		201	{object}	BuildResponse
-//	@Failure		400	{object}	httputils.ErrResponse
-//	@Failure		500	{object}	httputils.ErrResponse
+//	@Success		200
 func (h *Handler) Build(ctx *gin.Context) {
-	var req BuildRequest
+	var req DeployRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "cannot parse json",
@@ -48,13 +44,5 @@ func (h *Handler) Build(ctx *gin.Context) {
 		return
 	}
 
-	parentId, werr := h.service.BuildImage(ctx, req)
-	if werr != nil {
-		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, BuildResponse{
-		parentId,
-	})
+	ctx.Status(http.StatusOK)
 }
