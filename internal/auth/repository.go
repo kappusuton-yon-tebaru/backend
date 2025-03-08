@@ -69,6 +69,10 @@ func (r *Repository) CreateSession(ctx context.Context, dto CreateSessionDTO) (s
 		return sessionId.Hex(), nil
 	})
 
+	if err != nil {
+		return "", err
+	}
+
 	sessionId := result.(string)
 	return sessionId, nil
 }
