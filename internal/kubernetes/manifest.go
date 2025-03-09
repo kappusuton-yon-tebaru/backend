@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
-	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	acappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
@@ -18,14 +17,13 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 	var setupArgs []string
 	var mountPath string
 
-	switch credential := config.Credential.(type) {
-	case models.ECRCredential:
+	if config.ECRCredential != nil {
 		mountPath = "/root/.aws"
 		setupArgs = []string{
 			"mkdir -p /root/.aws && tee /root/.aws/credentials << EOF",
 			"[default]",
-			fmt.Sprintf("aws_access_key_id=%s", credential.AccessKey),
-			fmt.Sprintf("aws_secret_access_key=%s", credential.SecretAccessKey),
+			fmt.Sprintf("aws_access_key_id=%s", config.ECRCredential.AccessKey),
+			fmt.Sprintf("aws_secret_access_key=%s", config.ECRCredential.SecretAccessKey),
 			"EOF",
 		}
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
+	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
@@ -89,7 +90,7 @@ func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]interface{}{
+	ctx.JSON(http.StatusOK, map[string]any{
 		"data": regProviders,
 	})
 }
@@ -97,7 +98,7 @@ func (h *Handler) GetAllRegProvidersWithoutProject(ctx *gin.Context) {
 func (h *Handler) GetRegProviderById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
-		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "empty id",
 		})
 		return
@@ -106,69 +107,56 @@ func (h *Handler) GetRegProviderById(ctx *gin.Context) {
 	regProvider, err := h.service.GetRegistryProviderById(ctx, id)
 
 	if err != nil {
-		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]interface{}{
+		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
 			"message": err.GetMessageOr("internal server error"),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]interface{}{
+	ctx.JSON(http.StatusOK, map[string]any{
 		"data": regProvider,
 	})
 }
 
 func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	var req CreateRegistryProvidersRequest
-
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message": "invalid input",
-			"error":   err.Error(),
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid body",
 		})
 		return
 	}
 
-	credential, werr := regproviders.ParseCredential(req.ProviderType, req.Credential)
-	if werr != nil {
-		ctx.JSON(werr.GetCodeOr(http.StatusBadRequest), map[string]interface{}{
-			"message": werr.GetMessageOr("bad request"),
-		})
-	}
-
-	if err := h.validator.Struct(credential); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
-			"messages": h.validator.Translate(err),
+	if err := h.validator.Struct(req); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: strings.Join(h.validator.Translate(err), ", "),
 		})
 		return
 	}
 
-	regprovidersDTO := regproviders.CreateRegistryProvidersDTO{
+	dto := regproviders.CreateRegistryProvidersDTO{
 		Name:           req.Name,
-		ProviderType:   req.ProviderType,
 		Uri:            req.Uri,
-		Credential:     credential,
+		ECRCredential:  req.ECRCredential,
 		OrganizationId: req.OrganizationId,
 	}
 
-	id, err := h.service.CreateRegistryProviders(ctx, regprovidersDTO)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "failed to create registry provider",
-			"error":   err.Error(),
-		})
+	id, werr := h.service.CreateRegistryProviders(ctx, dto)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, map[string]interface{}{
-		"message": "registry provider created successfully",
-		"id":      id,
+	ctx.JSON(http.StatusCreated, CreateRegistryProvidersResponse{
+		Message: "registry provider created successfully",
+		Id:      id,
 	})
 }
 
 func (h *Handler) DeleteRegProvider(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
-		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
+		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "empty id",
 		})
 		return
@@ -176,13 +164,13 @@ func (h *Handler) DeleteRegProvider(ctx *gin.Context) {
 
 	err := h.service.DeleteRegistryProviders(ctx, id)
 	if err != nil {
-		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]interface{}{
+		ctx.JSON(err.GetCodeOr(http.StatusInternalServerError), map[string]any{
 			"message": err.GetMessageOr("internal server error"),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, map[string]interface{}{
+	ctx.JSON(http.StatusOK, map[string]any{
 		"message": "deleted",
 	})
 }
