@@ -106,8 +106,8 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/build", app.BuildHandler.Build)
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
-	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
-	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
+	r.GET("/setting/workerpool", app.ReverseProxyHandler.Forward())
+	r.POST("/setting/workerpool", app.ReverseProxyHandler.Forward())
 
 	r.GET("/github/userrepos", app.GithubAPIHandler.GetUserRepos)
 	r.GET("/github/:owner/:repo/contents", app.GithubAPIHandler.GetRepoContents) // ?path={folderPath}&branch={branchName}
