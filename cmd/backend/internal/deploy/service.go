@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -95,7 +96,15 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 			Environments: envs,
 		}
 
-		fmt.Println(deployCtx)
+		bs, err := json.Marshal(deployCtx)
+		if err != nil {
+			return nil
+		}
+
+		if err := s.rmq.Publish(ctx, enum.DeployContextRoutingKey, bs); err != nil {
+			s.logger.Error("error occured while publishing deploy context", zap.Error(err))
+			return werror.NewFromError(err).SetMessage("error occured while publishing deploy context")
+		}
 	}
 
 	return nil

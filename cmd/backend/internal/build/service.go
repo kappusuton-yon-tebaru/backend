@@ -100,7 +100,7 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		if err := s.rmq.Publish(ctx, "build", bs); err != nil {
+		if err := s.rmq.Publish(ctx, enum.BuildContextRoutingKey, bs); err != nil {
 			s.logger.Error("error occured while publishing build context", zap.Error(err))
 			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
 		}

@@ -23,7 +23,7 @@ func NewHandler(logger *logger.Logger, service *Service) *Handler {
 	}
 }
 
-func (h *Handler) BuildImageHandler(msg amqp091.Delivery) {
+func (h *Handler) BuildHandler(msg amqp091.Delivery) {
 	var body sharedBuild.BuildContext
 
 	err := json.Unmarshal(msg.Body, &body)

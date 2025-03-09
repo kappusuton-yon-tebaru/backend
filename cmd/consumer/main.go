@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/consumer"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.uber.org/zap"
 )
@@ -30,7 +34,14 @@ func main() {
 					}
 				}()
 
-				app.BuildHandler.BuildImageHandler(msg)
+				key := strings.TrimPrefix(msg.RoutingKey, fmt.Sprintf("%s.", app.Config.ConsumerConfig.OrganizationName))
+
+				switch key {
+				case enum.BuildContextRoutingKey:
+					app.BuildHandler.BuildHandler(msg)
+				case enum.DeployContextRoutingKey:
+					app.DeployHandler.DeployHandler(msg)
+				}
 			}()
 
 			if err := msg.Ack(false); err != nil {
