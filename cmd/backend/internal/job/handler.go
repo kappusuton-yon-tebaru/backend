@@ -45,51 +45,14 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 	pagination := query.NewPaginationWithDefault(1, 10)
 	err := ctx.ShouldBindQuery(&pagination)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "pagination should be integer",
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "pagination should be integer",
 		})
 		return
 	}
 
 	sortFilter := query.NewSortQueryWithDefault("created_at", enum.Desc)
 	err = ctx.ShouldBindQuery(&sortFilter)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "invalid sort query",
-		})
-		return
-	}
-
-	availableSortKey := []string{"created_at", "project.name"}
-	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
-		})
-		return
-	}
-
-	if err := h.validator.Struct(sortFilter); err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "sort order can only be 'asc' or 'desc'",
-		})
-		return
-	}
-
-	queryFilter := query.NewQueryFilter("project.resource_name")
-	err = ctx.ShouldBindQuery(&queryFilter)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"error": "invalid query",
-		})
-		return
-	}
-
-	queryParam := query.NewQueryParam().
-		WithPagination(pagination.WithMinimum(1, 10)).
-		WithSortQuery(sortFilter).
-		WithQueryFilter(queryFilter)
-
-	jobs, err := h.service.GetAllJobParents(ctx, queryParam)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "invalid sort query",

@@ -23,7 +23,7 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (PaginatedJobs, error) {
+func (s *Service) GetAllJobParents(ctx context.Context, queryParam query.QueryParam) (PaginatedJobs, *werror.WError) {
 	dtos, err := s.repo.GetAllJobParents(ctx, queryParam)
 	if err != nil {
 		return PaginatedJobs{}, werror.NewFromError(err)
@@ -102,15 +102,6 @@ func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, queryPara
 		Total: dtos.Total,
 		Data:  jobs,
 	}, nil
-}
-
-func (s *Service) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
-	id, err := s.repo.CreateJob(ctx, dto)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
 }
 
 func (s *Service) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, *werror.WError) {
