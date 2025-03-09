@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 )
 
 type ECRRepository struct {
@@ -42,9 +43,12 @@ func GetRepoName(repoURI string) string {
 	return repoURI[strings.LastIndex(repoURI, "/")+1:]
 }
 
-func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
+func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
 	isPublic := IsPublicRepo(repoURI)
 	repoName := GetRepoName(repoURI)
+
+	offset := (queryParam.Pagination.Page - 1) * queryParam.Pagination.Limit
+	end := offset + queryParam.Pagination.Limit
 
 	if isPublic {
 		input := &ecrpublic.DescribeImageTagsInput{
@@ -53,15 +57,29 @@ func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
 
 		result, err := r.publicClient.DescribeImageTags(context.TODO(), input)
 		if err != nil {
-			return nil, err
+			return PaginatedECRImages{}, err
 		}
 
-		var images []string
+		var images []ECRImageResponse
 		for _, image := range result.ImageTagDetails {
-			images = append(images, *image.ImageTag)
+			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
+				images = append(images, ECRImageResponse{
+					*image.ImageTag,
+				})
+			}
 		}
 
-		return images, nil
+		paginatedImages := []ECRImageResponse{}
+		if offset < len(images) {
+			paginatedImages = images[offset:min(len(images), end)]
+		}
+
+		return PaginatedECRImages{
+			Page:  queryParam.Pagination.Page,
+			Limit: queryParam.Pagination.Limit,
+			Total: len(paginatedImages),
+			Data:  paginatedImages,
+		}, nil
 	} else {
 		input := &ecr.ListImagesInput{
 			RepositoryName: aws.String(repoName),
@@ -71,15 +89,24 @@ func (r *ECRRepository) GetImages(repoURI string) ([]string, error) {
 		}
 		result, err := r.client.ListImages(input)
 		if err != nil {
-			return nil, err
+			return PaginatedECRImages{}, err
 		}
 
-		var images []string
+		var images []ECRImageResponse
 		for _, image := range result.ImageIds {
-			images = append(images, *image.ImageTag)
+			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
+				images = append(images, ECRImageResponse{
+					*image.ImageTag,
+				})
+			}
 		}
 
-		return images, nil
+		return PaginatedECRImages{
+			Page:  queryParam.Pagination.Page,
+			Limit: queryParam.Pagination.Limit,
+			Total: len(images),
+			Data:  images[offset:end],
+		}, nil
 	}
 
 }
