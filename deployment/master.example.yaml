@@ -110,8 +110,8 @@ spec:
               value: "<@MONGO_DATABASE_NAME>"
             - name: AGENT_PORT
               value: "<@AGENT_PORT>"
-            - name: AGENT_WORKER_IMAGE_URI
-              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: WORKER_IMAGE_URI
+              value: "<@WORKER_IMAGE_URI>"
             - name: BACKEND_PORT
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT
@@ -138,22 +138,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: builder-consumer-deployment
+  name: consumer-deployment
   labels:
-    app: builder-consumer
+    app: consumer
 spec:
   replicas: 4
   selector:
     matchLabels:
-      app: builder-consumer
+      app: consumer
   template:
     metadata:
       labels:
-        app: builder-consumer
+        app: consumer
     spec:
       serviceAccountName: system
       containers:
-        - name: builder-consumer
+        - name: consumer
           image: <@WORKER_IMAGE_URI>
           env:
             - name: IN_CLUSTER
@@ -168,8 +168,8 @@ spec:
               value: "<@MONGO_DATABASE_NAME>"
             - name: AGENT_PORT
               value: "<@AGENT_PORT>"
-            - name: AGENT_WORKER_IMAGE_URI
-              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: WORKER_IMAGE_URI
+              value: "<@WORKER_IMAGE_URI>"
             - name: BACKEND_PORT
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT

@@ -7,7 +7,7 @@
 package builderconsumer
 
 import (
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"

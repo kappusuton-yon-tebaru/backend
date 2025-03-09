@@ -12,7 +12,7 @@ import (
 
 type AgentConfig struct {
 	Port           int    `mapstructure:"AGENT_PORT"`
-	WorkerImageUri string `mapstructure:"AGENT_WORKER_IMAGE_URI"`
+	WorkerImageUri string `mapstructure:"WORKER_IMAGE_URI"`
 }
 
 type BackendConfig struct {
@@ -72,7 +72,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func bindStruct(s interface{}) error {
+func bindStruct(s any) error {
 	ct := reflect.TypeOf(s)
 
 	if ct.Kind() != reflect.Struct {

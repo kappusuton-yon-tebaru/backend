@@ -82,20 +82,20 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 }
 
 func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *config.Config) *acappsv1.DeploymentApplyConfiguration {
-	return acappsv1.Deployment("builder-consumer-deployment", config.KubeNamespace).
+	return acappsv1.Deployment("consumer-deployment", config.KubeNamespace).
 		WithNamespace("default").
-		WithLabels(map[string]string{"app": "builder-consumer"}).
+		WithLabels(map[string]string{"app": "consumer"}).
 		WithSpec(acappsv1.DeploymentSpec().
 			WithReplicas(dto.WorkerNumber).
 			WithSelector(acmetav1.LabelSelector().
-				WithMatchLabels(map[string]string{"app": "builder-consumer"})).
+				WithMatchLabels(map[string]string{"app": "consumer"})).
 			WithTemplate(accorev1.PodTemplateSpec().
-				WithLabels(map[string]string{"app": "builder-consumer"}).
+				WithLabels(map[string]string{"app": "consumer"}).
 				WithSpec(accorev1.PodSpec().
 					WithServiceAccountName("system").
 					WithContainers(
 						accorev1.Container().
-							WithName("builder-consumer").
+							WithName("consumer").
 							WithImage(dto.WorkerImageUri).
 							WithEnv(
 								accorev1.EnvVar().WithName("IN_CLUSTER").WithValue(strconv.FormatBool(config.InCluster)),
@@ -104,7 +104,7 @@ func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *c
 								accorev1.EnvVar().WithName("MONGO_URI").WithValue(config.MongoUri),
 								accorev1.EnvVar().WithName("MONGO_DATABASE_NAME").WithValue(config.MongoDatabaseName),
 								accorev1.EnvVar().WithName("AGENT_PORT").WithValue(strconv.FormatInt(int64(config.Agent.Port), 10)),
-								accorev1.EnvVar().WithName("AGENT_WORKER_IMAGE_URI").WithValue(config.Agent.WorkerImageUri),
+								accorev1.EnvVar().WithName("WORKER_IMAGE_URI").WithValue(config.Agent.WorkerImageUri),
 								accorev1.EnvVar().WithName("BACKEND_PORT").WithValue(strconv.FormatInt(int64(config.Backend.Port), 10)),
 								accorev1.EnvVar().WithName("BACKEND_AGENT_ENDPOINT").WithValue(config.Backend.AgentEndpoint),
 								accorev1.EnvVar().WithName("BUILDER_QUEUE_URI").WithValue(config.BuilderConfig.QueueUri),

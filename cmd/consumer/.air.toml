@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/builder-consumer"
-  cmd = "go build -o ./tmp/builder-consumer ./cmd/builder-consumer/"
+  bin = "./tmp/consumer"
+  cmd = "go build -o ./tmp/consumer ./cmd/consumer/"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
