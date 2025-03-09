@@ -6,5 +6,6 @@ type DeployRequest struct {
 }
 
 type ServiceInfo struct {
-	Tag string `json:"tag" validate:"required,ascii"`
+	ServiceName string `json:"service_name" validate:"required"`
+	Tag         string `json:"tag" validate:"required,ascii"`
 }

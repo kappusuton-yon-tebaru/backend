@@ -10,11 +10,13 @@ import (
 )
 
 type Handler struct {
+	service   *Service
 	validator *validator.Validator
 }
 
-func NewHandler(validator *validator.Validator) *Handler {
+func NewHandler(service *Service, validator *validator.Validator) *Handler {
 	return &Handler{
+		service,
 		validator,
 	}
 }
@@ -24,11 +26,11 @@ func NewHandler(validator *validator.Validator) *Handler {
 //	@Router			/deploy [post]
 //	@Summary		Deploy services in project
 //	@Description	Deploy services in project
-//	@Tags			Build
+//	@Tags			Deploy
 //	@Param			request	body	DeployRequest	true "deploy request"
 //	@Produce		json
 //	@Success		200
-func (h *Handler) Build(ctx *gin.Context) {
+func (h *Handler) Deploy(ctx *gin.Context) {
 	var req DeployRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
@@ -41,6 +43,12 @@ func (h *Handler) Build(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: strings.Join(h.validator.Translate(err), ", "),
 		})
+		return
+	}
+
+	werr := h.service.DeployService(ctx, req)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 

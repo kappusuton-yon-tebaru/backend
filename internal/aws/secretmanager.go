@@ -12,8 +12,12 @@ type SecretsManager struct {
 	session *secretsmanager.SecretsManager
 }
 
-func (s Session) SecretManager() SecretsManager {
-	return SecretsManager{secretsmanager.New(s)}
+func (s SessionBuilder) SecretsManager() (SecretsManager, error) {
+	if s.Err != nil {
+		return SecretsManager{}, s.Err
+	}
+
+	return SecretsManager{secretsmanager.New(s)}, nil
 }
 
 func (sm SecretsManager) GetSecretValue(ctx context.Context, secretName string, v any) error {

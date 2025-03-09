@@ -6,6 +6,7 @@ package backend
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
@@ -78,6 +79,7 @@ type App struct {
 	ECRHandler                  *ecr.Handler
 	DockerHubHandler            *dockerhub.Handler
 	BuildHandler                *build.Handler
+	DeployHandler               *deploy.Handler
 	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi.Handler
@@ -109,6 +111,7 @@ func New(
 	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi.Handler,
+	DeployHandler *deploy.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -133,6 +136,7 @@ func New(
 		ECRHandler,
 		DockerHubHandler,
 		BuildHandler,
+		DeployHandler,
 		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
@@ -205,6 +209,8 @@ func Initialize() (*App, error) {
 		sharedGithubAPI.NewRepository,
 		sharedGithubAPI.NewService,
 		githubapi.NewHandler,
+		deploy.NewHandler,
+		deploy.NewService,
 		New,
 	)
 
