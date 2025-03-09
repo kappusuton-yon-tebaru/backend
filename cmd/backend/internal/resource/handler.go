@@ -11,6 +11,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
+	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 )
 
 type Handler struct {
@@ -76,10 +77,19 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 		return
 	}
 
-	availableSortKey := []string{"created_at", "resource_name"}
+	availableSortKey := []string{"created_at", "resource_name", "updated_at"}
 	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
+		})
+		return
+	}
+
+	queryFilter := query.NewQueryFilter("resource_name")
+	err = ctx.ShouldBindQuery(&queryFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid query",
 		})
 		return
 	}
@@ -93,7 +103,8 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 
 	queryParam := query.NewQueryParam().
 		WithPagination(pagination.WithMinimum(1, 10)).
-		WithSortQuery(sortFilter)
+		WithSortQuery(sortFilter).
+		WithQueryFilter(queryFilter)
 
 	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId)
 	if err != nil {
