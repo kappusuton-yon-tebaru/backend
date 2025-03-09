@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"errors"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -54,21 +57,52 @@ func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, er
 	return resources, nil
 }
 
-func (r *Repository) GetResourceByFilter(ctx context.Context, filter map[string]any) (models.Resource, error) {
-	var resource ResourceDTO
-
-	err := r.resource.FindOne(ctx, filter).Decode(&resource)
+func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string) (models.Paginated[ResourceDTO], error) {
+	objId, err := bson.ObjectIDFromHex(parentId) 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// No document found, return an empty Resource
-			return models.Resource{}, nil
-		}
-		log.Println("Error in FindOne:", err)
-		return models.Resource{}, err
+		return models.Paginated[ResourceDTO]{}, err
+	}
+	pipeline := utils.NewFilterAggregationPipeline(queryParam,
+		[]map[string]any{
+			{
+				"$lookup": map[string]any{
+					"from":         "resource_relationships",
+					"localField":   "_id",
+					"foreignField": "child_resource_id",
+					"as":           "relationships",
+				},
+			},
+			{
+				"$unwind": map[string]any{
+					"path":          "$relationships",
+				},
+			},
+			{
+				"$match": map[string]any{
+					"relationships.parent_resource_id": objId,
+				},
+			},
+		},
+	)
+
+	cur, err := r.resource.Aggregate(ctx, pipeline)
+	if err != nil {
+		return models.Paginated[ResourceDTO]{}, err
 	}
 
-	// Convert DTO to the actual model
-	return DTOToResource(resource), nil
+	defer cur.Close(ctx)
+
+	if !cur.Next(ctx) {
+		return models.Paginated[ResourceDTO]{}, errors.New("not found")
+	}
+
+	var dto models.Paginated[ResourceDTO]
+	err = cur.Decode(&dto)
+	if err != nil {
+		return models.Paginated[ResourceDTO]{}, err
+	}
+
+	return dto, nil
 }
 
 func (r *Repository) CreateResource(ctx context.Context, dto CreateResourceDTO) (string, error) {

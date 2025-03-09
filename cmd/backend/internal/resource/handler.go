@@ -1,20 +1,27 @@
 package resource
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
+	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
 	service *resource.Service
+	validator *validator.Validator
 }
 
-func NewHandler(service *resource.Service) *Handler {
+func NewHandler(service *resource.Service, validator *validator.Validator) *Handler {
 	return &Handler{
 		service,
+		validator,
 	}
 }
 
@@ -46,38 +53,55 @@ func (h *Handler) GetResourceByID(ctx *gin.Context) {
 }
 
 func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
-	id := ctx.Param("parent_id")
-	if id == "" {
+	parentId := ctx.Param("parent_id")
+	if parentId == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
-		return
 	}
 
-	pagination := query.Pagination{
-		Limit: 10,
-		Page:  1,
-	}
-
+	pagination := query.NewPaginationWithDefault(1, 10)
 	err := ctx.ShouldBindQuery(&pagination)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "pagination should be integer"})
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "pagination should be integer",
+		})
 		return
 	}
 
-	pagination.Page = max(pagination.Page, 1)
-	pagination.Limit = max(pagination.Limit, 10)
-
-	resources, total, werr := h.service.GetChildrenResourcesByParentID(ctx, id, pagination.Page, pagination.Limit)
-	if werr != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	sortFilter := query.NewSortQueryWithDefault("created_at", enum.Desc)
+	err = ctx.ShouldBindQuery(&sortFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "invalid sort query",
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"data":  resources,
-		"page":  pagination.Page,
-		"limit": pagination.Limit,
-		"total": total,
-	})
+	availableSortKey := []string{"created_at", "resource.resource_name"}
+	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(sortFilter); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"error": "sort order can only be 'asc' or 'desc'",
+		})
+		return
+	}
+
+	queryParam := query.NewQueryParam().
+		WithPagination(pagination.WithMinimum(1, 10)).
+		WithSortQuery(sortFilter)
+
+	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resources)
 }
 
 func (h *Handler) CreateResource(ctx *gin.Context) {
