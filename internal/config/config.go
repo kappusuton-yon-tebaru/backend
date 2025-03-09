@@ -20,9 +20,9 @@ type BackendConfig struct {
 	AgentEndpoint string `mapstructure:"BACKEND_AGENT_ENDPOINT"`
 }
 
-type BuilderConfig struct {
-	QueueUri  string `mapstructure:"BUILDER_QUEUE_URI"`
-	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
+type ConsumerConfig struct {
+	QueueUri         string `mapstructure:"CONSUMER_QUEUE_URI"`
+	OrganizationName string `mapstructure:"CONSUMER_ORGANIZATION_NAME"`
 }
 
 type ECRConfig struct {
@@ -43,7 +43,7 @@ type Config struct {
 	MongoUri          string          `mapstructure:"MONGO_URI"`
 	InCluster         bool            `mapstructure:"IN_CLUSTER"`
 	Development       bool            `mapstructure:"DEVELOPMENT"`
-	BuilderConfig     BuilderConfig   `mapstructure:",squash"`
+	ConsumerConfig    ConsumerConfig  `mapstructure:",squash"`
 	KubeNamespace     string          `mapstructure:"KUBE_NAMESPACE"`
 	MongoDatabaseName string          `mapstructure:"MONGO_DATABASE_NAME"`
 	ClientID          string          `mapstructure:"GITHUB_CLIENT_ID"`

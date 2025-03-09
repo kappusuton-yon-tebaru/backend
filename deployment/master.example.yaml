@@ -116,10 +116,10 @@ spec:
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT
               value: "<@BACKEND_AGENT_ENDPOINT>"
-            - name: BUILDER_QUEUE_URI
-              value: "<@BUILDER_QUEUE_URI>"
-            - name: BUILDER_QUEUE_NAME
-              value: "<@BUILDER_QUEUE_NAME>"
+            - name: CONSUMER_QUEUE_URI
+              value: "<@CONSUMER_QUEUE_URI>"
+            - name: CONSUMER_ORGANIZATION_NAME
+              value: "<@CONSUMER_ORGANIZATION_NAME>"
 ---
 apiVersion: v1
 kind: Service
@@ -174,7 +174,7 @@ spec:
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT
               value: "<@BACKEND_AGENT_ENDPOINT>"
-            - name: BUILDER_QUEUE_URI
-              value: "<@BUILDER_QUEUE_URI>"
-            - name: BUILDER_QUEUE_NAME
-              value: "<@BUILDER_QUEUE_NAME>"
+            - name: CONSUMER_QUEUE_URI
+              value: "<@CONSUMER_QUEUE_URI>"
+            - name: CONSUMER_ORGANIZATION_NAME
+              value: "<@CONSUMER_ORGANIZATION_NAME>"
