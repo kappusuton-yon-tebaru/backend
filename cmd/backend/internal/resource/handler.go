@@ -76,7 +76,7 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 		return
 	}
 
-	availableSortKey := []string{"created_at", "resource.resource_name"}
+	availableSortKey := []string{"created_at", "resource_name"}
 	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"error": fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
