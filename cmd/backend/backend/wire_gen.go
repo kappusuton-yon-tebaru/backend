@@ -87,7 +87,6 @@ func Initialize() (*App, error) {
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
-	resourceHandler := resource2.NewHandler(resourceService)
 	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
@@ -106,6 +105,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)

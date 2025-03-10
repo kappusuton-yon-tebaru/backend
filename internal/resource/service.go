@@ -7,11 +7,13 @@ import (
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+type PaginatedResources = models.Paginated[models.Resource]
 type Service struct {
 	repo             *Repository
 	resourceRelaRepo *resourcerelationship.Repository
@@ -53,46 +55,23 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	return resource, nil
 }
 
-func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, parentID string, page, limit int) ([]models.Resource, int, *werror.WError) {
-	objId, err := bson.ObjectIDFromHex(parentID)
+func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, queryParam query.QueryParam, parentId string) (PaginatedResources, error) {
+	dtos, err := s.repo.GetResourcesByFilter(ctx, queryParam, parentId)
 	if err != nil {
-		return nil, 0, werror.NewFromError(err).
-			SetCode(http.StatusBadRequest).
-			SetMessage("invalid parent id")
+		return PaginatedResources{}, err
+	}
+	resources := make([]models.Resource, 0)
+	for _, dto := range dtos.Data {
+		fmt.Println(DTOToResource(dto))
+		resources = append(resources, DTOToResource(dto))
 	}
 
-	filter := map[string]any{
-		"parent_resource_id": objId,
-	}
-
-	skip := (page - 1) * limit
-
-	childrenResourceRelas, total, err := s.resourceRelaRepo.GetChildrenResourceRelationshipByParentID(ctx, filter, limit, skip)
-	if err != nil {
-		return nil, 0, werror.NewFromError(err)
-	}
-
-	childrenResources := []models.Resource{}
-
-	for _, childrenResourceRela := range childrenResourceRelas {
-		objId, err := bson.ObjectIDFromHex(childrenResourceRela.ChildResourceId)
-		if err != nil {
-			return nil, 0, werror.NewFromError(err).
-				SetCode(http.StatusBadRequest).
-				SetMessage("invalid id")
-		}
-
-		filter := map[string]any{
-			"_id": objId,
-		}
-		childrenResource, err := s.repo.GetResourceByFilter(ctx, filter)
-		if err != nil {
-			return nil, 0, werror.NewFromError(err)
-		}
-		childrenResources = append(childrenResources, childrenResource)
-	}
-
-	return childrenResources, total, nil
+	return PaginatedResources{
+		Page:  dtos.Page,
+		Limit: dtos.Limit,
+		Total: dtos.Total,
+		Data:  resources,
+	}, nil
 }
 
 func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, parentID string) (string, error) {
