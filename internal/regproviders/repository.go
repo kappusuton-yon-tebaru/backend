@@ -100,7 +100,7 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 }
 
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
-	request := RegistryProvidersDTO{
+	request := CreateRegistryProvidersDTO{
 		Name:           dto.Name,
 		ProviderType:   dto.ProviderType,
 		Uri:            dto.Uri,
