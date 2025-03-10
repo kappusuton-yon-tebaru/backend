@@ -126,9 +126,7 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	request := CreateRegistryProvidersDTO{
 		Name:           dto.Name,
-		ProviderType:   dto.ProviderType,
 		Uri:            dto.Uri,
-		Credential:     dto.Credential,
 		OrganizationId: dto.OrganizationId,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),

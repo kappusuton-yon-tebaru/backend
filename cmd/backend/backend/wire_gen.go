@@ -88,6 +88,11 @@ func Initialize() (*App, error) {
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
+	validatorValidator, err := validator.New()
+	if err != nil {
+		return nil, err
+	}
+	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
@@ -102,11 +107,6 @@ func Initialize() (*App, error) {
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
-	validatorValidator, err := validator.New()
-	if err != nil {
-		return nil, err
-	}
-	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)

@@ -1,11 +1,15 @@
 package models
 
+import "time"
+
 type RegistryProviders struct {
 	Id             string         `json:"id"`
 	Name           string         `json:"name"`
 	Uri            string         `json:"uri"`
 	ECRCredential  *ECRCredential `json:"ecr_credential"`
 	OrganizationId string         `json:"organization_id"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
 }
 
 type ECRCredential struct {
