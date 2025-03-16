@@ -54,6 +54,7 @@ func Initialize() (*App, error) {
 		job.NewRepository,
 		job.NewService,
 		deploy.NewHandler,
+		deploy.NewService,
 		New,
 	)
 

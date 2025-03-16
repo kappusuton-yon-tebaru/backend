@@ -31,7 +31,7 @@ func NewHandler(service *Service, validator *validator.Validator) *Handler {
 //	@Produce		json
 //	@Success		200
 func (h *Handler) Deploy(ctx *gin.Context) {
-	var req DeployRequest
+	req := DeployRequest{DeploymentEnv: "default"}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "cannot parse json",

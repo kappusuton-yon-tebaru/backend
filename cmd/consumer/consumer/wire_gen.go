@@ -44,7 +44,8 @@ func Initialize() (*App, error) {
 	service := job.NewService(repository)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
-	deployHandler := deploy.NewHandler(loggerLogger)
+	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service)
+	deployHandler := deploy.NewHandler(loggerLogger, deployService)
 	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler, deployHandler)
 	return app, nil
 }

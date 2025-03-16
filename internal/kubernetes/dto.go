@@ -11,6 +11,14 @@ type BuildImageDTO struct {
 	ECRCredential *models.ECRCredential
 }
 
+type DeployDTO struct {
+	ServiceName  string
+	ImageUri     string
+	Port         *int
+	Namespace    string
+	Environments map[string]string
+}
+
 type ConfigureMaxWorkerDTO struct {
 	WorkerImageUri string
 	WorkerNumber   int32

@@ -118,3 +118,36 @@ func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *c
 			),
 		)
 }
+
+func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfiguration {
+	port := accorev1.ContainerPort()
+	if dto.Port != nil {
+		port = port.WithContainerPort(int32(*dto.Port))
+	}
+
+	envs := []*accorev1.EnvVarApplyConfiguration{}
+	for key, val := range dto.Environments {
+		envs = append(envs, accorev1.EnvVar().WithName(key).WithValue(val))
+	}
+
+	return acappsv1.Deployment(fmt.Sprintf("%s-deployment", dto.ServiceName), dto.Namespace).
+		WithLabels(map[string]string{"app": dto.ServiceName}).
+		WithSpec(acappsv1.DeploymentSpec().
+			WithReplicas(1).
+			WithSelector(acmetav1.LabelSelector().
+				WithMatchLabels(map[string]string{"app": dto.ServiceName})).
+			WithTemplate(accorev1.PodTemplateSpec().
+				WithLabels(map[string]string{"app": dto.ServiceName}).
+				WithSpec(accorev1.PodSpec().
+					WithServiceAccountName("system").
+					WithContainers(
+						accorev1.Container().
+							WithName(dto.ServiceName).
+							WithPorts(port).
+							WithImage(dto.ImageUri).
+							WithEnv(envs...),
+					),
+				),
+			),
+		)
+}

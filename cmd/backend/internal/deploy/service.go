@@ -98,6 +98,7 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 			ServiceName:  service.ServiceName,
 			ImageUri:     fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
 			Port:         service.Port,
+			Namespace:    fmt.Sprintf("%s-%s", "project", req.DeploymentEnv),
 			Environments: envs,
 		}
 
