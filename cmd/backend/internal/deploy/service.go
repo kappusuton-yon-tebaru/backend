@@ -3,10 +3,12 @@ package deploy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
 	"github.com/kappusuton-yon-tebaru/backend/internal/aws"
 	sharedDeploy "github.com/kappusuton-yon-tebaru/backend/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
@@ -80,8 +82,12 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 
 		envs := make(map[string]string)
 		if service.SecretName != nil {
-			err = secretManager.GetSecretValue(ctx, *service.SecretName, &envs)
-			if err != nil {
+			err := secretManager.GetSecretValue(ctx, *service.SecretName, &envs)
+
+			var notFoundErr *types.ResourceNotFoundException
+			if errors.As(err, &notFoundErr) {
+				return werror.NewFromError(err).SetMessage("secret not found").SetCode(http.StatusNotFound)
+			} else if err != nil {
 				s.logger.Error("error occured while creating aws secret manager session", zap.Error(err))
 				return werror.NewFromError(err)
 			}
