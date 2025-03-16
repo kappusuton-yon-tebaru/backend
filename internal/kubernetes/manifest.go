@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,7 +14,7 @@ import (
 	acmetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
+func CreateBuilderPodManifest(config BuildImageDTO) (*apicorev1.Pod, error) {
 	var setupArgs []string
 	var mountPath string
 
@@ -26,6 +27,8 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 			fmt.Sprintf("aws_secret_access_key=%s", config.ECRCredential.SecretAccessKey),
 			"EOF",
 		}
+	} else {
+		return nil, errors.New("invalid credential")
 	}
 
 	builderArgs := []string{
@@ -78,7 +81,7 @@ func CreateBuilderPodManifest(config BuildImageDTO) *apicorev1.Pod {
 				},
 			},
 		},
-	}
+	}, nil
 }
 
 func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *config.Config) *acappsv1.DeploymentApplyConfiguration {
