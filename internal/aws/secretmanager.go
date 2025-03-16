@@ -4,24 +4,20 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
 type SecretsManager struct {
-	session *secretsmanager.SecretsManager
+	client *secretsmanager.Client
 }
 
-func (s SessionBuilder) SecretsManager() (SecretsManager, error) {
-	if s.Err != nil {
-		return SecretsManager{}, s.Err
-	}
-
-	return SecretsManager{secretsmanager.New(s)}, nil
+func (c ClientBuilder) SecretsManager() SecretsManager {
+	return SecretsManager{secretsmanager.NewFromConfig(c.Config)}
 }
 
 func (sm SecretsManager) GetSecretValue(ctx context.Context, secretName string, v any) error {
-	output, err := sm.session.GetSecretValueWithContext(ctx, &secretsmanager.GetSecretValueInput{
+	output, err := sm.client.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{
 		SecretId:     aws.String(secretName),
 		VersionStage: aws.String("AWSCURRENT"),
 	})

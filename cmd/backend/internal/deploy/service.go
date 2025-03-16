@@ -52,11 +52,7 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 			SetCode(http.StatusBadRequest)
 	}
 
-	secretManager, err := aws.NewSession(*projRepo.RegistryProvider.ECRCredential, "ap-southeast-1").SecretsManager()
-	if err != nil {
-		s.logger.Error("error occured while creating aws session", zap.Error(err))
-		return werror.NewFromError(err)
-	}
+	secretManager := aws.NewConfig(*projRepo.RegistryProvider.ECRCredential, "ap-southeast-1").SecretsManager()
 
 	jobs := []job.CreateJobDTO{}
 	for _, service := range req.Services {
