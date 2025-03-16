@@ -58,13 +58,6 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 		return werror.NewFromError(err)
 	}
 
-	envs := make(map[string]string)
-	err = secretManager.GetSecretValue(ctx, "covid-summary", &envs)
-	if err != nil {
-		s.logger.Error("error occured while creating aws secret manager session", zap.Error(err))
-		return werror.NewFromError(err)
-	}
-
 	jobs := []job.CreateJobDTO{}
 	for _, service := range req.Services {
 		jobs = append(jobs, job.CreateJobDTO{
@@ -89,10 +82,20 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) *werror.
 	for i, service := range req.Services {
 		jobId := resp.JobIds[i]
 
+		envs := make(map[string]string)
+		if service.SecretName != nil {
+			err = secretManager.GetSecretValue(ctx, *service.SecretName, &envs)
+			if err != nil {
+				s.logger.Error("error occured while creating aws secret manager session", zap.Error(err))
+				return werror.NewFromError(err)
+			}
+		}
+
 		deployCtx := sharedDeploy.DeployContext{
 			Id:           jobId,
 			ServiceName:  service.ServiceName,
 			ImageUri:     fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
+			Port:         service.Port,
 			Environments: envs,
 		}
 
