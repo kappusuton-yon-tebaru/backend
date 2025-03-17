@@ -26,11 +26,20 @@ func NewService(kube *kubernetes.Kubernetes, logger *logger.Logger, jobService *
 
 func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.WError {
 	deployClient := s.kube.NewDeploymentClient(dto.Namespace)
-	manifest := kubernetes.ApplyDeploymentManifest(dto)
+	deployManifest := kubernetes.ApplyDeploymentManifest(dto)
 
-	_, err := deployClient.Apply(ctx, manifest)
+	_, err := deployClient.Apply(ctx, deployManifest)
 	if err != nil {
-		s.logger.Error("error occured while deploying service", zap.Any("manifest", manifest), zap.Error(err))
+		s.logger.Error("error occured while deploying service", zap.Any("manifest", deployManifest), zap.Error(err))
+		return werror.NewFromError(err)
+	}
+
+	svcManifest := kubernetes.ApplyLoadBalancerService(dto)
+	svcClient := s.kube.NewServiceClient(dto.Namespace)
+
+	_, err = svcClient.Apply(ctx, svcManifest)
+	if err != nil {
+		s.logger.Error("error occured while deploying service", zap.Any("manifest", deployManifest), zap.Error(err))
 		return werror.NewFromError(err)
 	}
 

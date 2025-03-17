@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	acappsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	accorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	acmetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -150,4 +152,20 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 				),
 			),
 		)
+}
+
+func ApplyLoadBalancerService(dto DeployDTO) *accorev1.ServiceApplyConfiguration {
+	return accorev1.Service(fmt.Sprintf("%s-service", dto.ServiceName), dto.Namespace).
+		WithSpec(&accorev1.ServiceSpecApplyConfiguration{
+			Selector: map[string]string{
+				"app": dto.ServiceName,
+			},
+			Ports: []accorev1.ServicePortApplyConfiguration{
+				{
+					Protocol:   utils.Pointer(apicorev1.ProtocolTCP),
+					Port:       dto.Port,
+					TargetPort: utils.Pointer(intstr.FromInt32(*dto.Port)),
+				},
+			},
+		})
 }

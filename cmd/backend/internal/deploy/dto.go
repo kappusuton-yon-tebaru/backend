@@ -9,6 +9,6 @@ type DeployRequest struct {
 type ServiceInfo struct {
 	ServiceName string  `json:"service_name" validate:"required"`
 	Tag         string  `json:"tag" validate:"required,ascii"`
-	Port        *int    `json:"port" validate:"omitempty,min=1"`
+	Port        *int32  `json:"port" validate:"omitempty,min=1"`
 	SecretName  *string `json:"secret_name" validate:"omitempty,ascii"`
 }

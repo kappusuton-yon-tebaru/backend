@@ -14,7 +14,7 @@ type BuildImageDTO struct {
 type DeployDTO struct {
 	ServiceName  string
 	ImageUri     string
-	Port         *int
+	Port         *int32
 	Namespace    string
 	Environments map[string]string
 }

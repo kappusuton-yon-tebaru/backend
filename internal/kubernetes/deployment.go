@@ -20,14 +20,14 @@ func (kube *Kubernetes) NewDeploymentClient(namespace string) Deployment {
 }
 
 func (d Deployment) Apply(ctx context.Context, deployment *acappsv1.DeploymentApplyConfiguration) (*apiappsv1.Deployment, error) {
-	createdPod, err := d.client.Apply(ctx, deployment, apimetav1.ApplyOptions{
+	appliedDeployment, err := d.client.Apply(ctx, deployment, apimetav1.ApplyOptions{
 		FieldManager: "system",
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return createdPod, nil
+	return appliedDeployment, nil
 }
 
 func (d Deployment) Get(ctx context.Context, name string) (*apiappsv1.Deployment, error) {
