@@ -138,6 +138,7 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 			WithReplicas(1).
 			WithSelector(acmetav1.LabelSelector().
 				WithMatchLabels(map[string]string{"app": dto.ServiceName})).
+			WithRevisionHistoryLimit(0).
 			WithTemplate(accorev1.PodTemplateSpec().
 				WithLabels(map[string]string{"app": dto.ServiceName}).
 				WithSpec(accorev1.PodSpec().
@@ -147,7 +148,15 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 							WithName(dto.ServiceName).
 							WithPorts(port).
 							WithImage(dto.ImageUri).
-							WithEnv(envs...),
+							WithEnv(envs...).
+							WithReadinessProbe(accorev1.Probe().
+								WithHTTPGet(&accorev1.HTTPGetActionApplyConfiguration{
+									Path: utils.Pointer("/hc"),
+									Port: utils.Pointer(intstr.FromInt32(8080)),
+								}).
+								WithInitialDelaySeconds(5).
+								WithPeriodSeconds(5).
+								WithTimeoutSeconds(1)),
 					),
 				),
 			),

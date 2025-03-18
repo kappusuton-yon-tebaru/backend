@@ -1,6 +1,9 @@
 package kubernetes
 
-import "github.com/kappusuton-yon-tebaru/backend/internal/models"
+import (
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"k8s.io/api/apps/v1"
+)
 
 type BuildImageDTO struct {
 	Id            string
@@ -12,6 +15,7 @@ type BuildImageDTO struct {
 }
 
 type DeployDTO struct {
+	Id           string
 	ServiceName  string
 	ImageUri     string
 	Port         *int32
@@ -22,4 +26,10 @@ type DeployDTO struct {
 type ConfigureMaxWorkerDTO struct {
 	WorkerImageUri string
 	WorkerNumber   int32
+}
+
+type DeploymentCondition struct {
+	Available      *v1.DeploymentCondition
+	Progressing    *v1.DeploymentCondition
+	ReplicaFailure *v1.DeploymentCondition
 }

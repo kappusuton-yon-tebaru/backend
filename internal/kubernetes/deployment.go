@@ -38,3 +38,20 @@ func (d Deployment) Get(ctx context.Context, name string) (*apiappsv1.Deployment
 
 	return deployment, nil
 }
+
+func (d Deployment) GetCondition(deployment *apiappsv1.Deployment) DeploymentCondition {
+	deployCondition := DeploymentCondition{}
+
+	for _, condition := range deployment.Status.Conditions {
+		switch condition.Type {
+		case apiappsv1.DeploymentAvailable:
+			deployCondition.Available = &condition
+		case apiappsv1.DeploymentProgressing:
+			deployCondition.Progressing = &condition
+		case apiappsv1.DeploymentReplicaFailure:
+			deployCondition.ReplicaFailure = &condition
+		}
+	}
+
+	return deployCondition
+}
