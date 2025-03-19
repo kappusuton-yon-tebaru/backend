@@ -22,6 +22,16 @@ func NewHandler(service *sharedDeployEnv.Service, validator *validator.Validator
 	}
 }
 
+// List deployment environments in project
+//
+//	@Router			/project/{projectId}/deployenv [get]
+//	@Summary		List deployment environments in project
+//	@Description	List deployment environments in project
+//	@Tags			Deployment Environment
+//	@Param			projectId	path	string	true	"Project Id"
+//	@Produce		json
+//	@Success		200	{object}	ListDeploymentEnvResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) ListDeploymentEnv(ctx *gin.Context) {
 	projectId := ctx.Param("id")
 
@@ -31,11 +41,23 @@ func (h *Handler) ListDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, map[string]any{
-		"data": namespaces,
+	ctx.JSON(200, ListDeploymentEnvResponse{
+		Data: namespaces,
 	})
 }
 
+// Create deployment environment in project
+//
+//	@Router			/project/{projectId}/deployenv [post]
+//	@Summary		Create deployment environment in project
+//	@Description	Create deployment environment in project
+//	@Tags			Deployment Environment
+//	@Param			projectId	path	string						true	"Project Id"
+//	@Param			request		body	ModifyDeploymentEnvRequest	true	"create deployment environment request"
+//	@Produce		json
+//	@Success		201
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 	req := ModifyDeploymentEnvRequest{
 		ProjectId: ctx.Param("id"),
@@ -64,6 +86,18 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 	ctx.Status(201)
 }
 
+// Delete deployment environment in project
+//
+//	@Router			/project/{projectId}/deployenv [delete]
+//	@Summary		Delete deployment environment in project
+//	@Description	Delete deployment environment in project
+//	@Tags			Deployment Environment
+//	@Param			projectId	path	string						true	"Project Id"
+//	@Param			request		body	ModifyDeploymentEnvRequest	true	"delete deployment environment request"
+//	@Produce		json
+//	@Success		201
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
 	req := ModifyDeploymentEnvRequest{
 		ProjectId: ctx.Param("id"),

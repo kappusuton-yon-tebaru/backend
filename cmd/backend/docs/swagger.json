@@ -9,77 +9,6 @@
     "host": "localhost:3000",
     "basePath": "/",
     "paths": {
-        "/build": {
-            "post": {
-                "description": "Build services in project",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Build"
-                ],
-                "summary": "Build services in project",
-                "parameters": [
-                    {
-                        "description": "build request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/cmd_backend_internal_build.BuildRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/cmd_backend_internal_build.BuildResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/deploy": {
-            "post": {
-                "description": "Deploy services in project",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Build"
-                ],
-                "summary": "Deploy services in project",
-                "parameters": [
-                    {
-                        "description": "deploy request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/deploy.DeployRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/jobs": {
             "get": {
                 "description": "List all job parents",
@@ -236,6 +165,216 @@
                 }
             }
         },
+        "/project/{projectId}/build": {
+            "post": {
+                "description": "Build services in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Build"
+                ],
+                "summary": "Build services in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "build request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_build.BuildRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_build.BuildResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/project/{projectId}/deploy": {
+            "post": {
+                "description": "Deploy services in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deploy"
+                ],
+                "summary": "Deploy services in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\\*.port\n - services.\\*.secret_name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_deploy.DeployRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/project/{projectId}/deployenv": {
+            "get": {
+                "description": "List deployment environments in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment Environment"
+                ],
+                "summary": "List deployment environments in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/deploy.ListDeploymentEnvResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create deployment environment in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment Environment"
+                ],
+                "summary": "Create deployment environment in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "create deployment environment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deploy.ModifyDeploymentEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete deployment environment in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment Environment"
+                ],
+                "summary": "Delete deployment environment in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "delete deployment environment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deploy.ModifyDeploymentEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/setting/workerpool": {
             "get": {
                 "description": "Get worker pool setting",
@@ -308,13 +447,9 @@
         "cmd_backend_internal_build.BuildRequest": {
             "type": "object",
             "required": [
-                "project_id",
                 "services"
             ],
             "properties": {
-                "project_id": {
-                    "type": "string"
-                },
                 "services": {
                     "type": "array",
                     "items": {
@@ -346,31 +481,63 @@
                 }
             }
         },
-        "deploy.DeployRequest": {
+        "cmd_backend_internal_deploy.DeployRequest": {
             "type": "object",
             "required": [
-                "project_id",
                 "services"
             ],
             "properties": {
-                "project_id": {
+                "deployment_env": {
                     "type": "string"
                 },
                 "services": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/deploy.ServiceInfo"
+                        "$ref": "#/definitions/cmd_backend_internal_deploy.ServiceInfo"
                     }
                 }
             }
         },
-        "deploy.ServiceInfo": {
+        "cmd_backend_internal_deploy.ServiceInfo": {
             "type": "object",
             "required": [
+                "service_name",
                 "tag"
             ],
             "properties": {
+                "port": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "secret_name": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "type": "string"
+                },
                 "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "deploy.ListDeploymentEnvResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "deploy.ModifyDeploymentEnvRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -457,6 +624,9 @@
         },
         "setting.SetWorkerPoolRequest": {
             "type": "object",
+            "required": [
+                "pool_size"
+            ],
             "properties": {
                 "pool_size": {
                     "type": "integer",

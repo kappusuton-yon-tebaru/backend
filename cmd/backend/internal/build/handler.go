@@ -23,17 +23,18 @@ func NewHandler(validator *validator.Validator, service *Service) *Handler {
 
 // Build services in project
 //
-//	@Router			/build [post]
+//	@Router			/project/{projectId}/build [post]
 //	@Summary		Build services in project
 //	@Description	Build services in project
 //	@Tags			Build
-//	@Param			request	body	BuildRequest	true "build request"
+//	@Param			projectId	path	string			true	"Project Id"
+//	@Param			request		body	BuildRequest	true	"build request"
 //	@Produce		json
 //	@Success		201	{object}	BuildResponse
 //	@Failure		400	{object}	httputils.ErrResponse
 //	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) Build(ctx *gin.Context) {
-	var req BuildRequest
+	req := BuildRequest{ProjectId: ctx.Param("id")}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "cannot parse json",

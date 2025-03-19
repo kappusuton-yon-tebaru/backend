@@ -23,15 +23,19 @@ func NewHandler(service *Service, validator *validator.Validator) *Handler {
 
 // Deploy services in project
 //
-//	@Router			/deploy [post]
+//	@Router			/project/{projectId}/deploy [post]
 //	@Summary		Deploy services in project
 //	@Description	Deploy services in project
 //	@Tags			Deploy
-//	@Param			request	body	DeployRequest	true "deploy request"
+//	@Param			projectId	path	string			true	"Project Id"
+//	@Param			request		body	DeployRequest	true	"Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\*.port\n - services.\*.secret_name"
 //	@Produce		json
 //	@Success		200
 func (h *Handler) Deploy(ctx *gin.Context) {
-	req := DeployRequest{DeploymentEnv: "default"}
+	req := DeployRequest{
+		ProjectId:     ctx.Param("id"),
+		DeploymentEnv: "default",
+	}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "cannot parse json",

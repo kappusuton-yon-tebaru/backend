@@ -1,7 +1,7 @@
 package deploy
 
 type DeployRequest struct {
-	ProjectId     string        `json:"project_id" validate:"required"`
+	ProjectId     string        `swaggerignore:"true"`
 	DeploymentEnv string        `json:"deployment_env" validate:"omitempty"`
 	Services      []ServiceInfo `json:"services"   validate:"required,gt=0,dive,required"`
 }
