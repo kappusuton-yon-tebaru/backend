@@ -46,11 +46,13 @@ func (h *Handler) Deploy(ctx *gin.Context) {
 		return
 	}
 
-	werr := h.service.DeployService(ctx, req)
+	parentId, werr := h.service.DeployService(ctx, req)
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusCreated, DeployResponse{
+		parentId,
+	})
 }

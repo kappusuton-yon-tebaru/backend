@@ -2,9 +2,9 @@ package deploy
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
@@ -12,19 +12,22 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.uber.org/zap"
 	apicorev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 type Service struct {
-	kube       *kubernetes.Kubernetes
-	logger     *logger.Logger
-	jobService *job.Service
+	kube             *kubernetes.Kubernetes
+	logger           *logger.Logger
+	jobService       *job.Service
+	deployEnvService *deployenv.Service
 }
 
-func NewService(kube *kubernetes.Kubernetes, logger *logger.Logger, jobService *job.Service) *Service {
+func NewService(kube *kubernetes.Kubernetes, logger *logger.Logger, jobService *job.Service, deployEnvService *deployenv.Service) *Service {
 	return &Service{
 		kube,
 		logger,
 		jobService,
+		deployEnvService,
 	}
 }
 
@@ -45,6 +48,17 @@ func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.
 			s.logger.Error("error occured while updating job status", zap.Error(werr.Err), zap.String("job_id", dto.Id))
 		}
 	}()
+
+	if dto.DeploymentEnv == "default" {
+		werr := s.deployEnvService.CreateDeploymentEnv(ctx, deployenv.ModifyDeploymentEnvDTO{
+			ProjectId: dto.ProjectId,
+			Name:      dto.DeploymentEnv,
+		})
+		if werr != nil && !apierrors.IsAlreadyExists(werr.Err) {
+			s.logger.Error("error occured while creating default namspace", zap.String("project_id", dto.ProjectId), zap.String("namespace", dto.Namespace), zap.Error(werr.Err))
+			return werr
+		}
+	}
 
 	deployClient := s.kube.NewDeploymentClient(dto.Namespace)
 	deployManifest := kubernetes.ApplyDeploymentManifest(dto)
@@ -89,8 +103,6 @@ func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.
 
 		time.Sleep(time.Second)
 	}
-
-	fmt.Println("DONE")
 
 	return nil
 }

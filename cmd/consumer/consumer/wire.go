@@ -8,10 +8,13 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
@@ -55,6 +58,10 @@ func Initialize() (*App, error) {
 		job.NewService,
 		deploy.NewHandler,
 		deploy.NewService,
+		deployenv.NewService,
+		resource.NewService,
+		resource.NewRepository,
+		resourcerelationship.NewRepository,
 		New,
 	)
 

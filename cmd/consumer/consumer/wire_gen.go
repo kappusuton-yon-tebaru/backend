@@ -10,10 +10,13 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
@@ -44,7 +47,11 @@ func Initialize() (*App, error) {
 	service := job.NewService(repository)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
-	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service)
+	resourceRepository := resource.NewRepository(database)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
+	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
+	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
+	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service, deployenvService)
 	deployHandler := deploy.NewHandler(loggerLogger, deployService)
 	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler, deployHandler)
 	return app, nil

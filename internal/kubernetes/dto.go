@@ -15,12 +15,14 @@ type BuildImageDTO struct {
 }
 
 type DeployDTO struct {
-	Id           string
-	ServiceName  string
-	ImageUri     string
-	Port         *int32
-	Namespace    string
-	Environments map[string]string
+	Id            string
+	ProjectId     string
+	ServiceName   string
+	ImageUri      string
+	Port          *int32
+	Namespace     string
+	DeploymentEnv string
+	Environments  map[string]string
 }
 
 type ConfigureMaxWorkerDTO struct {

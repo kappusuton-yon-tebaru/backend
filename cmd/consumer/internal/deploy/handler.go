@@ -35,12 +35,14 @@ func (h *Handler) DeployHandler(msg amqp091.Delivery) {
 	h.logger.Info("consuming job", zap.String("job_id", body.Id))
 
 	dto := kubernetes.DeployDTO{
-		Id:           body.Id,
-		ServiceName:  body.ServiceName,
-		ImageUri:     body.ImageUri,
-		Port:         body.Port,
-		Namespace:    body.Namespace,
-		Environments: body.Environments,
+		Id:            body.Id,
+		ProjectId:     body.ProjectId,
+		ServiceName:   body.ServiceName,
+		ImageUri:      body.ImageUri,
+		Port:          body.Port,
+		Namespace:     body.Namespace,
+		Environments:  body.Environments,
+		DeploymentEnv: body.DeploymentEnv,
 	}
 
 	ctx := context.Background()

@@ -12,3 +12,7 @@ type ServiceInfo struct {
 	Port        *int32  `json:"port" validate:"omitempty,min=1"`
 	SecretName  *string `json:"secret_name" validate:"omitempty,ascii"`
 }
+
+type DeployResponse struct {
+	ParentId string `json:"parent_id"`
+}
