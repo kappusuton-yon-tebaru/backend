@@ -6,7 +6,7 @@ type ModifyDeploymentEnvRequest struct {
 }
 
 type DeleteDeploymentRequest struct {
-	ProjectId     string `json:"project_id" validate:"required"`
+	ProjectId     string `swaggerignore:"true"`
 	DeploymentEnv string `json:"deployment_env" validate:"omitempty"`
 	ServiceName   string `json:"service_name"   validate:"required,gt=0"`
 }

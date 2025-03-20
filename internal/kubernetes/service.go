@@ -38,3 +38,12 @@ func (s Service) Get(ctx context.Context, name string) (*apicorev1.Service, erro
 
 	return svc, nil
 }
+
+func (s Service) Delete(ctx context.Context, name string) error {
+	err := s.client.Delete(ctx, name, apimetav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

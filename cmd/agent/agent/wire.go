@@ -55,6 +55,7 @@ func Initialize() (*App, error) {
 		setting.NewService,
 		setting.NewHandler,
 		sharedDeployEnv.NewService,
+		deploy.NewService,
 		deploy.NewHandler,
 		mongodb.NewMongoDB,
 		resourcerelationship.NewRepository,

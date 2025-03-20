@@ -11,12 +11,14 @@ import (
 )
 
 type Handler struct {
-	service   *sharedDeployEnv.Service
-	validator *validator.Validator
+	sharedService *sharedDeployEnv.Service
+	service       *Service
+	validator     *validator.Validator
 }
 
-func NewHandler(service *sharedDeployEnv.Service, validator *validator.Validator) *Handler {
+func NewHandler(sharedService *sharedDeployEnv.Service, service *Service, validator *validator.Validator) *Handler {
 	return &Handler{
+		sharedService,
 		service,
 		validator,
 	}
@@ -35,7 +37,7 @@ func NewHandler(service *sharedDeployEnv.Service, validator *validator.Validator
 func (h *Handler) ListDeploymentEnv(ctx *gin.Context) {
 	projectId := ctx.Param("id")
 
-	namespaces, werr := h.service.ListDeploymentEnv(ctx, projectId)
+	namespaces, werr := h.sharedService.ListDeploymentEnv(ctx, projectId)
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
@@ -77,7 +79,7 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	werr := h.service.CreateDeploymentEnv(ctx, sharedDeployEnv.ModifyDeploymentEnvDTO(req))
+	werr := h.sharedService.CreateDeploymentEnv(ctx, sharedDeployEnv.ModifyDeploymentEnvDTO(req))
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
@@ -117,7 +119,7 @@ func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	werr := h.service.DeleteDeploymentEnv(ctx, sharedDeployEnv.ModifyDeploymentEnvDTO(req))
+	werr := h.sharedService.DeleteDeploymentEnv(ctx, sharedDeployEnv.ModifyDeploymentEnvDTO(req))
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
@@ -127,7 +129,7 @@ func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
 }
 
 func (h *Handler) DeleteDeployment(ctx *gin.Context) {
-	var req DeleteDeploymentRequest
+	req := DeleteDeploymentRequest{DeploymentEnv: "default", ProjectId: ctx.Param("id")}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
 			Message: "cannot parse json",
@@ -142,9 +144,11 @@ func (h *Handler) DeleteDeployment(ctx *gin.Context) {
 		return
 	}
 
-	werr := h.service.DeleteDeployment(ctx, sharedDeployEnv.DeleteDeploymentDTO(req))
+	werr := h.service.DeleteDeployment(ctx, req)
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
+
+	ctx.Status(200)
 }

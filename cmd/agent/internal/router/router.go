@@ -36,5 +36,5 @@ func (r *Router) RegisterRoutes(app *agent.App) {
 	r.POST("/project/:id/deployenv", app.DeployHandler.CreateDeploymentEnv)
 	r.DELETE("/project/:id/deployenv", app.DeployHandler.DeleteDeploymentEnv)
 
-	r.DELETE("/project/:id/deploy")
+	r.DELETE("/project/:id/deploy", app.DeployHandler.DeleteDeployment)
 }

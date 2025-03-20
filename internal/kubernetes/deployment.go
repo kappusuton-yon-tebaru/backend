@@ -55,3 +55,12 @@ func (d Deployment) GetCondition(deployment *apiappsv1.Deployment) DeploymentCon
 
 	return deployCondition
 }
+
+func (d Deployment) Delete(ctx context.Context, name string) error {
+	err := d.client.Delete(ctx, name, apimetav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

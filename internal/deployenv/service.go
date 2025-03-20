@@ -107,10 +107,6 @@ func (s *Service) DeleteDeploymentEnv(ctx context.Context, dto ModifyDeploymentE
 	return nil
 }
 
-func (s *Service) DeleteDeployment(ctx context.Context, dto DeleteDeploymentDTO) *werror.WError {
-	return nil
-}
-
 func GetNamespaceName(projectName, envName string) string {
 	return fmt.Sprintf("%s-%s", projectName, envName)
 }

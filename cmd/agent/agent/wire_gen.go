@@ -53,7 +53,8 @@ func Initialize() (*App, error) {
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(repository, resourcerelationshipRepository)
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
-	deployHandler := deploy.NewHandler(deployenvService, validatorValidator)
+	deployService := deploy.NewService(kubernetesKubernetes, resourceService)
+	deployHandler := deploy.NewHandler(deployenvService, deployService, validatorValidator)
 	app := New(loggerLogger, configConfig, handler, settingHandler, deployHandler)
 	return app, nil
 }
