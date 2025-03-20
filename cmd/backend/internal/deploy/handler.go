@@ -26,7 +26,7 @@ func NewHandler(service *Service, validator *validator.Validator) *Handler {
 //	@Router			/project/{projectId}/deploy [post]
 //	@Summary		Deploy services in project
 //	@Description	Deploy services in project
-//	@Tags			Deploy
+//	@Tags			Deployment
 //	@Param			projectId	path	string			true	"Project Id"
 //	@Param			request		body	DeployRequest	true	"Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\*.port\n - services.\*.secret_name"
 //	@Produce		json

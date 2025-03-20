@@ -50,6 +50,15 @@ definitions:
     - service_name
     - tag
     type: object
+  deploy.DeleteDeploymentRequest:
+    properties:
+      deployment_env:
+        type: string
+      service_name:
+        type: string
+    required:
+    - service_name
+    type: object
   deploy.ListDeploymentEnvResponse:
     properties:
       data:
@@ -278,6 +287,38 @@ paths:
       tags:
       - Build
   /project/{projectId}/deploy:
+    delete:
+      description: Delete deployment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: |-
+          Optional fields:
+           - deployment_env
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deploy.DeleteDeploymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Delete deployment in project
+      tags:
+      - Deployment
     post:
       description: Deploy services in project
       parameters:
@@ -303,7 +344,7 @@ paths:
           description: OK
       summary: Deploy services in project
       tags:
-      - Deploy
+      - Deployment
   /project/{projectId}/deployenv:
     delete:
       description: Delete deployment environment in project

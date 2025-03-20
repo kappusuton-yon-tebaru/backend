@@ -43,7 +43,7 @@ func (h *Handler) ListDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, ListDeploymentEnvResponse{
+	ctx.JSON(http.StatusOK, ListDeploymentEnvResponse{
 		Data: namespaces,
 	})
 }
@@ -85,7 +85,7 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(201)
+	ctx.Status(http.StatusCreated)
 }
 
 // Delete deployment environment in project
@@ -125,9 +125,21 @@ func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(200)
+	ctx.Status(http.StatusOK)
 }
 
+// Delete deployment in project
+//
+//	@Router			/project/{projectId}/deploy [delete]
+//	@Summary		Delete deployment in project
+//	@Description	Delete deployment in project
+//	@Tags			Deployment
+//	@Param			projectId	path	string					true	"Project Id"
+//	@Param			request		body	DeleteDeploymentRequest	true	"Optional fields:\n - deployment_env"
+//	@Produce		json
+//	@Success		200
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) DeleteDeployment(ctx *gin.Context) {
 	req := DeleteDeploymentRequest{DeploymentEnv: "default", ProjectId: ctx.Param("id")}
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -150,5 +162,5 @@ func (h *Handler) DeleteDeployment(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(200)
+	ctx.Status(http.StatusOK)
 }
