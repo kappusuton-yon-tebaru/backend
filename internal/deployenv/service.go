@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -82,11 +83,25 @@ func (s *Service) DeleteDeploymentEnv(ctx context.Context, dto ModifyDeploymentE
 		return werr
 	}
 
+	name := GetNamespaceName(project.ResourceName, dto.Name)
+
 	nsClient := s.kube.NewNamespaceClient()
-	err := nsClient.Delete(ctx, GetNamespaceName(project.ResourceName, dto.Name))
+	err := nsClient.Delete(ctx, name)
 	if err != nil {
-		s.logger.Error("error occured while deleting namespace", zap.String("project_name", project.ResourceName), zap.String("environment_name", dto.Name), zap.Error(err))
+		s.logger.Error("error occured while deleting namespace", zap.String("namespace", name), zap.Error(err))
 		return werror.NewFromError(err)
+	}
+
+	for {
+		_, err := nsClient.GetNamespace(ctx, name)
+		if err != nil && !apierrors.IsNotFound(err) {
+			s.logger.Error("error occured while waiting for namespace to be deleted", zap.String("namespace", name), zap.Error(err))
+			return werror.NewFromError(err)
+		} else if apierrors.IsNotFound(err) {
+			break
+		}
+
+		time.Sleep(time.Second)
 	}
 
 	return nil
