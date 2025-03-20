@@ -8,6 +8,7 @@ package agent
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deploy"
+	deployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
@@ -55,7 +56,8 @@ func Initialize() (*App, error) {
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
 	deployService := deploy.NewService(kubernetesKubernetes, resourceService)
 	deployHandler := deploy.NewHandler(deployenvService, deployService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, settingHandler, deployHandler)
+	deployenvHandler := deployenv2.NewHandler(deployenvService, validatorValidator)
+	app := New(loggerLogger, configConfig, handler, settingHandler, deployHandler, deployenvHandler)
 	return app, nil
 }
 
@@ -67,6 +69,7 @@ type App struct {
 	MonitoringHandler *monitoring.Handler
 	SettingHandler    *setting.Handler
 	DeployHandler     *deploy.Handler
+	DeployEnvHandler  *deployenv2.Handler
 }
 
 func New(
@@ -75,6 +78,7 @@ func New(
 	MonitoringHandler *monitoring.Handler,
 	SettingHandler *setting.Handler,
 	DeployHandler *deploy.Handler,
+	DeployEnvHandler *deployenv2.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -82,5 +86,6 @@ func New(
 		MonitoringHandler,
 		SettingHandler,
 		DeployHandler,
+		DeployEnvHandler,
 	}
 }

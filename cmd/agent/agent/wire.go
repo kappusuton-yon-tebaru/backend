@@ -6,6 +6,7 @@ package agent
 import (
 	"github.com/google/wire"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deploy"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
@@ -25,6 +26,7 @@ type App struct {
 	MonitoringHandler *monitoring.Handler
 	SettingHandler    *setting.Handler
 	DeployHandler     *deploy.Handler
+	DeployEnvHandler  *deployenv.Handler
 }
 
 func New(
@@ -33,6 +35,7 @@ func New(
 	MonitoringHandler *monitoring.Handler,
 	SettingHandler *setting.Handler,
 	DeployHandler *deploy.Handler,
+	DeployEnvHandler *deployenv.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -40,6 +43,7 @@ func New(
 		MonitoringHandler,
 		SettingHandler,
 		DeployHandler,
+		DeployEnvHandler,
 	}
 }
 
@@ -54,6 +58,7 @@ func Initialize() (*App, error) {
 		validator.New,
 		setting.NewService,
 		setting.NewHandler,
+		deployenv.NewHandler,
 		sharedDeployEnv.NewService,
 		deploy.NewService,
 		deploy.NewHandler,

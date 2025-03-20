@@ -32,9 +32,9 @@ func (r *Router) RegisterRoutes(app *agent.App) {
 	r.GET("/setting/workerpool", app.SettingHandler.GetWorkerPoolSetting)
 	r.POST("/setting/workerpool", app.SettingHandler.SetWorkerPoolSetting)
 
-	r.GET("/project/:id/deployenv", app.DeployHandler.ListDeploymentEnv)
-	r.POST("/project/:id/deployenv", app.DeployHandler.CreateDeploymentEnv)
-	r.DELETE("/project/:id/deployenv", app.DeployHandler.DeleteDeploymentEnv)
+	r.GET("/project/:id/deployenv", app.DeployEnvHandler.ListDeploymentEnv)
+	r.POST("/project/:id/deployenv", app.DeployEnvHandler.CreateDeploymentEnv)
+	r.DELETE("/project/:id/deployenv", app.DeployEnvHandler.DeleteDeploymentEnv)
 
 	r.DELETE("/project/:id/deploy", app.DeployHandler.DeleteDeployment)
 }
