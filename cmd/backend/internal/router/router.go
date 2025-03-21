@@ -103,6 +103,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/dockerhub/images", app.DockerHubHandler.GetDockerHubImages)
 
+	r.GET("/project/:id/deploy", app.ReverseProxyHandler.Forward())
 	r.POST("/project/:id/build", app.BuildHandler.Build)
 	r.POST("/project/:id/deploy", app.DeployHandler.Deploy)
 	r.DELETE("/project/:id/deploy", app.ReverseProxyHandler.Forward())

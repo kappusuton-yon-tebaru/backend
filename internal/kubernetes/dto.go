@@ -30,6 +30,11 @@ type ConfigureMaxWorkerDTO struct {
 	WorkerNumber   int32
 }
 
+type DeploymentFilter struct {
+	ProjectId     string
+	DeploymentEnv string
+}
+
 type DeploymentCondition struct {
 	Available      *v1.DeploymentCondition
 	Progressing    *v1.DeploymentCondition

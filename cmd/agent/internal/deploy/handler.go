@@ -1,12 +1,16 @@
 package deploy
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	sharedDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -22,6 +26,71 @@ func NewHandler(sharedService *sharedDeployEnv.Service, service *Service, valida
 		service,
 		validator,
 	}
+}
+
+func (h *Handler) ListDeployment(ctx *gin.Context) {
+	pagination := query.NewPaginationWithDefault(1, 10)
+	err := ctx.ShouldBindQuery(&pagination)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "pagination should be integer",
+		})
+		return
+	}
+
+	sortFilter := query.NewSortQueryWithDefault("service_name", enum.Asc)
+	err = ctx.ShouldBindQuery(&sortFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid sort query",
+		})
+		return
+	}
+
+	availableSortKey := []string{"age", "service_name", "status"}
+	if err := h.validator.Var(sortFilter.SortBy, fmt.Sprintf("omitempty,oneof=%s", strings.Join(availableSortKey, " "))); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: fmt.Sprintf("sort key can only be one of the field: %s", utils.ArrayWithComma(availableSortKey, "or")),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(sortFilter); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "sort order can only be 'asc' or 'desc'",
+		})
+		return
+	}
+
+	queryFilter := query.NewQueryFilter("service_name")
+	err = ctx.ShouldBindQuery(&queryFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid query",
+		})
+		return
+	}
+
+	queryParam := query.NewQueryParam().
+		WithPagination(pagination.WithMinimum(1, 10)).
+		WithSortQuery(sortFilter).
+		WithQueryFilter(queryFilter)
+
+	deployFilter := ListDeploymentQuery{ProjectId: ctx.Param("id"), DeploymentEnv: "default"}
+	err = ctx.ShouldBindQuery(&deployFilter)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid query",
+		})
+		return
+	}
+
+	deployments, werr := h.service.ListDeployment(ctx, queryParam, deployFilter)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+	}
+
+	ctx.JSON(http.StatusOK, deployments)
 }
 
 // Delete deployment in project

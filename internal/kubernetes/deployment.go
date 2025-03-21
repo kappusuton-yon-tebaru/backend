@@ -2,6 +2,8 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	apiappsv1 "k8s.io/api/apps/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +30,24 @@ func (d Deployment) Apply(ctx context.Context, deployment *acappsv1.DeploymentAp
 	}
 
 	return appliedDeployment, nil
+}
+
+func (d Deployment) List(ctx context.Context, filter DeploymentFilter) (*apiappsv1.DeploymentList, error) {
+	filters := []string{
+		fmt.Sprintf("deployment_env=%s", filter.DeploymentEnv),
+		fmt.Sprintf("project_id=%s", filter.ProjectId),
+	}
+
+	fmt.Println(strings.Join(filters, ","))
+
+	deployments, err := d.client.List(ctx, apimetav1.ListOptions{
+		LabelSelector: strings.Join(filters, ","),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return deployments, nil
 }
 
 func (d Deployment) Get(ctx context.Context, name string) (*apiappsv1.Deployment, error) {

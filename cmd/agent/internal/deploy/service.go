@@ -4,13 +4,22 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
+
+type PaginatedDeployment models.Paginated[models.Deployment]
 
 type Service struct {
 	kube            *kubernetes.Kubernetes
@@ -22,6 +31,53 @@ func NewService(kube *kubernetes.Kubernetes, resourceService *resource.Service) 
 		kube,
 		resourceService,
 	}
+}
+
+func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryParam, deployFilter ListDeploymentQuery) (PaginatedDeployment, *werror.WError) {
+	project, werr := s.resourceService.GetResourceByID(ctx, deployFilter.ProjectId)
+	if werr != nil {
+		return PaginatedDeployment{}, werr
+	}
+
+	namespace := deployenv.GetNamespaceName(project.ResourceName, deployFilter.DeploymentEnv)
+	deployClient := s.kube.NewDeploymentClient(namespace)
+	results, err := deployClient.List(ctx, kubernetes.DeploymentFilter(deployFilter))
+	if err != nil {
+		return PaginatedDeployment{}, werror.NewFromError(err)
+	}
+
+	deployments := []models.Deployment{}
+	for _, deploy := range results.Items {
+		age := time.Since(deploy.CreationTimestamp.Time).Seconds()
+		condition := deployClient.GetCondition(&deploy)
+
+		status := enum.DeploymentStatusUnhealthy
+		if condition.Available.Status == v1.ConditionTrue {
+			status = enum.DeploymentStatusHealthy
+		}
+
+		deployments = append(deployments, models.Deployment{
+			ProjectId:     deployFilter.ProjectId,
+			ProjectName:   project.ResourceName,
+			DeploymentEnv: deployFilter.DeploymentEnv,
+			ServiceName:   strings.TrimSuffix(deploy.Name, "-deployment"),
+			Age:           int(age),
+			Status:        status,
+		})
+	}
+
+	deployments = utils.Filter(deployments, func(d models.Deployment) bool {
+		return strings.HasPrefix(d.ServiceName, queryParam.QueryFilter.Query)
+	})
+
+	deployments = utils.Paginate(deployments, queryParam.Pagination.Page, queryParam.Pagination.Limit)
+
+	return PaginatedDeployment{
+		Data:  deployments,
+		Page:  queryParam.Pagination.Page,
+		Limit: queryParam.Pagination.Limit,
+		Total: len(deployments),
+	}, nil
 }
 
 func (s *Service) DeleteDeployment(ctx context.Context, dto DeleteDeploymentRequest) *werror.WError {

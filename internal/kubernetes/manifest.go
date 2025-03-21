@@ -134,9 +134,10 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 
 	return acappsv1.Deployment(fmt.Sprintf("%s-deployment", dto.ServiceName), dto.Namespace).
 		WithLabels(map[string]string{
-			"app":          dto.ServiceName,
-			"project_id":   dto.ProjectId,
-			"service_name": dto.ServiceName,
+			"app":            dto.ServiceName,
+			"project_id":     dto.ProjectId,
+			"service_name":   dto.ServiceName,
+			"deployment_env": dto.DeploymentEnv,
 		}).
 		WithSpec(acappsv1.DeploymentSpec().
 			WithReplicas(1).
@@ -181,7 +182,8 @@ func ApplyLoadBalancerService(dto DeployDTO) *accorev1.ServiceApplyConfiguration
 				},
 			},
 		}).WithLabels(map[string]string{
-		"project_id":   dto.ProjectId,
-		"service_name": dto.ServiceName,
+		"project_id":     dto.ProjectId,
+		"service_name":   dto.ServiceName,
+		"deployment_env": dto.DeploymentEnv,
 	})
 }
