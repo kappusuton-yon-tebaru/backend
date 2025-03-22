@@ -49,7 +49,7 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 
 	deployments := []models.Deployment{}
 	for _, deploy := range results.Items {
-		age := time.Since(deploy.CreationTimestamp.Time).Seconds()
+		age := time.Since(deploy.CreationTimestamp.Time)
 		condition := deployClient.GetCondition(&deploy)
 
 		status := enum.DeploymentStatusUnhealthy
@@ -62,7 +62,8 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 			ProjectName:   project.ResourceName,
 			DeploymentEnv: deployFilter.DeploymentEnv,
 			ServiceName:   strings.TrimSuffix(deploy.Name, "-deployment"),
-			Age:           int(age),
+			Age:           age,
+			StringAge:     age.Truncate(time.Second).String(),
 			Status:        status,
 		})
 	}
@@ -75,7 +76,7 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 		direction := 0
 		switch queryParam.SortFilter.SortBy {
 		case "age":
-			direction = a.Age - b.Age
+			direction = int(a.Age.Seconds() - b.Age.Seconds())
 		case "service_name":
 			direction = strings.Compare(a.ServiceName, b.ServiceName)
 		case "status":
