@@ -1,6 +1,8 @@
 package ecr
 
 import (
+	"context"
+
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 )
@@ -17,8 +19,8 @@ func NewService(repo *ECRRepository) *Service {
 	}
 }
 
-func (s *Service) GetECRImages(repoURI string, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
-	images, err := s.repo.GetImages(repoURI, serviceName, queryParam)
+func (s *Service) GetECRImages(ctx context.Context, registry models.RegistryProviders, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
+	images, err := s.repo.GetImages(ctx, registry, serviceName, queryParam)
 	if err != nil {
 		return PaginatedECRImages{}, err
 	}

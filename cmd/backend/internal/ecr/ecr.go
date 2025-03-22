@@ -4,35 +4,16 @@ import (
 	"context"
 	"strings"
 
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/ecrpublic"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ecr"
-	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/aws"
+	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 )
 
-type ECRRepository struct {
-	client       *ecr.ECR
-	publicClient *ecrpublic.Client
-}
+type ECRRepository struct{}
 
-func NewECRRepository(cfg *config.Config) *ECRRepository {
-	privateSession := session.Must(session.NewSession(&aws.Config{
-		Region:      aws.String(cfg.ECR.Region),
-		Credentials: credentials.NewStaticCredentials(cfg.ECR.AccessKey, cfg.ECR.SecretKey, ""),
-	}))
-	publicConfig, err := awsConfig.LoadDefaultConfig(context.Background(), awsConfig.WithRegion(cfg.ECR.Region))
-	if err != nil {
-		panic(err)
-	}
-
-	return &ECRRepository{
-		client:       ecr.New(privateSession),
-		publicClient: ecrpublic.NewFromConfig(publicConfig),
-	}
+func NewECRRepository() *ECRRepository {
+	return &ECRRepository{}
 }
 
 func IsPublicRepo(repoURI string) bool {
@@ -43,25 +24,21 @@ func GetRepoName(repoURI string) string {
 	return repoURI[strings.LastIndex(repoURI, "/")+1:]
 }
 
-func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
+func (r *ECRRepository) GetImages(ctx context.Context, registry models.RegistryProviders, serviceName string, queryParam query.QueryParam) (PaginatedECRImages, error) {
+	repoURI := registry.Uri
+
 	isPublic := IsPublicRepo(repoURI)
 	repoName := GetRepoName(repoURI)
 
-	offset := (queryParam.Pagination.Page - 1) * queryParam.Pagination.Limit
-	end := offset + queryParam.Pagination.Limit
-
 	if isPublic {
-		input := &ecrpublic.DescribeImageTagsInput{
-			RepositoryName: aws.String(repoName),
-		}
-
-		result, err := r.publicClient.DescribeImageTags(context.TODO(), input)
+		client := aws.NewConfig(*registry.ECRCredential, registry.ECRCredential.Region).ECRPublic()
+		tags, err := client.DescribeImageTags(ctx, repoName)
 		if err != nil {
 			return PaginatedECRImages{}, err
 		}
 
 		var images []ECRImageResponse
-		for _, image := range result.ImageTagDetails {
+		for _, image := range tags {
 			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
 				images = append(images, ECRImageResponse{
 					*image.ImageTag,
@@ -69,10 +46,7 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 			}
 		}
 
-		paginatedImages := []ECRImageResponse{}
-		if offset < len(images) {
-			paginatedImages = images[offset:min(len(images), end)]
-		}
+		paginatedImages := utils.Paginate(images, queryParam.Pagination.Page, queryParam.Pagination.Limit)
 
 		return PaginatedECRImages{
 			Page:  queryParam.Pagination.Page,
@@ -81,19 +55,14 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 			Data:  paginatedImages,
 		}, nil
 	} else {
-		input := &ecr.ListImagesInput{
-			RepositoryName: aws.String(repoName),
-			Filter: &ecr.ListImagesFilter{
-				TagStatus: aws.String("TAGGED"),
-			},
-		}
-		result, err := r.client.ListImages(input)
+		client := aws.NewConfig(*registry.ECRCredential, registry.ECRCredential.Region).ECRPrivate()
+		tags, err := client.ListImages(ctx, repoName)
 		if err != nil {
 			return PaginatedECRImages{}, err
 		}
 
 		var images []ECRImageResponse
-		for _, image := range result.ImageIds {
+		for _, image := range tags {
 			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
 				images = append(images, ECRImageResponse{
 					*image.ImageTag,
@@ -101,11 +70,13 @@ func (r *ECRRepository) GetImages(repoURI string, serviceName string, queryParam
 			}
 		}
 
+		paginatedImages := utils.Paginate(images, queryParam.Pagination.Page, queryParam.Pagination.Limit)
+
 		return PaginatedECRImages{
 			Page:  queryParam.Pagination.Page,
 			Limit: queryParam.Pagination.Limit,
-			Total: len(images),
-			Data:  images[offset:end],
+			Total: len(paginatedImages),
+			Data:  paginatedImages,
 		}, nil
 	}
 
