@@ -111,12 +111,15 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) (string,
 			Namespace:     deployenv.GetNamespaceName(project.ResourceName, req.DeploymentEnv),
 			Environments:  envs,
 			DeploymentEnv: req.DeploymentEnv,
+			HealthCheck:   (*sharedDeploy.DeployHealthCheckContext)(service.Healthcheck),
 		}
 
 		bs, err := json.Marshal(deployCtx)
 		if err != nil {
 			return "", nil
 		}
+
+		fmt.Println(string(bs))
 
 		if err := s.rmq.Publish(ctx, enum.DeployContextRoutingKey, bs); err != nil {
 			s.logger.Error("error occured while publishing deploy context", zap.Error(err))

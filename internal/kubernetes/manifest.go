@@ -141,6 +141,18 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 		envs = append(envs, accorev1.EnvVar().WithName(key).WithValue(val))
 	}
 
+	httpProbe := (*accorev1.ProbeApplyConfiguration)(nil)
+	if dto.HealthCheck != nil {
+		httpProbe = accorev1.Probe().
+			WithHTTPGet(&accorev1.HTTPGetActionApplyConfiguration{
+				Path: &dto.HealthCheck.Path,
+				Port: utils.Pointer(intstr.FromInt32(dto.HealthCheck.Port)),
+			}).
+			WithInitialDelaySeconds(5).
+			WithPeriodSeconds(5).
+			WithTimeoutSeconds(1)
+	}
+
 	return acappsv1.Deployment(fmt.Sprintf("%s-deployment", dto.ServiceName), dto.Namespace).
 		WithLabels(map[string]string{
 			"app":            dto.ServiceName,
@@ -163,14 +175,7 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 							WithPorts(port).
 							WithImage(dto.ImageUri).
 							WithEnv(envs...).
-							WithReadinessProbe(accorev1.Probe().
-								WithHTTPGet(&accorev1.HTTPGetActionApplyConfiguration{
-									Path: utils.Pointer("/hc"),
-									Port: utils.Pointer(intstr.FromInt32(8080)),
-								}).
-								WithInitialDelaySeconds(5).
-								WithPeriodSeconds(5).
-								WithTimeoutSeconds(1)),
+							WithReadinessProbe(httpProbe),
 					),
 				),
 			),

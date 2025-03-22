@@ -327,7 +327,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\\*.port\n - services.\\*.secret_name",
+                        "description": "Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\\*.port\n - services.\\*.secret_name\n - services.\\*.health_check",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -636,6 +636,21 @@ const docTemplate = `{
                 }
             }
         },
+        "cmd_backend_internal_deploy.HealthCheckInfo": {
+            "type": "object",
+            "required": [
+                "path",
+                "port"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
         "cmd_backend_internal_deploy.ServiceInfo": {
             "type": "object",
             "required": [
@@ -643,6 +658,9 @@ const docTemplate = `{
                 "tag"
             ],
             "properties": {
+                "health_check": {
+                    "$ref": "#/definitions/cmd_backend_internal_deploy.HealthCheckInfo"
+                },
                 "port": {
                     "type": "integer",
                     "minimum": 1

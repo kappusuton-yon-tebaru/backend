@@ -23,6 +23,12 @@ type DeployDTO struct {
 	Namespace     string
 	DeploymentEnv string
 	Environments  map[string]string
+	HealthCheck   *DeployHealthCheckDTO
+}
+
+type DeployHealthCheckDTO struct {
+	Path string
+	Port int32
 }
 
 type ConfigureMaxWorkerDTO struct {

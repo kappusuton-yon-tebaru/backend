@@ -34,6 +34,14 @@ func (h *Handler) DeployHandler(msg amqp091.Delivery) {
 
 	h.logger.Info("consuming job", zap.String("job_id", body.Id))
 
+	hc := (*kubernetes.DeployHealthCheckDTO)(nil)
+	if body.HealthCheck != nil {
+		hc = &kubernetes.DeployHealthCheckDTO{
+			Path: body.HealthCheck.Path,
+			Port: body.HealthCheck.Port,
+		}
+	}
+
 	dto := kubernetes.DeployDTO{
 		Id:            body.Id,
 		ProjectId:     body.ProjectId,
@@ -43,6 +51,7 @@ func (h *Handler) DeployHandler(msg amqp091.Delivery) {
 		Namespace:     body.Namespace,
 		Environments:  body.Environments,
 		DeploymentEnv: body.DeploymentEnv,
+		HealthCheck:   hc,
 	}
 
 	ctx := context.Background()

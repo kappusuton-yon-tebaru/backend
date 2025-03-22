@@ -7,10 +7,16 @@ type DeployRequest struct {
 }
 
 type ServiceInfo struct {
-	ServiceName string  `json:"service_name" validate:"required"`
-	Tag         string  `json:"tag" validate:"required,ascii"`
-	Port        *int32  `json:"port" validate:"omitempty,min=1"`
-	SecretName  *string `json:"secret_name" validate:"omitempty,ascii"`
+	ServiceName string           `json:"service_name" validate:"required"`
+	Tag         string           `json:"tag" validate:"required,ascii"`
+	Port        *int32           `json:"port" validate:"omitempty,min=1"`
+	SecretName  *string          `json:"secret_name" validate:"omitempty,ascii"`
+	Healthcheck *HealthCheckInfo `json:"health_check" validate:"omitempty"`
+}
+
+type HealthCheckInfo struct {
+	Path string `json:"path" validate:"required"`
+	Port int32  `json:"port" validate:"required"`
 }
 
 type DeployResponse struct {

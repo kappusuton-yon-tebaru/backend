@@ -35,8 +35,20 @@ definitions:
     required:
     - services
     type: object
+  cmd_backend_internal_deploy.HealthCheckInfo:
+    properties:
+      path:
+        type: string
+      port:
+        type: integer
+    required:
+    - path
+    - port
+    type: object
   cmd_backend_internal_deploy.ServiceInfo:
     properties:
+      health_check:
+        $ref: '#/definitions/cmd_backend_internal_deploy.HealthCheckInfo'
       port:
         minimum: 1
         type: integer
@@ -392,6 +404,7 @@ paths:
            - deployment_env (service will be deployed on __default__ if null)
            - services.\*.port
            - services.\*.secret_name
+           - services.\*.health_check
         in: body
         name: request
         required: true
