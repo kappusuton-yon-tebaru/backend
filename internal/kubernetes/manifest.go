@@ -88,7 +88,7 @@ func CreateBuilderPodManifest(config BuildImageDTO) (*apicorev1.Pod, error) {
 
 func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *config.Config) *acappsv1.DeploymentApplyConfiguration {
 	return acappsv1.Deployment("consumer-deployment", config.KubeNamespace).
-		WithNamespace("default").
+		WithNamespace(config.KubeNamespace).
 		WithLabels(map[string]string{"app": "consumer"}).
 		WithSpec(acappsv1.DeploymentSpec().
 			WithReplicas(dto.WorkerNumber).
