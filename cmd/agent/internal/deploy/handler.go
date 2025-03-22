@@ -28,6 +28,23 @@ func NewHandler(sharedService *sharedDeployEnv.Service, service *Service, valida
 	}
 }
 
+// List deployment in project
+//
+//	@Router			/project/{projectId}/deploy [get]
+//	@Summary		List deployment in project
+//	@Description	List deployment in project
+//	@Tags			Deployment
+//	@Param			projectId	path	string	true	"Project Id"
+//	@Produce		json
+//	@Param			page			query	int		false	"Page"															Default(1)
+//	@Param			limit			query	int		false	"Limit"															Default(10)
+//	@Param			sort_by			query	string	false	"Sort by"														Enums(age, service_name, status)
+//	@Param			sort_order		query	string	false	"Sort order"													Enums(asc, desc)
+//	@Param			deployment_env	query	string	false	"Deployment Environment defaults to 'default' if not specified"	Enums(asc, desc)
+//	@Param			query			query	string	false	"Query on service_name"
+//	@Success		200
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) ListDeployment(ctx *gin.Context) {
 	pagination := query.NewPaginationWithDefault(1, 10)
 	err := ctx.ShouldBindQuery(&pagination)

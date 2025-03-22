@@ -59,14 +59,14 @@ definitions:
     required:
     - service_name
     type: object
-  deploy.ListDeploymentEnvResponse:
+  deployenv.ListDeploymentEnvResponse:
     properties:
       data:
         items:
           type: string
         type: array
     type: object
-  deploy.ModifyDeploymentEnvRequest:
+  deployenv.ModifyDeploymentEnvRequest:
     properties:
       name:
         type: string
@@ -319,6 +319,66 @@ paths:
       summary: Delete deployment in project
       tags:
       - Deployment
+    get:
+      description: List deployment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - age
+        - service_name
+        - status
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Deployment Environment defaults to 'default' if not specified
+        enum:
+        - asc
+        - desc
+        in: query
+        name: deployment_env
+        type: string
+      - description: Query on service_name
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List deployment in project
+      tags:
+      - Deployment
     post:
       description: Deploy services in project
       parameters:
@@ -359,7 +419,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/deploy.ModifyDeploymentEnvRequest'
+          $ref: '#/definitions/deployenv.ModifyDeploymentEnvRequest'
       produces:
       - application/json
       responses:
@@ -390,7 +450,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/deploy.ListDeploymentEnvResponse'
+            $ref: '#/definitions/deployenv.ListDeploymentEnvResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -411,7 +471,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/deploy.ModifyDeploymentEnvRequest'
+          $ref: '#/definitions/deployenv.ModifyDeploymentEnvRequest'
       produces:
       - application/json
       responses:

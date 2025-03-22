@@ -222,6 +222,93 @@ const docTemplate = `{
             }
         },
         "/project/{projectId}/deploy": {
+            "get": {
+                "description": "List deployment in project",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deployment"
+                ],
+                "summary": "List deployment in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project Id",
+                        "name": "projectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "age",
+                            "service_name",
+                            "status"
+                        ],
+                        "type": "string",
+                        "description": "Sort by",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "description": "Sort order",
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "description": "Deployment Environment defaults to 'default' if not specified",
+                        "name": "deployment_env",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Query on service_name",
+                        "name": "query",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Deploy services in project",
                 "produces": [
@@ -324,7 +411,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/deploy.ListDeploymentEnvResponse"
+                            "$ref": "#/definitions/deployenv.ListDeploymentEnvResponse"
                         }
                     },
                     "500": {
@@ -358,7 +445,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/deploy.ModifyDeploymentEnvRequest"
+                            "$ref": "#/definitions/deployenv.ModifyDeploymentEnvRequest"
                         }
                     }
                 ],
@@ -403,7 +490,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/deploy.ModifyDeploymentEnvRequest"
+                            "$ref": "#/definitions/deployenv.ModifyDeploymentEnvRequest"
                         }
                     }
                 ],
@@ -585,7 +672,7 @@ const docTemplate = `{
                 }
             }
         },
-        "deploy.ListDeploymentEnvResponse": {
+        "deployenv.ListDeploymentEnvResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -596,7 +683,7 @@ const docTemplate = `{
                 }
             }
         },
-        "deploy.ModifyDeploymentEnvRequest": {
+        "deployenv.ModifyDeploymentEnvRequest": {
             "type": "object",
             "required": [
                 "name"
