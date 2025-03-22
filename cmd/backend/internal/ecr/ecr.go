@@ -37,7 +37,7 @@ func (r *ECRRepository) GetImages(ctx context.Context, registry models.RegistryP
 			return PaginatedECRImages{}, err
 		}
 
-		var images []ECRImageResponse
+		images := []ECRImageResponse{}
 		for _, image := range tags {
 			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
 				images = append(images, ECRImageResponse{
@@ -61,7 +61,7 @@ func (r *ECRRepository) GetImages(ctx context.Context, registry models.RegistryP
 			return PaginatedECRImages{}, err
 		}
 
-		var images []ECRImageResponse
+		images := []ECRImageResponse{}
 		for _, image := range tags {
 			if strings.Contains(*image.ImageTag, serviceName) && strings.Contains(*image.ImageTag, queryParam.QueryFilter.Query) {
 				images = append(images, ECRImageResponse{
