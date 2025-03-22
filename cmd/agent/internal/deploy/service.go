@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -68,6 +69,24 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 
 	deployments = utils.Filter(deployments, func(d models.Deployment) bool {
 		return strings.HasPrefix(d.ServiceName, queryParam.QueryFilter.Query)
+	})
+
+	slices.SortFunc(deployments, func(a, b models.Deployment) int {
+		direction := 0
+		switch queryParam.SortFilter.SortBy {
+		case "age":
+			direction = a.Age - b.Age
+		case "service_name":
+			direction = strings.Compare(a.ServiceName, b.ServiceName)
+		case "status":
+			direction = strings.Compare(a.Status, b.Status)
+		}
+
+		if queryParam.SortFilter.SortOrder == enum.Desc {
+			return -direction
+		} else {
+			return direction
+		}
 	})
 
 	deployments = utils.Paginate(deployments, queryParam.Pagination.Page, queryParam.Pagination.Limit)
