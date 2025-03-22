@@ -30,7 +30,7 @@ func NewHandler(service *Service, validator *validator.Validator) *Handler {
 //	@Param			projectId	path	string			true	"Project Id"
 //	@Param			request		body	DeployRequest	true	"Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\*.port\n - services.\*.secret_name\n - services.\*.health_check"
 //	@Produce		json
-//	@Success		200
+//	@Success		200 {object} DeployResponse
 func (h *Handler) Deploy(ctx *gin.Context) {
 	req := DeployRequest{
 		ProjectId:     ctx.Param("id"),

@@ -35,6 +35,11 @@ definitions:
     required:
     - services
     type: object
+  cmd_backend_internal_deploy.DeployResponse:
+    properties:
+      parent_id:
+        type: string
+    type: object
   cmd_backend_internal_deploy.HealthCheckInfo:
     properties:
       path:
@@ -70,6 +75,29 @@ definitions:
         type: string
     required:
     - service_name
+    type: object
+  deploy.DeploymentResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  deploy.PaginatedDeployment:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  deployenv.DeploymentDevResponse:
+    properties:
+      message:
+        type: string
     type: object
   deployenv.ListDeploymentEnvResponse:
     properties:
@@ -114,6 +142,21 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment:
+    properties:
+      age:
+        type: string
+      deployment_env:
+        type: string
+      deployment_status:
+        type: string
+      project_id:
+        type: string
+      project_name:
+        type: string
+      service_name:
+        type: string
     type: object
   github_com_kappusuton-yon-tebaru_backend_internal_models.Job:
     properties:
@@ -320,6 +363,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/deploy.DeploymentResponse'
         "400":
           description: Bad Request
           schema:
@@ -380,6 +425,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/deploy.PaginatedDeployment'
         "400":
           description: Bad Request
           schema:
@@ -415,6 +462,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_deploy.DeployResponse'
       summary: Deploy services in project
       tags:
       - Deployment
@@ -436,8 +485,10 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deployenv.DeploymentDevResponse'
         "400":
           description: Bad Request
           schema:
@@ -490,6 +541,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/deployenv.DeploymentDevResponse'
         "400":
           description: Bad Request
           schema:

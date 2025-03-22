@@ -36,15 +36,15 @@ func NewHandler(sharedService *sharedDeployEnv.Service, service *Service, valida
 //	@Tags			Deployment
 //	@Param			projectId	path	string	true	"Project Id"
 //	@Produce		json
-//	@Param			page			query	int		false	"Page"															Default(1)
-//	@Param			limit			query	int		false	"Limit"															Default(10)
-//	@Param			sort_by			query	string	false	"Sort by"														Enums(age, service_name, status)
-//	@Param			sort_order		query	string	false	"Sort order"													Enums(asc, desc)
-//	@Param			deployment_env	query	string	false	"Deployment Environment defaults to 'default' if not specified"	Enums(asc, desc)
-//	@Param			query			query	string	false	"Query on service_name"
-//	@Success		200
-//	@Failure		400	{object}	httputils.ErrResponse
-//	@Failure		500	{object}	httputils.ErrResponse
+//	@Param			page			query		int		false	"Page"															Default(1)
+//	@Param			limit			query		int		false	"Limit"															Default(10)
+//	@Param			sort_by			query		string	false	"Sort by"														Enums(age, service_name, status)
+//	@Param			sort_order		query		string	false	"Sort order"													Enums(asc, desc)
+//	@Param			deployment_env	query		string	false	"Deployment Environment defaults to 'default' if not specified"	Enums(asc, desc)
+//	@Param			query			query		string	false	"Query on service_name"
+//	@Success		200				{object}	PaginatedDeployment
+//	@Failure		400				{object}	httputils.ErrResponse
+//	@Failure		500				{object}	httputils.ErrResponse
 func (h *Handler) ListDeployment(ctx *gin.Context) {
 	pagination := query.NewPaginationWithDefault(1, 10)
 	err := ctx.ShouldBindQuery(&pagination)
@@ -119,7 +119,7 @@ func (h *Handler) ListDeployment(ctx *gin.Context) {
 //	@Param			projectId	path	string					true	"Project Id"
 //	@Param			request		body	DeleteDeploymentRequest	true	"Optional fields:\n - deployment_env"
 //	@Produce		json
-//	@Success		200
+//	@Success		200	{object}	DeploymentResponse
 //	@Failure		400	{object}	httputils.ErrResponse
 //	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) DeleteDeployment(ctx *gin.Context) {
@@ -144,5 +144,7 @@ func (h *Handler) DeleteDeployment(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, DeploymentResponse{
+		Message: fmt.Sprintf("deleted deployment %s", req.DeploymentEnv),
+	})
 }

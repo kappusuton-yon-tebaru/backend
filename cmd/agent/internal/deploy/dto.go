@@ -10,3 +10,7 @@ type ListDeploymentQuery struct {
 	ProjectId     string
 	DeploymentEnv string `form:"deployment_env"`
 }
+
+type DeploymentResponse struct {
+	Message string `json:"message"`
+}

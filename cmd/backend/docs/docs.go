@@ -293,7 +293,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/deploy.PaginatedDeployment"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -338,7 +341,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_deploy.DeployResponse"
+                        }
                     }
                 }
             },
@@ -371,7 +377,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/deploy.DeploymentResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -451,7 +460,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/deployenv.DeploymentDevResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -495,8 +507,11 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/deployenv.DeploymentDevResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -636,6 +651,14 @@ const docTemplate = `{
                 }
             }
         },
+        "cmd_backend_internal_deploy.DeployResponse": {
+            "type": "object",
+            "properties": {
+                "parent_id": {
+                    "type": "string"
+                }
+            }
+        },
         "cmd_backend_internal_deploy.HealthCheckInfo": {
             "type": "object",
             "required": [
@@ -686,6 +709,42 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "service_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "deploy.DeploymentResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "deploy.PaginatedDeployment": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "deployenv.DeploymentDevResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }
@@ -752,6 +811,29 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "string"
+                },
+                "deployment_env": {
+                    "type": "string"
+                },
+                "deployment_status": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "project_name": {
+                    "type": "string"
+                },
+                "service_name": {
+                    "type": "string"
                 }
             }
         },

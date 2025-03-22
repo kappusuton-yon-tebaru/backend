@@ -56,7 +56,7 @@ func (h *Handler) ListDeploymentEnv(ctx *gin.Context) {
 //	@Param			projectId	path	string						true	"Project Id"
 //	@Param			request		body	ModifyDeploymentEnvRequest	true	"create deployment environment request"
 //	@Produce		json
-//	@Success		201
+//	@Success		201 {object} DeploymentDevResponse
 //	@Failure		400	{object}	httputils.ErrResponse
 //	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
@@ -84,8 +84,8 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, CreateDeploymentDevResponse{
-		Message: fmt.Sprintf("created %s deployment environment", req.Name),
+	ctx.JSON(http.StatusCreated, DeploymentDevResponse{
+		Message: fmt.Sprintf("created deployment environment %s", req.Name),
 	})
 }
 
@@ -98,7 +98,7 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 //	@Param			projectId	path	string						true	"Project Id"
 //	@Param			request		body	ModifyDeploymentEnvRequest	true	"delete deployment environment request"
 //	@Produce		json
-//	@Success		201
+//	@Success		200 {object} DeploymentDevResponse
 //	@Failure		400	{object}	httputils.ErrResponse
 //	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
@@ -126,5 +126,7 @@ func (h *Handler) DeleteDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, DeploymentDevResponse{
+		Message: fmt.Sprintf("deleted deployment environment %s", req.Name),
+	})
 }

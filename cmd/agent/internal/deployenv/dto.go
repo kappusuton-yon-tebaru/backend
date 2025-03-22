@@ -9,6 +9,6 @@ type ListDeploymentEnvResponse struct {
 	Data []string `json:"data"`
 }
 
-type CreateDeploymentDevResponse struct {
+type DeploymentDevResponse struct {
 	Message string `json:"message"`
 }
