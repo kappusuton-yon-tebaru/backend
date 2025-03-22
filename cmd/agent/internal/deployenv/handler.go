@@ -1,6 +1,7 @@
 package deployenv
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -83,7 +84,9 @@ func (h *Handler) CreateDeploymentEnv(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.JSON(http.StatusCreated, CreateDeploymentDevResponse{
+		Message: fmt.Sprintf("created %s deployment environment", req.Name),
+	})
 }
 
 // Delete deployment environment in project

@@ -8,3 +8,7 @@ type ModifyDeploymentEnvRequest struct {
 type ListDeploymentEnvResponse struct {
 	Data []string `json:"data"`
 }
+
+type CreateDeploymentDevResponse struct {
+	Message string `json:"message"`
+}
