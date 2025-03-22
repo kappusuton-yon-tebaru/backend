@@ -5,12 +5,18 @@ package agent
 
 import (
 	"github.com/google/wire"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deploy"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	sharedDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -19,6 +25,8 @@ type App struct {
 	Config            *config.Config
 	MonitoringHandler *monitoring.Handler
 	SettingHandler    *setting.Handler
+	DeployHandler     *deploy.Handler
+	DeployEnvHandler  *deployenv.Handler
 }
 
 func New(
@@ -26,12 +34,16 @@ func New(
 	Config *config.Config,
 	MonitoringHandler *monitoring.Handler,
 	SettingHandler *setting.Handler,
+	DeployHandler *deploy.Handler,
+	DeployEnvHandler *deployenv.Handler,
 ) *App {
 	return &App{
 		Logger,
 		Config,
 		MonitoringHandler,
 		SettingHandler,
+		DeployHandler,
+		DeployEnvHandler,
 	}
 }
 
@@ -46,6 +58,14 @@ func Initialize() (*App, error) {
 		validator.New,
 		setting.NewService,
 		setting.NewHandler,
+		deployenv.NewHandler,
+		sharedDeployEnv.NewService,
+		deploy.NewService,
+		deploy.NewHandler,
+		mongodb.NewMongoDB,
+		resourcerelationship.NewRepository,
+		resource.NewRepository,
+		resource.NewService,
 		New,
 	)
 

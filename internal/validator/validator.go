@@ -2,6 +2,7 @@ package validator
 
 import (
 	"reflect"
+	"regexp"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -27,6 +28,14 @@ func New() (*Validator, error) {
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
 		return field.Tag.Get("json")
 	})
+
+	err = validate.RegisterValidation("kebabnum", func(fl validator.FieldLevel) bool {
+		pattern := "^[a-z0-9]+(-[a-z0-9]+)*$"
+		return regexp.MustCompile(pattern).MatchString(fl.Field().String())
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &Validator{
 		validate,

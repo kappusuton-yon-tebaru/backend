@@ -7,12 +7,18 @@
 package agent
 
 import (
+	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deploy"
+	deployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/agent/internal/setting"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/hub"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -40,7 +46,18 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	settingHandler := setting.NewHandler(settingService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, settingHandler)
+	database, err := mongodb.NewMongoDB(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	repository := resource.NewRepository(database)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
+	resourceService := resource.NewService(repository, resourcerelationshipRepository)
+	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
+	deployService := deploy.NewService(kubernetesKubernetes, resourceService)
+	deployHandler := deploy.NewHandler(deployenvService, deployService, validatorValidator)
+	deployenvHandler := deployenv2.NewHandler(deployenvService, validatorValidator)
+	app := New(loggerLogger, configConfig, handler, settingHandler, deployHandler, deployenvHandler)
 	return app, nil
 }
 
@@ -51,6 +68,8 @@ type App struct {
 	Config            *config.Config
 	MonitoringHandler *monitoring.Handler
 	SettingHandler    *setting.Handler
+	DeployHandler     *deploy.Handler
+	DeployEnvHandler  *deployenv2.Handler
 }
 
 func New(
@@ -58,11 +77,15 @@ func New(
 	Config *config.Config,
 	MonitoringHandler *monitoring.Handler,
 	SettingHandler *setting.Handler,
+	DeployHandler *deploy.Handler,
+	DeployEnvHandler *deployenv2.Handler,
 ) *App {
 	return &App{
 		Logger,
 		Config,
 		MonitoringHandler,
 		SettingHandler,
+		DeployHandler,
+		DeployEnvHandler,
 	}
 }

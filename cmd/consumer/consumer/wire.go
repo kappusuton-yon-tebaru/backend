@@ -5,21 +5,26 @@ package builderconsumer
 
 import (
 	"github.com/google/wire"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
 type App struct {
-	Logger       *logger.Logger
-	Config       *config.Config
-	KubeClient   *kubernetes.Kubernetes
-	RmqClient    *rmq.BuilderRmq
-	BuildHandler *build.Handler
+	Logger        *logger.Logger
+	Config        *config.Config
+	KubeClient    *kubernetes.Kubernetes
+	RmqClient     *rmq.BuilderRmq
+	BuildHandler  *build.Handler
+	DeployHandler *deploy.Handler
 }
 
 func New(
@@ -28,6 +33,7 @@ func New(
 	KubeClient *kubernetes.Kubernetes,
 	RmqClient *rmq.BuilderRmq,
 	BuildHandler *build.Handler,
+	DeployHandler *deploy.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -35,6 +41,7 @@ func New(
 		KubeClient,
 		RmqClient,
 		BuildHandler,
+		DeployHandler,
 	}
 }
 
@@ -49,6 +56,12 @@ func Initialize() (*App, error) {
 		mongodb.NewMongoDB,
 		job.NewRepository,
 		job.NewService,
+		deploy.NewHandler,
+		deploy.NewService,
+		deployenv.NewService,
+		resource.NewService,
+		resource.NewRepository,
+		resourcerelationship.NewRepository,
 		New,
 	)
 

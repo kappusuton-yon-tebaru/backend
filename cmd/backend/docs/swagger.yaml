@@ -1,9 +1,117 @@
 basePath: /
 definitions:
+  cmd_backend_internal_build.BuildRequest:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/cmd_backend_internal_build.ServiceInfo'
+        type: array
+    required:
+    - services
+    type: object
   cmd_backend_internal_build.BuildResponse:
     properties:
       parent_id:
         type: string
+    type: object
+  cmd_backend_internal_build.ServiceInfo:
+    properties:
+      service_name:
+        type: string
+      tag:
+        type: string
+    required:
+    - service_name
+    - tag
+    type: object
+  cmd_backend_internal_deploy.DeployRequest:
+    properties:
+      deployment_env:
+        type: string
+      services:
+        items:
+          $ref: '#/definitions/cmd_backend_internal_deploy.ServiceInfo'
+        type: array
+    required:
+    - services
+    type: object
+  cmd_backend_internal_deploy.DeployResponse:
+    properties:
+      parent_id:
+        type: string
+    type: object
+  cmd_backend_internal_deploy.HealthCheckInfo:
+    properties:
+      path:
+        type: string
+      port:
+        type: integer
+    required:
+    - path
+    - port
+    type: object
+  cmd_backend_internal_deploy.ServiceInfo:
+    properties:
+      health_check:
+        $ref: '#/definitions/cmd_backend_internal_deploy.HealthCheckInfo'
+      port:
+        minimum: 1
+        type: integer
+      secret_name:
+        type: string
+      service_name:
+        type: string
+      tag:
+        type: string
+    required:
+    - service_name
+    - tag
+    type: object
+  deploy.DeleteDeploymentRequest:
+    properties:
+      deployment_env:
+        type: string
+      service_name:
+        type: string
+    required:
+    - service_name
+    type: object
+  deploy.DeploymentResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  deploy.PaginatedDeployment:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  deployenv.DeploymentDevResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  deployenv.ListDeploymentEnvResponse:
+    properties:
+      data:
+        items:
+          type: string
+        type: array
+    type: object
+  deployenv.ModifyDeploymentEnvRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   github_com_kappusuton-yon-tebaru_backend_internal_enum.JobStatus:
     enum:
@@ -35,6 +143,21 @@ definitions:
       total:
         type: integer
     type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment:
+    properties:
+      age:
+        type: string
+      deployment_env:
+        type: string
+      deployment_status:
+        type: string
+      project_id:
+        type: string
+      project_name:
+        type: string
+      service_name:
+        type: string
+    type: object
   github_com_kappusuton-yon-tebaru_backend_internal_models.Job:
     properties:
       created_at:
@@ -59,6 +182,19 @@ definitions:
       name:
         type: string
     type: object
+  setting.SetWorkerPoolRequest:
+    properties:
+      pool_size:
+        minimum: 0
+        type: integer
+    required:
+    - pool_size
+    type: object
+  setting.WorkerPoolResponse:
+    properties:
+      pool_size:
+        type: integer
+    type: object
 host: localhost:3000
 info:
   contact: {}
@@ -66,27 +202,6 @@ info:
   title: Snapping Service
   version: "1.0"
 paths:
-  /build:
-    post:
-      description: Build services in project
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/cmd_backend_internal_build.BuildResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
-      summary: Build services in project
-      tags:
-      - Build
   /jobs:
     get:
       description: List all job parents
@@ -193,4 +308,294 @@ paths:
       summary: List jobs by job parent id
       tags:
       - Jobs
+  /project/{projectId}/build:
+    post:
+      description: Build services in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: build request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/cmd_backend_internal_build.BuildRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_build.BuildResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Build services in project
+      tags:
+      - Build
+  /project/{projectId}/deploy:
+    delete:
+      description: Delete deployment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: |-
+          Optional fields:
+           - deployment_env
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deploy.DeleteDeploymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deploy.DeploymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Delete deployment in project
+      tags:
+      - Deployment
+    get:
+      description: List deployment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - age
+        - service_name
+        - status
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Deployment Environment defaults to 'default' if not specified
+        enum:
+        - asc
+        - desc
+        in: query
+        name: deployment_env
+        type: string
+      - description: Query on service_name
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deploy.PaginatedDeployment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List deployment in project
+      tags:
+      - Deployment
+    post:
+      description: Deploy services in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: |-
+          Optional fields:
+           - deployment_env (service will be deployed on __default__ if null)
+           - services.\*.port
+           - services.\*.secret_name
+           - services.\*.health_check
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/cmd_backend_internal_deploy.DeployRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_deploy.DeployResponse'
+      summary: Deploy services in project
+      tags:
+      - Deployment
+  /project/{projectId}/deployenv:
+    delete:
+      description: Delete deployment environment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: delete deployment environment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deployenv.ModifyDeploymentEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deployenv.DeploymentDevResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Delete deployment environment in project
+      tags:
+      - Deployment Environment
+    get:
+      description: List deployment environments in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deployenv.ListDeploymentEnvResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List deployment environments in project
+      tags:
+      - Deployment Environment
+    post:
+      description: Create deployment environment in project
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: create deployment environment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deployenv.ModifyDeploymentEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/deployenv.DeploymentDevResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Create deployment environment in project
+      tags:
+      - Deployment Environment
+  /setting/workerpool:
+    get:
+      description: Get worker pool setting
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/setting.WorkerPoolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Get worker pool setting
+      tags:
+      - Setting
+    post:
+      description: Set worker pool setting
+      parameters:
+      - description: worker pool setting request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/setting.SetWorkerPoolRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/setting.WorkerPoolResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Set worker pool setting
+      tags:
+      - Setting
 swagger: "2.0"

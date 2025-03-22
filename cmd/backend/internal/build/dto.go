@@ -1,7 +1,7 @@
 package build
 
 type BuildRequest struct {
-	ProjectId string        `json:"project_id" validate:"required"`
+	ProjectId string        `swaggerignore:"true"`
 	Services  []ServiceInfo `json:"services"   validate:"required,gt=0,dive,required"`
 }
 

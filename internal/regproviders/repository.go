@@ -11,16 +11,40 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Repository struct {
 	regProviders *mongo.Collection
 }
 
-func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{
+func NewRepository(db *mongo.Database) (*Repository, error) {
+	repo := &Repository{
 		regProviders: db.Collection("registry_providers"),
 	}
+
+	if err := repo.ensureIndexes(context.Background()); err != nil {
+		return nil, err
+	}
+
+	return repo, nil
+}
+
+func (r *Repository) ensureIndexes(ctx context.Context) error {
+	index := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "name", Value: 1},
+			{Key: "organization_id", Value: 1},
+		},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := r.regProviders.Indexes().CreateOne(ctx, index)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Repository) GetAllRegistryProviders(ctx context.Context, queryParam query.QueryParam) (models.Paginated[RegistryProvidersDTO], error) {
@@ -102,9 +126,7 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	request := CreateRegistryProvidersDTO{
 		Name:           dto.Name,
-		ProviderType:   dto.ProviderType,
 		Uri:            dto.Uri,
-		Credential:     dto.Credential,
 		OrganizationId: dto.OrganizationId,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),

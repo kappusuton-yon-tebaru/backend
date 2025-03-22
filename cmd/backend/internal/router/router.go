@@ -103,11 +103,19 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/dockerhub/images", app.DockerHubHandler.GetDockerHubImages)
 
-	r.POST("/build", app.BuildHandler.Build)
+	r.GET("/project/:id/deploy", app.ReverseProxyHandler.Forward())
+	r.POST("/project/:id/build", app.BuildHandler.Build)
+	r.POST("/project/:id/deploy", app.DeployHandler.Deploy)
+	r.DELETE("/project/:id/deploy", app.ReverseProxyHandler.Forward())
+
+	r.GET("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
+	r.POST("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
+	r.DELETE("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
+
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
-	r.GET("/setting/maxworker", app.ReverseProxyHandler.Forward())
-	r.POST("/setting/maxworker", app.ReverseProxyHandler.Forward())
+	r.GET("/setting/workerpool", app.ReverseProxyHandler.Forward())
+	r.POST("/setting/workerpool", app.ReverseProxyHandler.Forward())
 
 	r.GET("/github/userrepos", app.GithubAPIHandler.GetUserRepos)
 	r.GET("/github/:owner/:repo/contents", app.GithubAPIHandler.GetRepoContents) // ?path={folderPath}&branch={branchName}

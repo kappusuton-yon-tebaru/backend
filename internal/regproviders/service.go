@@ -4,12 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
-	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type PaginatedRegistryProviders = models.Paginated[models.RegistryProviders]
@@ -73,10 +72,12 @@ func (s *Service) GetRegistryProviderById(ctx context.Context, id string) (model
 	return regProvider, nil
 }
 
-func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
+func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, *werror.WError) {
 	id, err := s.repo.CreateRegistryProviders(ctx, dto)
-	if err != nil {
-		return "", err
+	if err != nil && mongo.IsDuplicateKeyError(err) {
+		return "", werror.NewFromError(err).SetMessage("registry name already exist in this organization").SetCode(http.StatusBadRequest)
+	} else if err != nil {
+		return "", werror.NewFromError(err)
 	}
 
 	return id, nil
@@ -106,22 +107,4 @@ func (s *Service) DeleteRegistryProviders(ctx context.Context, id string) *werro
 	}
 
 	return nil
-}
-
-func ParseCredential(provider enum.RegistryProviderType, dto map[string]any) (interface{}, *werror.WError) {
-	switch provider {
-	case enum.ECR:
-		var ecr models.ECRCredential
-		if err := utils.MapToStruct(dto, &ecr); err != nil {
-			return nil, werror.NewFromError(err).
-				SetMessage("cannot parse ecr credential").
-				SetCode(http.StatusBadRequest)
-		}
-		return ecr, nil
-
-	default:
-		return nil, werror.New().
-			SetMessage("invalid provider type").
-			SetCode(http.StatusBadRequest)
-	}
 }

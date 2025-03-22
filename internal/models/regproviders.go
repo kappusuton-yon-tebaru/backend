@@ -1,20 +1,15 @@
 package models
 
-import (
-	"time"
-
-	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
-)
+import "time"
 
 type RegistryProviders struct {
-	Id             string                       `json:"id"`
-	Name           string                       `json:"name"`
-	ProviderType   enum.RegistryProviderType    `json:"provider_type"`
-	Uri            string                       `json:"uri"`
-	Credential     interface{}                  `json:"credential"`
-	OrganizationId string                       `json:"organization_id"`
-	CreatedAt      time.Time 					`json:"created_at"`
-	UpdatedAt      time.Time 					`json:"updated_at"`
+	Id             string         `json:"id"`
+	Name           string         `json:"name"`
+	Uri            string         `json:"uri"`
+	ECRCredential  *ECRCredential `json:"ecr_credential"`
+	OrganizationId string         `json:"organization_id"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
 }
 
 type ECRCredential struct {

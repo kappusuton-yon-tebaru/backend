@@ -16,7 +16,7 @@ import (
 type Handler struct {
 	service            *Service
 	projectRepoService *projectrepository.Service
-	validator		  *validator.Validator
+	validator          *validator.Validator
 }
 
 func NewHandler(service *Service, projectRepoService *projectrepository.Service, validator *validator.Validator) *Handler {
@@ -45,6 +45,12 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 			"error":   projectRepoErr.Error(),
 		})
 		return
+	}
+
+	if projectRepo.RegistryProvider.ECRCredential == nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid ecr credential",
+		})
 	}
 
 	pagination := query.NewPaginationWithDefault(1, 10)
@@ -94,7 +100,7 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		WithSortQuery(sortFilter).
 		WithQueryFilter(queryFilter)
 
-	images, err := h.service.GetECRImages(projectRepo.RegistryProvider.Uri, serviceName, queryParam)
+	images, err := h.service.GetECRImages(ctx, *projectRepo.RegistryProvider, serviceName, queryParam)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",

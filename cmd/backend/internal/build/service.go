@@ -13,6 +13,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.uber.org/zap"
@@ -87,13 +88,12 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 		jobId := resp.JobIds[i]
 
 		buildCtx := sharedBuild.BuildContext{
-			Id:                 jobId,
-			RepoUrl:            repoUrl,
-			RepoRoot:           fmt.Sprintf("apps/%s", service.ServiceName),
-			Destination:        fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
-			Dockerfile:         "Dockerfile",
-			RegistryType:       projRepo.RegistryProvider.ProviderType,
-			RegistryCredential: projRepo.RegistryProvider.Credential,
+			Id:            jobId,
+			RepoUrl:       repoUrl,
+			RepoRoot:      fmt.Sprintf("apps/%s", service.ServiceName),
+			Destination:   fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, utils.ToKebabCase(service.Tag)),
+			Dockerfile:    "Dockerfile",
+			ECRCredential: projRepo.RegistryProvider.ECRCredential,
 		}
 
 		bs, err := json.Marshal(buildCtx)
@@ -101,7 +101,7 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			return "", nil
 		}
 
-		if err := s.rmq.Publish(ctx, bs); err != nil {
+		if err := s.rmq.Publish(ctx, enum.BuildContextRoutingKey, bs); err != nil {
 			s.logger.Error("error occured while publishing build context", zap.Error(err))
 			return "", werror.NewFromError(err).SetMessage("error occured while publishing build context")
 		}

@@ -1,7 +1,11 @@
 package main
 
 import (
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/builderconsumer"
+	"fmt"
+	"strings"
+
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/consumer"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.uber.org/zap"
 )
@@ -14,8 +18,8 @@ func main() {
 
 	app.Logger.Info("builder consumer initalizing")
 
-	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.BuilderConfig.QueueName), zap.String("queue_uri", app.Config.BuilderConfig.QueueUri))
-	msgs, err := app.RmqClient.Ch.Consume(app.Config.BuilderConfig.QueueName, "agent-builder-consumer", false, false, false, false, nil)
+	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.ConsumerConfig.OrganizationName), zap.String("queue_uri", app.Config.ConsumerConfig.QueueUri))
+	msgs, err := app.RmqClient.Ch.Consume(app.Config.ConsumerConfig.OrganizationName, "agent-consumer", false, false, false, false, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +34,14 @@ func main() {
 					}
 				}()
 
-				app.BuildHandler.BuildImageHandler(msg)
+				key := strings.TrimPrefix(msg.RoutingKey, fmt.Sprintf("%s.", app.Config.ConsumerConfig.OrganizationName))
+
+				switch key {
+				case enum.BuildContextRoutingKey:
+					app.BuildHandler.BuildHandler(msg)
+				case enum.DeployContextRoutingKey:
+					app.DeployHandler.DeployHandler(msg)
+				}
 			}()
 
 			if err := msg.Ack(false); err != nil {

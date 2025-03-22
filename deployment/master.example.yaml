@@ -1,86 +1,51 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: pod-modifier
-  namespace: default
+  name: system-role
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log"]
     verbs: ["create", "delete", "get"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: deployment-modifier
-  namespace: default
-rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get", "create", "delete", "patch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: service-modifier
-  namespace: default
-rules:
+    verbs: ["get", "create", "delete", "patch", "list"]
   - apiGroups: [""]
     resources: ["services"]
     verbs: ["create", "delete", "patch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["create", "delete", "get", "list"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["create"]
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: system
+  namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: modify-pod
-  namespace: default
+  name: system-role-default
+roleRef:
+  kind: ClusterRole
+  name: system-role
+  apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount
     name: system
-    namespace: default
-roleRef:
-  kind: Role
-  name: pod-modifier
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: modify-deployment
-  namespace: default
-subjects:
-  - kind: ServiceAccount
-    name: system
-    namespace: default
-roleRef:
-  kind: Role
-  name: deployment-modifier
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: modify-service
-  namespace: default
-subjects:
-  - kind: ServiceAccount
-    name: system
-    namespace: default
-roleRef:
-  kind: Role
-  name: service-modifier
-  apiGroup: rbac.authorization.k8s.io
+    namespace: kube-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-deployment
+  namespace: kube-system
   labels:
     app: agent
+    platform: snapping-service
 spec:
   replicas: 1
   selector:
@@ -90,6 +55,7 @@ spec:
     metadata:
       labels:
         app: agent
+        platform: snapping-service
     spec:
       serviceAccountName: system
       containers:
@@ -110,21 +76,24 @@ spec:
               value: "<@MONGO_DATABASE_NAME>"
             - name: AGENT_PORT
               value: "<@AGENT_PORT>"
-            - name: AGENT_WORKER_IMAGE_URI
-              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: WORKER_IMAGE_URI
+              value: "<@WORKER_IMAGE_URI>"
             - name: BACKEND_PORT
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT
               value: "<@BACKEND_AGENT_ENDPOINT>"
-            - name: BUILDER_QUEUE_URI
-              value: "<@BUILDER_QUEUE_URI>"
-            - name: BUILDER_QUEUE_NAME
-              value: "<@BUILDER_QUEUE_NAME>"
+            - name: CONSUMER_QUEUE_URI
+              value: "<@CONSUMER_QUEUE_URI>"
+            - name: CONSUMER_ORGANIZATION_NAME
+              value: "<@CONSUMER_ORGANIZATION_NAME>"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: agent-service
+  namespace: kube-system
+  labels:
+    platform: snapping-service
 spec:
   selector:
     app: agent
@@ -138,22 +107,25 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: builder-consumer-deployment
+  name: consumer-deployment
+  namespace: kube-system
   labels:
-    app: builder-consumer
+    app: consumer
+    platform: snapping-service
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
-      app: builder-consumer
+      app: consumer
   template:
     metadata:
       labels:
-        app: builder-consumer
+        app: consumer
+        platform: snapping-service
     spec:
       serviceAccountName: system
       containers:
-        - name: builder-consumer
+        - name: consumer
           image: <@WORKER_IMAGE_URI>
           env:
             - name: IN_CLUSTER
@@ -168,13 +140,13 @@ spec:
               value: "<@MONGO_DATABASE_NAME>"
             - name: AGENT_PORT
               value: "<@AGENT_PORT>"
-            - name: AGENT_WORKER_IMAGE_URI
-              value: "<@AGENT_WORKER_IMAGE_URI>"
+            - name: WORKER_IMAGE_URI
+              value: "<@WORKER_IMAGE_URI>"
             - name: BACKEND_PORT
               value: "<@BACKEND_PORT>"
             - name: BACKEND_AGENT_ENDPOINT
               value: "<@BACKEND_AGENT_ENDPOINT>"
-            - name: BUILDER_QUEUE_URI
-              value: "<@BUILDER_QUEUE_URI>"
-            - name: BUILDER_QUEUE_NAME
-              value: "<@BUILDER_QUEUE_NAME>"
+            - name: CONSUMER_QUEUE_URI
+              value: "<@CONSUMER_QUEUE_URI>"
+            - name: CONSUMER_ORGANIZATION_NAME
+              value: "<@CONSUMER_ORGANIZATION_NAME>"

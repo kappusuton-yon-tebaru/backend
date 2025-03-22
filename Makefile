@@ -1,9 +1,9 @@
-.PHONY: gen dev-agent dev-backend dev-builder-consumer lint build
+.PHONY: gen dev-agent dev-backend dev-consumer lint build
 
 gen:
 	@wire ./cmd/agent/agent/
 	@wire ./cmd/backend/backend/
-	@wire ./cmd/builder-consumer/builderconsumer/
+	@wire ./cmd/consumer/consumer/
 
 docs:
 	@swag fmt
@@ -13,7 +13,7 @@ neogen:
 	@go run tools/wire/main.go \
 		./cmd/agent/agent \
 		./cmd/backend/backend \
-		./cmd/builder-consumer/builderconsumer
+		./cmd/consumer/consumer
 
 dev-agent:
 	@air -c ./cmd/agent/.air.toml
@@ -21,16 +21,16 @@ dev-agent:
 dev-backend:
 	@air -c ./cmd/backend/.air.toml
 
-dev-builder-consumer:
-	@air -c ./cmd/builder-consumer/.air.toml
+dev-consumer:
+	@air -c ./cmd/consumer/.air.toml
 
 build:
-	@docker build -t public.ecr.aws/r2n4f6g5/agent -f cmd/agent/Dockerfile .
-	@docker build -t public.ecr.aws/r2n4f6g5/builder-consumer -f cmd/builder-consumer/Dockerfile .
+	@docker build -t public.ecr.aws/r2n4f6g5/agent:latest -f cmd/agent/Dockerfile .
+	@docker build -t public.ecr.aws/r2n4f6g5/consumer:latest -f cmd/consumer/Dockerfile .
 
 push:
-	@docker push public.ecr.aws/r2n4f6g5/agent
-	@docker push public.ecr.aws/r2n4f6g5/builder-consumer
+	@docker push public.ecr.aws/r2n4f6g5/agent:latest
+	@docker push public.ecr.aws/r2n4f6g5/consumer:latest
 
 lint:
 	@golangci-lint run --timeout=5m

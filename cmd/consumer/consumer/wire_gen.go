@@ -7,12 +7,16 @@
 package builderconsumer
 
 import (
-	"github.com/kappusuton-yon-tebaru/backend/cmd/builder-consumer/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/deploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 )
 
@@ -43,18 +47,25 @@ func Initialize() (*App, error) {
 	service := job.NewService(repository)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
-	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler)
+	resourceRepository := resource.NewRepository(database)
+	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
+	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
+	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
+	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service, deployenvService)
+	deployHandler := deploy.NewHandler(loggerLogger, deployService)
+	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler, deployHandler)
 	return app, nil
 }
 
 // wire.go:
 
 type App struct {
-	Logger       *logger.Logger
-	Config       *config.Config
-	KubeClient   *kubernetes.Kubernetes
-	RmqClient    *rmq.BuilderRmq
-	BuildHandler *build.Handler
+	Logger        *logger.Logger
+	Config        *config.Config
+	KubeClient    *kubernetes.Kubernetes
+	RmqClient     *rmq.BuilderRmq
+	BuildHandler  *build.Handler
+	DeployHandler *deploy.Handler
 }
 
 func New(
@@ -63,6 +74,7 @@ func New(
 	KubeClient *kubernetes.Kubernetes,
 	RmqClient *rmq.BuilderRmq,
 	BuildHandler *build.Handler,
+	DeployHandler *deploy.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -70,5 +82,6 @@ func New(
 		KubeClient,
 		RmqClient,
 		BuildHandler,
+		DeployHandler,
 	}
 }

@@ -29,6 +29,13 @@ func (r *Router) RegisterRoutes(app *agent.App) {
 	r.GET("/ws/job/:id/log", app.MonitoringHandler.IntervalPing)
 	// r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
-	r.GET("/setting/maxworker", app.SettingHandler.GetMaxWorker)
-	r.POST("/setting/maxworker", app.SettingHandler.SetMaxWorker)
+	r.GET("/setting/workerpool", app.SettingHandler.GetWorkerPoolSetting)
+	r.POST("/setting/workerpool", app.SettingHandler.SetWorkerPoolSetting)
+
+	r.GET("/project/:id/deployenv", app.DeployEnvHandler.ListDeploymentEnv)
+	r.POST("/project/:id/deployenv", app.DeployEnvHandler.CreateDeploymentEnv)
+	r.DELETE("/project/:id/deployenv", app.DeployEnvHandler.DeleteDeploymentEnv)
+
+	r.GET("/project/:id/deploy", app.DeployHandler.ListDeployment)
+	r.DELETE("/project/:id/deploy", app.DeployHandler.DeleteDeployment)
 }

@@ -12,7 +12,7 @@ import (
 
 type AgentConfig struct {
 	Port           int    `mapstructure:"AGENT_PORT"`
-	WorkerImageUri string `mapstructure:"AGENT_WORKER_IMAGE_URI"`
+	WorkerImageUri string `mapstructure:"WORKER_IMAGE_URI"`
 }
 
 type BackendConfig struct {
@@ -20,15 +20,9 @@ type BackendConfig struct {
 	AgentEndpoint string `mapstructure:"BACKEND_AGENT_ENDPOINT"`
 }
 
-type BuilderConfig struct {
-	QueueUri  string `mapstructure:"BUILDER_QUEUE_URI"`
-	QueueName string `mapstructure:"BUILDER_QUEUE_NAME"`
-}
-
-type ECRConfig struct {
-	Region    string `mapstructure:"AWS_REGION"`
-	AccessKey string `mapstructure:"AWS_ACCESS_KEY_ID"`
-	SecretKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+type ConsumerConfig struct {
+	QueueUri         string `mapstructure:"CONSUMER_QUEUE_URI"`
+	OrganizationName string `mapstructure:"CONSUMER_ORGANIZATION_NAME"`
 }
 
 type DockerHubConfig struct {
@@ -38,12 +32,11 @@ type DockerHubConfig struct {
 type Config struct {
 	Agent             AgentConfig     `mapstructure:",squash"`
 	Backend           BackendConfig   `mapstructure:",squash"`
-	ECR               ECRConfig       `mapstructure:",squash"`
 	DockerHub         DockerHubConfig `mapstructure:",squash"`
 	MongoUri          string          `mapstructure:"MONGO_URI"`
 	InCluster         bool            `mapstructure:"IN_CLUSTER"`
 	Development       bool            `mapstructure:"DEVELOPMENT"`
-	BuilderConfig     BuilderConfig   `mapstructure:",squash"`
+	ConsumerConfig    ConsumerConfig  `mapstructure:",squash"`
 	KubeNamespace     string          `mapstructure:"KUBE_NAMESPACE"`
 	MongoDatabaseName string          `mapstructure:"MONGO_DATABASE_NAME"`
 	ClientID          string          `mapstructure:"GITHUB_CLIENT_ID"`
@@ -72,7 +65,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func bindStruct(s interface{}) error {
+func bindStruct(s any) error {
 	ct := reflect.TypeOf(s)
 
 	if ct.Kind() != reflect.Struct {

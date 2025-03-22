@@ -51,7 +51,12 @@ func (s *Service) BuildImage(ctx context.Context, dto kubernetes.BuildImageDTO) 
 	}()
 
 	podClient := s.kube.NewPodClient(s.namespace)
-	manifest := kubernetes.CreateBuilderPodManifest(dto)
+	manifest, err := kubernetes.CreateBuilderPodManifest(dto)
+	if err != nil {
+		s.logger.Error("error occured while creating buidler pod", zap.Error(err))
+		return werror.NewFromError(err)
+	}
+
 	builderPod, err := podClient.Create(ctx, manifest)
 	if err != nil {
 		s.logger.Error("error occured while creating buidler pod", zap.Any("manifest", manifest), zap.Error(err))
