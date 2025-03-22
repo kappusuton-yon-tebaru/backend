@@ -46,6 +46,9 @@ func CreateBuilderPodManifest(config BuildImageDTO) (*apicorev1.Pod, error) {
 	return &apicorev1.Pod{
 		ObjectMeta: apimetav1.ObjectMeta{
 			Name: "worker-" + config.Id,
+			Labels: map[string]string{
+				"platform": "snapping-service",
+			},
 		},
 		Spec: apicorev1.PodSpec{
 			Containers: []apicorev1.Container{
@@ -89,13 +92,19 @@ func CreateBuilderPodManifest(config BuildImageDTO) (*apicorev1.Pod, error) {
 func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *config.Config) *acappsv1.DeploymentApplyConfiguration {
 	return acappsv1.Deployment("consumer-deployment", config.KubeNamespace).
 		WithNamespace(config.KubeNamespace).
-		WithLabels(map[string]string{"app": "consumer"}).
+		WithLabels(map[string]string{
+			"app":      "consumer",
+			"platform": "snapping-service",
+		}).
 		WithSpec(acappsv1.DeploymentSpec().
 			WithReplicas(dto.WorkerNumber).
 			WithSelector(acmetav1.LabelSelector().
 				WithMatchLabels(map[string]string{"app": "consumer"})).
 			WithTemplate(accorev1.PodTemplateSpec().
-				WithLabels(map[string]string{"app": "consumer"}).
+				WithLabels(map[string]string{
+					"app":      "consumer",
+					"platform": "snapping-service",
+				}).
 				WithSpec(accorev1.PodSpec().
 					WithServiceAccountName("system").
 					WithContainers(
