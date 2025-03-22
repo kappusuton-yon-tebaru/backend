@@ -13,6 +13,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.uber.org/zap"
@@ -90,7 +91,7 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			Id:            jobId,
 			RepoUrl:       repoUrl,
 			RepoRoot:      fmt.Sprintf("apps/%s", service.ServiceName),
-			Destination:   fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
+			Destination:   fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, utils.ToKebabCase(service.Tag)),
 			Dockerfile:    "Dockerfile",
 			ECRCredential: projRepo.RegistryProvider.ECRCredential,
 		}

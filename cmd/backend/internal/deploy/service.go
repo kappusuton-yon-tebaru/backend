@@ -18,6 +18,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.uber.org/zap"
@@ -105,7 +106,7 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) (string,
 		deployCtx := sharedDeploy.DeployContext{
 			Id:            jobId,
 			ProjectId:     req.ProjectId,
-			ServiceName:   service.ServiceName,
+			ServiceName:   utils.ToKebabCase(service.ServiceName),
 			ImageUri:      fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
 			Port:          service.Port,
 			Namespace:     deployenv.GetNamespaceName(project.ResourceName, req.DeploymentEnv),
