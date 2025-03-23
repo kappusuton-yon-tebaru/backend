@@ -50,7 +50,7 @@ func (ns Namespace) Create(ctx context.Context, projectId string, name string) (
 	}
 
 	namespace, err := ns.client.Create(ctx, dto, apimetav1.CreateOptions{
-		FieldManager: "system",
+		FieldManager: SystemServiceAccount,
 	})
 	if err != nil {
 		return nil, err

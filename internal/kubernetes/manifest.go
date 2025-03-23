@@ -106,7 +106,7 @@ func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *c
 					"platform": "snapping-service",
 				}).
 				WithSpec(accorev1.PodSpec().
-					WithServiceAccountName("system").
+					WithServiceAccountName(SystemServiceAccount).
 					WithContainers(
 						accorev1.Container().
 							WithName("consumer").
@@ -168,7 +168,7 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 			WithTemplate(accorev1.PodTemplateSpec().
 				WithLabels(map[string]string{"app": dto.ServiceName}).
 				WithSpec(accorev1.PodSpec().
-					WithServiceAccountName("system").
+					WithServiceAccountName(SystemServiceAccount).
 					WithContainers(
 						accorev1.Container().
 							WithName(dto.ServiceName).

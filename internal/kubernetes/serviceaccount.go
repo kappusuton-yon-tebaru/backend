@@ -29,7 +29,7 @@ func (s ServiceAccount) Create(ctx context.Context, name string) error {
 	}
 
 	_, err := s.client.Create(ctx, serviceAccount, apimetav1.CreateOptions{
-		FieldManager: "system",
+		FieldManager: SystemServiceAccount,
 	})
 	if err != nil {
 		return err
