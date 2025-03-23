@@ -26,7 +26,6 @@ type CreateRegistryProvidersDTO struct {
 	ECRCredential       *models.ECRCredential       `bson:"ecr_credential,omitempty" json:"ecr_credential,omitempty"`
 	DockerhubCredential *models.DockerhubCredential `bson:"dockerhub_credential,omitempty" json:"dockerhub_credential,omitempty"`
 	OrganizationId      bson.ObjectID               `bson:"organization_id"          json:"organization_id"`
-	Id                  bson.ObjectID               `bson:"_id"`
 	CreatedAt           time.Time                   `bson:"created_at"`
 	UpdatedAt           time.Time                   `bson:"updated_at"`
 }
