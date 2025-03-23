@@ -27,6 +27,14 @@ type CreateRegistryProvidersDTO struct {
 	UpdatedAt      time.Time             `bson:"updated_at"`
 }
 
+type UpdateRegistryProvidersDTO struct {
+	Name           string                `bson:"name,omitempty"                     json:"name,omitempty"`
+	Uri            string                `bson:"uri,omitempty"                      json:"uri,omitempty"`
+	ECRCredential  *models.ECRCredential `bson:"ecr_credential,omitempty"           json:"ecr_credential,omitempty"`
+	OrganizationId bson.ObjectID         `bson:"organization_id,omitempty"          json:"organization_id,omitempty"`
+	UpdatedAt      time.Time             `bson:"updated_at"`
+}
+
 func DTOToRegistryProviders(regProviders RegistryProvidersDTO) models.RegistryProviders {
 	return models.RegistryProviders{
 		Id:             regProviders.Id.Hex(),

@@ -83,6 +83,30 @@ func (s *Service) CreateRegistryProviders(ctx context.Context, dto CreateRegistr
 	return id, nil
 }
 
+func (s *Service) UpdateRegistryProviders(ctx context.Context, id string, dto UpdateRegistryProvidersDTO) *werror.WError {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid registry provider id")
+	}
+
+	filter := map[string]any{
+		"_id": objId,
+	}
+
+	count, err := s.repo.UpdateRegistryProviders(ctx, filter, dto)
+	if err != nil {
+		return werror.NewFromError(err)
+	}
+
+	if count == 0 {
+		return werror.New().SetCode(http.StatusNotFound).SetMessage("not found")
+	}
+
+	return nil
+}
+
 func (s *Service) DeleteRegistryProviders(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {

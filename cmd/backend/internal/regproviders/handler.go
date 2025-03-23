@@ -153,6 +153,48 @@ func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	})
 }
 
+func (h *Handler) UpdateRegProvider(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	var req UpdateRegistryProvidersRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid body",
+		})
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: strings.Join(h.validator.Translate(err), ", "),
+		})
+		return
+	}
+
+	dto := regproviders.UpdateRegistryProvidersDTO{
+		Name:           req.Name,
+		Uri:            req.Uri,
+		ECRCredential:  req.ECRCredential,
+		OrganizationId: req.OrganizationId,
+	}
+
+	werr := h.service.UpdateRegistryProviders(ctx, id, dto)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message": "updated",
+	})
+}
+
 func (h *Handler) DeleteRegProvider(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

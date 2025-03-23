@@ -142,6 +142,19 @@ func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegi
 	return id.Hex(), nil
 }
 
+func (r *Repository) UpdateRegistryProviders(ctx context.Context, filter map[string]any, dto UpdateRegistryProvidersDTO) (int64, error) {
+	update := bson.D{
+		{Key: "$set", Value: dto},
+	}
+
+	result, err := r.regProviders.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
+}
+
 func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter map[string]any) (int64, error) {
 	result, err := r.regProviders.DeleteOne(ctx, filter)
 	if err != nil {

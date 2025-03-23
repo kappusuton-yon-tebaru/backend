@@ -16,3 +16,14 @@ type CreateRegistryProvidersResponse struct {
 	Message string `json:"message"`
 	Id      string `json:"id"`
 }
+
+type UpdateRegistryProvidersRequest struct {
+	Name           string                `json:"name"            validate:"omitempty"`
+	Uri            string                `json:"uri"             validate:"omitempty"`
+	ECRCredential  *models.ECRCredential `json:"ecr_credential"  validate:"omitempty"`
+	OrganizationId bson.ObjectID         `json:"organization_id" validate:"omitempty"`
+}
+
+type UpdateRegistryProvidersResponse struct {
+	Message string `json:"message"`
+}
