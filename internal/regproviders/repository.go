@@ -125,11 +125,14 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	request := CreateRegistryProvidersDTO{
-		Name:           dto.Name,
-		Uri:            dto.Uri,
-		OrganizationId: dto.OrganizationId,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		Name:                dto.Name,
+		Uri:                 dto.Uri,
+		ProviderType:        dto.ProviderType,
+		ECRCredential:       dto.ECRCredential,
+		DockerhubCredential: dto.DockerhubCredential,
+		OrganizationId:      dto.OrganizationId,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 
 	result, err := r.regProviders.InsertOne(ctx, request)

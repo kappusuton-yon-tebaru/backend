@@ -6,10 +6,12 @@ import (
 )
 
 type CreateRegistryProvidersRequest struct {
-	Name           string                `json:"name"            validate:"required"`
-	Uri            string                `json:"uri"             validate:"required"`
-	ECRCredential  *models.ECRCredential `json:"ecr_credential"  validate:"required"`
-	OrganizationId bson.ObjectID         `json:"organization_id" validate:"required"`
+	Name                string                      `json:"name"            validate:"required"`
+	Uri                 string                      `json:"uri"             validate:"required"`
+	ProviderType        string                      `json:"provider_type"   validate:"required"`
+	ECRCredential       *models.ECRCredential       `json:"ecr_credential,omitempty"`
+	DockerhubCredential *models.DockerhubCredential `json:"dockerhub_credential,omitempty"`
+	OrganizationId      bson.ObjectID               `json:"organization_id" validate:"required"`
 }
 
 type CreateRegistryProvidersResponse struct {

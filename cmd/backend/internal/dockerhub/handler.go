@@ -1,6 +1,7 @@
 package dockerhub
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,17 +21,17 @@ func NewHandler(service *Service, projectRepoService *projectrepository.Service)
 }
 
 func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
-	namespace := ctx.Query("namespace")
+	// namespace := ctx.Query("namespace")
 	projectId := ctx.Query("project_id")
 	serviceName := ctx.Query("service_name")
 
-	if namespace == "" || projectId == "" || serviceName == "" {
-		ctx.JSON(http.StatusBadRequest, map[string]any{
-			"message": "invalid input",
-			"error":   err.Error(),
-		})
-		return
-	}
+	// if namespace == "" || projectId == "" || serviceName == "" {
+	// 	ctx.JSON(http.StatusBadRequest, map[string]any{
+	// 		"message": "invalid input",
+	// 		"error":   "missing required query parameters",
+	// 	})
+	// 	return
+	// }
 
 	projectRepo, projectRepoErr := h.projectRepoService.GetProjectRepositoryByProjectId(ctx, projectId)
 	if projectRepoErr != nil {
@@ -41,6 +42,10 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 		return
 	}
 
+	log.Println(projectRepo)
+	log.Println(projectRepo.RegistryProvider.Name)
+	log.Println(projectRepo.RegistryProvider.DockerhubCredential.Username)
+
 	// var req GetDockerHubImagesRequest
 	// if err := ctx.ShouldBindJSON(&req); err != nil {
 	// 	ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -50,7 +55,8 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 	// 	return
 	// }
 
-	images, err := h.service.GetDockerHubImages(namespace, projectRepo.RegistryProvider.Name, serviceName)
+	// images, err := h.service.GetDockerHubImages(namespace, projectRepo.RegistryProvider.Name, serviceName)
+	images, err := h.service.GetDockerHubImages(projectRepo.RegistryProvider.DockerhubCredential.Username, projectRepo.RegistryProvider.Name, serviceName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",

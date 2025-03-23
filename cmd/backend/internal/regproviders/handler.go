@@ -135,10 +135,12 @@ func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	}
 
 	dto := regproviders.CreateRegistryProvidersDTO{
-		Name:           req.Name,
-		Uri:            req.Uri,
-		ECRCredential:  req.ECRCredential,
-		OrganizationId: req.OrganizationId,
+		Name:                req.Name,
+		Uri:                 req.Uri,
+		ProviderType:        req.ProviderType,
+		ECRCredential:       req.ECRCredential,
+		DockerhubCredential: req.DockerhubCredential,
+		OrganizationId:      req.OrganizationId,
 	}
 
 	id, werr := h.service.CreateRegistryProviders(ctx, dto)

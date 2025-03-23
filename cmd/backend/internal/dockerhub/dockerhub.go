@@ -10,24 +10,25 @@ import (
 
 type DockerHubRepository struct {
 	apiURL string
-	token  string
+	// token  string
 }
 
 func NewDockerHubRepository(cfg *config.Config) *DockerHubRepository {
 	return &DockerHubRepository{
 		apiURL: "https://hub.docker.com/v2",
-		token:  cfg.DockerHub.Token,
+		// token:  cfg.DockerHub.Token,
 	}
 }
 
 func (r *DockerHubRepository) GetImages(namespace string, repoName string) ([]DockerHubImageResponse, error) {
-	url := fmt.Sprintf("%s/namespaces/%s/repositories/%s/tags", r.apiURL, namespace, repoName)
+	url := fmt.Sprintf("%s/repositories/%s/%s/tags", r.apiURL, namespace, repoName)
+	url = fmt.Sprintf("%s/repositories/%s/%s/tags", r.apiURL, "capstoning", "kappusuton-test")
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
+	// req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", r.token))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
