@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -49,7 +50,9 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 
 func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
-		"role_name": dto.Role_name,
+		"role_name": dto.RoleName,
+		"org_id": dto.OrgId,
+		"permissions": []models.Permission{},
 	}
 
 	result, err := r.role.InsertOne(ctx, role)
@@ -59,6 +62,33 @@ func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string,
 	}
 
 	return result.InsertedID.(bson.ObjectID).Hex(), nil
+}
+
+func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID string) (string, error) {
+	objID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err")
+		return "", err
+	}
+	update := map[string]any{
+		"$set": map[string]any{
+			"role_name": dto.RoleName,
+			"updated_at":    time.Now(), 
+		},
+	}
+	// Update the role in MongoDB
+	result, err := r.role.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		log.Println("Error updating role:", err)
+		return "", fmt.Errorf("error updating role: %v", err)
+	}
+
+	// Check if any document was modified
+	if result.MatchedCount == 0 {
+		return "", fmt.Errorf("role not found")
+	}
+
+	return objID.Hex(), nil
 }
 
 func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int64, error) {
