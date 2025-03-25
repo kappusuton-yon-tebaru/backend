@@ -53,6 +53,40 @@ func (h *Handler) CreateRole(ctx *gin.Context) {
 	})
 }
 
+func (h *Handler) UpdateRole(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	var roleDTO role.UpdateRoleDTO
+
+	if err := ctx.ShouldBindJSON(&roleDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	roleId, err := h.service.UpdateRole(ctx, roleDTO, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to update role",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message":    "role updated successfully",
+		"roleId": roleId,
+	})
+}
+
 func (h *Handler) DeleteRoleById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

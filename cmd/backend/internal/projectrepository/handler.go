@@ -55,7 +55,6 @@ func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
 		return
 	}
 	var projRepoDTO projectrepository.CreateProjectRepositoryDTO
-
 	if err := ctx.ShouldBindJSON(&projRepoDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",

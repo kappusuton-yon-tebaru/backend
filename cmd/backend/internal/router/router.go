@@ -66,15 +66,16 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
 	r.POST("/roles", app.RoleHandler.CreateRole)
+	r.PUT("/roles/:id", app.RoleHandler.UpdateRole)
 	r.DELETE("/roles/:id", app.RoleHandler.DeleteRoleById)
 
-	r.GET("/permissions", app.PermissionHandler.GetAllPermissions)
-	r.POST("/permissions", app.PermissionHandler.CreatePermission)
-	r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
+	// r.GET("/permissions", app.PermissionHandler.GetAllPermissions)
+	// r.POST("/permissions", app.PermissionHandler.CreatePermission)
+	// r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
 
-	r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
-	r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
-	r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
+	// r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
+	// r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
+	// r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
 
 	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
 	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
