@@ -64,6 +64,39 @@ func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string,
 	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
+func (r *Repository) AddPermissionToRole(ctx context.Context, dto CreatePermissionDTO, roleID string) (string, error) {
+	objID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err")
+		return "", err
+	}
+
+	permission := map[string]any{
+		"_id":            bson.NewObjectID(), 
+		"permission_name": dto.PermissionName,
+		"action": dto.Action,
+		"resource_id": dto.ResourceId,
+	}
+	update :=  map[string]any{
+		"$push":  map[string]any{
+			"permissions": permission,
+		}}
+
+	// Update the role in MongoDB
+	result, err := r.role.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		log.Println("Error adding permission to role:", err)
+		return "", fmt.Errorf("error adding permission to role: %v", err)
+	}
+
+	// Check if any document was modified
+	if result.MatchedCount == 0 {
+		return "", fmt.Errorf("role not found")
+	}
+
+	return objID.Hex(), nil
+}
+
 func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID string) (string, error) {
 	objID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {

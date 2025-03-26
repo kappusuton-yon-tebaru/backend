@@ -53,6 +53,40 @@ func (h *Handler) CreateRole(ctx *gin.Context) {
 	})
 }
 
+func (h *Handler) AddPermissionToRole(ctx *gin.Context) {
+	id := ctx.Param("role_id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	var permissionDTO role.CreatePermissionDTO
+
+	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "invalid input",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	roleId, err := h.service.AddPermissionToRole(ctx, permissionDTO, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to add permission to role",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message":    "permission added successfully",
+		"roleId": roleId,
+	})
+}
+
 func (h *Handler) UpdateRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
