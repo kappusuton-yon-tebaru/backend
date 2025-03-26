@@ -63,7 +63,7 @@ func (h *Handler) CreateProjectRepository(ctx *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateProjectRepository(ctx,pid, projRepoDTO)
+	id, err := h.service.CreateProjectRepository(ctx, pid, projRepoDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create project repository",

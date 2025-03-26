@@ -122,7 +122,7 @@ func (r *Repository) AddRole(ctx context.Context, userID string, roleID string) 
 
 	update := bson.M{
 		"$addToSet": bson.M{
-			"role_ids": roleObjID, 
+			"role_ids": roleObjID,
 		},
 	}
 

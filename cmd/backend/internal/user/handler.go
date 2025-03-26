@@ -76,8 +76,8 @@ func (h *Handler) AddRole(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, map[string]any{
-		"message":    "role added successfully",
-		"roleId": roleId,
+		"message": "role added successfully",
+		"roleId":  roleId,
 	})
 }
 
@@ -97,7 +97,7 @@ func (h *Handler) RemoveRole(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.RemoveRole(ctx, user_id,role_id)
+	err := h.service.RemoveRole(ctx, user_id, role_id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -22,7 +22,7 @@ func DTOToUser(user UserDTO) models.User {
 		Id:       user.Id.Hex(),
 		Email:    user.Email,
 		Password: user.Password,
-		RoleIds: mapRoles(user.RoleIds),
+		RoleIds:  mapRoles(user.RoleIds),
 	}
 }
 

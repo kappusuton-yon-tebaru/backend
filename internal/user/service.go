@@ -71,7 +71,7 @@ func (s *Service) RemoveRole(ctx context.Context, userId string, roleId string) 
 	count, err := s.repo.RemoveRole(ctx, userId, roleId)
 	if err != nil {
 		return werror.NewFromError(err).
-		SetCode(http.StatusBadRequest)
+			SetCode(http.StatusBadRequest)
 	}
 
 	if count == 0 {
