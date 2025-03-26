@@ -5,22 +5,25 @@ import (
 	"net/http"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
-	repo *Repository
+	roleRepo *Repository
+	userRepo  *user.Repository
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(roleRepo *Repository, userRepo  *user.Repository) *Service {
 	return &Service{
-		repo,
+		roleRepo,
+		userRepo,
 	}
 }
 
 func (s *Service) GetAllRoles(ctx context.Context) ([]models.Role, error) {
-	roles, err := s.repo.GetAllRoles(ctx)
+	roles, err := s.roleRepo.GetAllRoles(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +32,7 @@ func (s *Service) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 }
 
 func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
-	id, err := s.repo.CreateRole(ctx, dto)
+	id, err := s.roleRepo.CreateRole(ctx, dto)
 	if err != nil {
 		return "", err
 	}
@@ -38,7 +41,7 @@ func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, er
 }
 
 func (s *Service) UpdateRole(ctx context.Context, dto UpdateRoleDTO, id string) (string, *werror.WError) {
-	roleId, err := s.repo.UpdateRole(ctx, dto, id)
+	roleId, err := s.roleRepo.UpdateRole(ctx, dto, id)
 	if err != nil {
 		return "", werror.NewFromError(err).
 			SetCode(http.StatusBadRequest)
@@ -59,7 +62,18 @@ func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError 
 		"_id": objId,
 	}
 
-	count, err := s.repo.DeleteRole(ctx, filter)
+	count, err := s.roleRepo.DeleteRole(ctx, filter)
+	if err != nil {
+		return werror.NewFromError(err)
+	}
+
+	if count == 0 {
+		return werror.New().
+			SetCode(http.StatusNotFound).
+			SetMessage("not found")
+	}
+	//remove role in users
+	count, err = s.userRepo.RemoveRoleInAllUser(ctx, id)
 	if err != nil {
 		return werror.NewFromError(err)
 	}
@@ -74,7 +88,7 @@ func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError 
 }
 
 func (s *Service) AddPermission(ctx context.Context, dto ModifyPermissionDTO, id string) (string, *werror.WError) {
-	roleId, err := s.repo.AddPermission(ctx, dto, id)
+	roleId, err := s.roleRepo.AddPermission(ctx, dto, id)
 	if err != nil {
 		return "", werror.NewFromError(err).
 			SetCode(http.StatusBadRequest)
@@ -84,7 +98,7 @@ func (s *Service) AddPermission(ctx context.Context, dto ModifyPermissionDTO, id
 }
 
 func (s *Service) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleId string, permId string) (string, *werror.WError) {
-	roleId, err := s.repo.UpdatePermission(ctx, dto, roleId, permId)
+	roleId, err := s.roleRepo.UpdatePermission(ctx, dto, roleId, permId)
 	if err != nil {
 		return "", werror.NewFromError(err).
 			SetCode(http.StatusBadRequest)
@@ -94,7 +108,7 @@ func (s *Service) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO,
 }
 
 func (s *Service) DeletePermission(ctx context.Context, roleId string, permId string) *werror.WError {
-	count, err := s.repo.DeletePermission(ctx, roleId, permId)
+	count, err := s.roleRepo.DeletePermission(ctx, roleId, permId)
 	if err != nil {
 		return werror.NewFromError(err).
 		SetCode(http.StatusBadRequest)

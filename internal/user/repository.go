@@ -165,3 +165,25 @@ func (r *Repository) RemoveRole(ctx context.Context, userID string, roleID strin
 
 	return result.ModifiedCount, nil
 }
+
+func (r *Repository) RemoveRoleInAllUser(ctx context.Context, roleID string) (int64, error) {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectID FromHex err")
+		return 0, err
+	}
+
+	update := bson.M{
+		"$pull": bson.M{
+			"role_ids": roleObjID,
+		},
+	}
+
+	result, err := r.user.UpdateMany(ctx, bson.M{"role_ids": roleObjID}, update)
+	if err != nil {
+		log.Println("Error removing role from users:", err)
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
+}
