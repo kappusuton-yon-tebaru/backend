@@ -64,11 +64,43 @@ func (r *Repository) CreateUser(ctx context.Context, dto CreateUserDTO) (string,
 	return insertedID.Hex(), nil
 }
 
-func (r *Repository) DeleteUser(ctx context.Context, filter map[string]any) (int64, error) {
+func (r *Repository) DeleteUser(ctx context.Context, filter bson.M) (int64, error) {
 	result, err := r.user.DeleteOne(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
 
 	return result.DeletedCount, nil
+}
+
+func (r *Repository) AddRole(ctx context.Context, userID string, roleID string) (string, error) {
+	userObjID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Println("userID FromHex err")
+		return "", err
+	}
+
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("roleID FromHex err")
+		return "", err
+	}
+
+	update := bson.M{
+		"$addToSet": bson.M{
+			"role_ids": roleObjID, 
+		},
+	}
+
+	result, err := r.user.UpdateOne(ctx, bson.M{"_id": userObjID}, update)
+	if err != nil {
+		log.Println("Error adding role to user:", err)
+		return "", fmt.Errorf("error adding user to role: %v", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return "", fmt.Errorf("user not found")
+	}
+
+	return userObjID.Hex(), nil
 }
