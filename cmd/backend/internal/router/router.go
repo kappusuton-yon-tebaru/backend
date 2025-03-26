@@ -68,6 +68,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/roles", app.RoleHandler.CreateRole)
 	r.PUT("/roles/:id", app.RoleHandler.UpdateRole)
 	r.DELETE("/roles/:id", app.RoleHandler.DeleteRoleById)
+	r.POST("/roles/:role_id/permissions", app.RoleHandler.AddPermissionToRole)
 
 	// r.GET("/permissions", app.PermissionHandler.GetAllPermissions)
 	// r.POST("/permissions", app.PermissionHandler.CreatePermission)
