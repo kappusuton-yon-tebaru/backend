@@ -4,5 +4,16 @@ type PermissionActions string
 
 const (
 	PermissionActionsRead PermissionActions = "read"
-	PermissionActionsEdit PermissionActions = "edit"
+	PermissionActionsWrite PermissionActions = "write"
+	PermissionActionsExecute PermissionActions = "execute"
+	PermissionActionsBuild PermissionActions = "build"
 )
+
+func IsValidPermissionActions(t PermissionActions) bool {
+	switch t {
+	case PermissionActionsRead, PermissionActionsWrite, PermissionActionsExecute, PermissionActionsBuild:
+		return true
+	default:
+		return false
+	}
+}
