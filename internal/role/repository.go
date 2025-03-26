@@ -101,7 +101,7 @@ func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int
 	return result.DeletedCount, nil
 }
 
-func (r *Repository) AddPermissionToRole(ctx context.Context, dto CreatePermissionDTO, roleID string) (string, error) {
+func (r *Repository) AddPermissionToRole(ctx context.Context, dto ModifyPermissionDTO, roleID string) (string, error) {
 	objID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
 		log.Println("ObjectIDFromHex err")
@@ -134,7 +134,7 @@ func (r *Repository) AddPermissionToRole(ctx context.Context, dto CreatePermissi
 	return objID.Hex(), nil
 }
 
-func (r *Repository) UpdatePermission(ctx context.Context, dto CreatePermissionDTO, roleID string, permID string) (string, error) {
+func (r *Repository) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleID string, permID string) (string, error) {
 	roleObjID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
 		log.Println("ObjectID FromHex err")
