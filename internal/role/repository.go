@@ -64,6 +64,43 @@ func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string,
 	return result.InsertedID.(bson.ObjectID).Hex(), nil
 }
 
+func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID string) (string, error) {
+	objID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err")
+		return "", err
+	}
+	update := map[string]any{
+		"$set": map[string]any{
+			"role_name": dto.RoleName,
+			"updated_at":    time.Now(), 
+		},
+	}
+	// Update the role in MongoDB
+	result, err := r.role.UpdateOne(ctx, bson.M{"_id": objID}, update)
+	if err != nil {
+		log.Println("Error updating role:", err)
+		return "", fmt.Errorf("error updating role: %v", err)
+	}
+
+	// Check if any document was modified
+	if result.MatchedCount == 0 {
+		return "", fmt.Errorf("role not found")
+	}
+
+	return objID.Hex(), nil
+}
+
+func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int64, error) {
+	result, err := r.role.DeleteOne(ctx, filter)
+	if err != nil {
+		log.Println("Error deleting role:", err)
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}
+
 func (r *Repository) AddPermissionToRole(ctx context.Context, dto CreatePermissionDTO, roleID string) (string, error) {
 	objID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
@@ -97,23 +134,31 @@ func (r *Repository) AddPermissionToRole(ctx context.Context, dto CreatePermissi
 	return objID.Hex(), nil
 }
 
-func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID string) (string, error) {
-	objID, err := bson.ObjectIDFromHex(roleID)
+func (r *Repository) UpdatePermission(ctx context.Context, dto CreatePermissionDTO, roleID string, permID string) (string, error) {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
-		log.Println("ObjectIDFromHex err")
+		log.Println("ObjectID FromHex err")
 		return "", err
 	}
-	update := map[string]any{
-		"$set": map[string]any{
-			"role_name": dto.RoleName,
-			"updated_at":    time.Now(), 
-		},
-	}
-	// Update the role in MongoDB
-	result, err := r.role.UpdateOne(ctx, bson.M{"_id": objID}, update)
+
+	permObjID, err := bson.ObjectIDFromHex(permID)
 	if err != nil {
-		log.Println("Error updating role:", err)
-		return "", fmt.Errorf("error updating role: %v", err)
+		log.Println("ObjectID FromHex err")
+		return "", err
+	}
+
+	update :=  map[string]any{
+		"$set":  map[string]any{
+			"permissions.$.permission_name": dto.PermissionName,
+            "permissions.$.action":          dto.Action,
+            "permissions.$.resource_id":     dto.ResourceId,
+		}}
+
+	// Update the role in MongoDB
+	result, err := r.role.UpdateOne(ctx, bson.M{"_id": roleObjID, "permissions._id": permObjID}, update)
+	if err != nil {
+		log.Println("Error updating permission in role:", err)
+		return "", fmt.Errorf("error updating permission in role: %v", err)
 	}
 
 	// Check if any document was modified
@@ -121,14 +166,33 @@ func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID s
 		return "", fmt.Errorf("role not found")
 	}
 
-	return objID.Hex(), nil
+	return roleObjID.Hex(), nil
 }
 
-func (r *Repository) DeleteRole(ctx context.Context, filter map[string]any) (int64, error) {
-	result, err := r.role.DeleteOne(ctx, filter)
+func (r *Repository) DeletePermission(ctx context.Context, roleID string, permID string) (int64, error) {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
+		log.Println("ObjectID FromHex err")
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	permObjID, err := bson.ObjectIDFromHex(permID)
+	if err != nil {
+		log.Println("ObjectID FromHex err")
+		return 0, err
+	}
+
+	update := map[string]any{
+		"$pull": map[string]any{
+			"permissions": map[string]any{"_id": permObjID},
+		},
+	}
+
+	result, err := r.role.UpdateOne(ctx, bson.M{"_id": roleObjID}, update)
+	if err != nil {
+		log.Println("Error deleting permission from role:", err)
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
 }
