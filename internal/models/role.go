@@ -2,7 +2,7 @@ package models
 
 import "github.com/kappusuton-yon-tebaru/backend/internal/enum"
 
-type Perm struct {
+type Permission struct {
 	Id              string                 `json:"id"`
 	PermissionName string                 `json:"permission_name"`
 	Action          enum.PermissionActions `json:"action"`
@@ -13,5 +13,5 @@ type Role struct {
 	Id          string       `json:"id"`
 	RoleName   string       `json:"role_name"`
 	OrgId       string       `json:"orgId"`
-	Permissions []Perm `json:"permissions"`
+	Permissions []Permission `json:"permissions"`
 }

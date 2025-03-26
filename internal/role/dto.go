@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type PermDTO struct {
+type PermissionDTO struct {
 	Id            bson.ObjectID `bson:"_id"`
 	PermissionName string       `bson:"permission_name"`
 	Action        enum.PermissionActions        `bson:"action"`
@@ -16,7 +16,7 @@ type RoleDTO struct {
 	Id        bson.ObjectID `bson:"_id"`
 	RoleName string        `bson:"role_name"`
 	OrgId  bson.ObjectID 	`bson:"org_id"`
-	Permissions []PermDTO `bson:"permissions"`
+	Permissions []PermissionDTO `bson:"permissions"`
 }
 
 type CreateRoleDTO struct {
@@ -43,8 +43,8 @@ func DTOToRole(role RoleDTO) models.Role {
 	}
 }
 
-func DTOToPermission(perm PermDTO) models.Perm {
-	return models.Perm{
+func DTOToPermission(perm PermissionDTO) models.Permission {
+	return models.Permission{
 		Id:            perm.Id.Hex(), 
 		PermissionName: perm.PermissionName,
 		Action:        perm.Action,
@@ -52,8 +52,8 @@ func DTOToPermission(perm PermDTO) models.Perm {
 	}
 }
 
-func mapPermissions(perms []PermDTO) []models.Perm {
-	mapped := make([]models.Perm, len(perms))
+func mapPermissions(perms []PermissionDTO) []models.Permission {
+	mapped := make([]models.Permission, len(perms))
 	for i, perm := range perms {
 		mapped[i] = DTOToPermission(perm)
 	}

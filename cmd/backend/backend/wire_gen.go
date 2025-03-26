@@ -15,7 +15,6 @@ import (
 	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
-	permission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	projectenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	regproviders2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
@@ -23,7 +22,6 @@ import (
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	rolepermission2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	roleusergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
@@ -35,7 +33,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
-	"github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
@@ -43,7 +40,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
@@ -95,12 +91,6 @@ func Initialize() (*App, error) {
 	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository)
 	roleHandler := role2.NewHandler(roleService)
-	permissionRepository := permission.NewRepository(database)
-	permissionService := permission.NewService(permissionRepository)
-	permissionHandler := permission2.NewHandler(permissionService)
-	rolepermissionRepository := rolepermission.NewRepository(database)
-	rolepermissionService := rolepermission.NewService(rolepermissionRepository)
-	rolepermissionHandler := rolepermission2.NewHandler(rolepermissionService)
 	roleusergroupRepository := roleusergroup.NewRepository(database)
 	roleusergroupService := roleusergroup.NewService(roleusergroupRepository)
 	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
@@ -138,7 +128,7 @@ func Initialize() (*App, error) {
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, permissionHandler, rolepermissionHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
 	return app, nil
 }
 
@@ -156,8 +146,6 @@ type App struct {
 	UserGroupHandler            *usergroup2.Handler
 	ResourceHandler             *resource2.Handler
 	RoleHandler                 *role2.Handler
-	PermissionHandler           *permission2.Handler
-	RolePermissionHandler       *rolepermission2.Handler
 	RoleUserGroupHandler        *roleusergroup2.Handler
 	ProjectRepositoryHandler    *projectrepository2.Handler
 	ResourceRelationshipHandler *resourcerelationship2.Handler
@@ -184,8 +172,6 @@ func New(
 	UserGroupHandler *usergroup2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
-	PermissionHandler *permission2.Handler,
-	RolePermissionHandler *rolepermission2.Handler,
 	RoleUserGroupHandler *roleusergroup2.Handler,
 	ProjectRepositoryHandler *projectrepository2.Handler,
 	ResourceRelationshipHandler *resourcerelationship2.Handler,
@@ -211,8 +197,6 @@ func New(
 		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
-		PermissionHandler,
-		RolePermissionHandler,
 		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
