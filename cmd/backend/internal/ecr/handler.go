@@ -16,7 +16,7 @@ import (
 type Handler struct {
 	service            *Service
 	projectRepoService *projectrepository.Service
-	validator		  *validator.Validator
+	validator          *validator.Validator
 }
 
 func NewHandler(service *Service, projectRepoService *projectrepository.Service, validator *validator.Validator) *Handler {

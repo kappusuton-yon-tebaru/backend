@@ -82,8 +82,8 @@ func (h *Handler) UpdateRole(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, map[string]any{
-		"message":    "role updated successfully",
-		"roleId": roleId,
+		"message": "role updated successfully",
+		"roleId":  roleId,
 	})
 }
 
@@ -136,8 +136,8 @@ func (h *Handler) AddPermission(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, map[string]any{
-		"message":    "permission added successfully",
-		"roleId": roleId,
+		"message": "permission added successfully",
+		"roleId":  roleId,
 	})
 }
 
@@ -177,8 +177,8 @@ func (h *Handler) UpdatePermission(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, map[string]any{
-		"message":    "permission updated successfully",
-		"roleId": roleId,
+		"message": "permission updated successfully",
+		"roleId":  roleId,
 	})
 }
 
@@ -199,7 +199,7 @@ func (h *Handler) DeletePermission(ctx *gin.Context) {
 		return
 	}
 
-	err := h.service.DeletePermission(ctx, roleId,permId)
+	err := h.service.DeletePermission(ctx, roleId, permId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -12,10 +12,10 @@ import (
 
 type Service struct {
 	roleRepo *Repository
-	userRepo  *user.Repository
+	userRepo *user.Repository
 }
 
-func NewService(roleRepo *Repository, userRepo  *user.Repository) *Service {
+func NewService(roleRepo *Repository, userRepo *user.Repository) *Service {
 	return &Service{
 		roleRepo,
 		userRepo,
@@ -111,7 +111,7 @@ func (s *Service) DeletePermission(ctx context.Context, roleId string, permId st
 	count, err := s.roleRepo.DeletePermission(ctx, roleId, permId)
 	if err != nil {
 		return werror.NewFromError(err).
-		SetCode(http.StatusBadRequest)
+			SetCode(http.StatusBadRequest)
 	}
 
 	if count == 0 {

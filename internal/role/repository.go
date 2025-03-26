@@ -50,8 +50,8 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 
 func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
-		"role_name": dto.RoleName,
-		"org_id": dto.OrgId,
+		"role_name":   dto.RoleName,
+		"org_id":      dto.OrgId,
 		"permissions": []models.Permission{},
 	}
 
@@ -72,8 +72,8 @@ func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID s
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"role_name": dto.RoleName,
-			"updated_at":    time.Now(), 
+			"role_name":  dto.RoleName,
+			"updated_at": time.Now(),
 		},
 	}
 	// Update the role in MongoDB
@@ -122,9 +122,9 @@ func (r *Repository) AddPermission(ctx context.Context, dto ModifyPermissionDTO,
 		"_id": roleObjID,
 		"permissions": bson.M{
 			"$not": bson.M{
-				"$elemMatch": bson.M{ 
-					"action":          dto.Action,
-					"resource_id":     dto.ResourceId,
+				"$elemMatch": bson.M{
+					"action":      dto.Action,
+					"resource_id": dto.ResourceId,
 				},
 			},
 		},
@@ -140,17 +140,17 @@ func (r *Repository) AddPermission(ctx context.Context, dto ModifyPermissionDTO,
 	}
 	// add new perm to role
 	permission := bson.M{
-		"_id":            bson.NewObjectID(), 
+		"_id":             bson.NewObjectID(),
 		"permission_name": dto.PermissionName,
-		"action": dto.Action,
-		"resource_id": dto.ResourceId,
+		"action":          dto.Action,
+		"resource_id":     dto.ResourceId,
 	}
 	update := bson.M{
 		"$push": bson.M{
 			"permissions": permission,
 		},
 	}
-	_, err = r.role.UpdateOne(ctx,  bson.M{"_id": roleObjID} , update)
+	_, err = r.role.UpdateOne(ctx, bson.M{"_id": roleObjID}, update)
 	if err != nil {
 		log.Println("Error adding permission to role:", err)
 		return "", fmt.Errorf("error adding permission to role: %v", err)
@@ -182,7 +182,7 @@ func (r *Repository) UpdatePermission(ctx context.Context, dto ModifyPermissionD
 		return "", fmt.Errorf("this role doesn't exist")
 	}
 	// check permission exists
-	count, err = r.role.CountDocuments(ctx, bson.M{"_id": roleObjID,"permissions._id":permObjID})
+	count, err = r.role.CountDocuments(ctx, bson.M{"_id": roleObjID, "permissions._id": permObjID})
 	if err != nil {
 		log.Println("Error checking permission existence:", err)
 		return "", fmt.Errorf("error checking permission existence: %v", err)
@@ -195,10 +195,10 @@ func (r *Repository) UpdatePermission(ctx context.Context, dto ModifyPermissionD
 	filter := bson.M{
 		"_id": roleObjID,
 		"permissions": bson.M{
-			"$elemMatch": bson.M{ 
-				"_id":         permObjID, 
-				"action":      bson.M{"$ne": dto.Action},        // Ensure new action is unique
-				"resource_id": bson.M{"$ne": dto.ResourceId},    // Ensure new resource_id is unique
+			"$elemMatch": bson.M{
+				"_id":         permObjID,
+				"action":      bson.M{"$ne": dto.Action},     // Ensure new action is unique
+				"resource_id": bson.M{"$ne": dto.ResourceId}, // Ensure new resource_id is unique
 			},
 		},
 	}
@@ -212,11 +212,11 @@ func (r *Repository) UpdatePermission(ctx context.Context, dto ModifyPermissionD
 		return "", fmt.Errorf("Permission with this action on this resource already exists")
 	}
 	// update permission
-	update :=  bson.M{
-		"$set":  bson.M{
+	update := bson.M{
+		"$set": bson.M{
 			"permissions.$.permission_name": dto.PermissionName,
-            "permissions.$.action":          dto.Action,
-            "permissions.$.resource_id":     dto.ResourceId,
+			"permissions.$.action":          dto.Action,
+			"permissions.$.resource_id":     dto.ResourceId,
 		}}
 
 	_, err = r.role.UpdateOne(ctx, filter, update)

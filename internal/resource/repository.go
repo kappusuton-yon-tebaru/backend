@@ -2,16 +2,16 @@ package resource
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
-	"errors"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
-	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -75,7 +75,7 @@ func (r *Repository) GetResourceByFilter(ctx context.Context, filter map[string]
 }
 
 func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string) (models.Paginated[ResourceDTO], error) {
-	objId, err := bson.ObjectIDFromHex(parentId) 
+	objId, err := bson.ObjectIDFromHex(parentId)
 	if err != nil {
 		return models.Paginated[ResourceDTO]{}, err
 	}
@@ -91,7 +91,7 @@ func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.
 			},
 			{
 				"$unwind": map[string]any{
-					"path":          "$relationships",
+					"path": "$relationships",
 				},
 			},
 			{

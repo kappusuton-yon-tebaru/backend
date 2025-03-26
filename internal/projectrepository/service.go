@@ -50,12 +50,12 @@ func (s *Service) GetProjectRepositoryByProjectId(ctx context.Context, projectId
 	return projRepo, nil
 }
 
-func (s *Service) CreateProjectRepository(ctx context.Context, projectId string, dto CreateProjectRepositoryDTO) (string, *werror.WError ) {
+func (s *Service) CreateProjectRepository(ctx context.Context, projectId string, dto CreateProjectRepositoryDTO) (string, *werror.WError) {
 	pid, err := bson.ObjectIDFromHex(projectId)
 	if err != nil {
 		return "", werror.NewFromError(err).SetMessage("invalid project id").SetCode(400)
 	}
-	id, err := s.repo.CreateProjectRepository(ctx,pid, dto)
+	id, err := s.repo.CreateProjectRepository(ctx, pid, dto)
 	if err != nil {
 		return "", werror.NewFromError(err).SetMessage("can't create project repo").SetCode(400)
 	}
