@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -102,6 +103,9 @@ func (r *Repository) DeleteRole(ctx context.Context, filter bson.M) (int64, erro
 }
 
 func (r *Repository) AddPermission(ctx context.Context, dto ModifyPermissionDTO, roleID string) (string, error) {
+	if !enum.IsValidPermissionActions(dto.Action) {
+		return "", fmt.Errorf("invalid resource type: %v", dto.Action)
+	}
 	roleObjID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
 		log.Println("ObjectID FromHex err")
@@ -160,6 +164,9 @@ func (r *Repository) AddPermission(ctx context.Context, dto ModifyPermissionDTO,
 }
 
 func (r *Repository) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleID string, permID string) (string, error) {
+	if !enum.IsValidPermissionActions(dto.Action) {
+		return "", fmt.Errorf("invalid resource type: %v", dto.Action)
+	}
 	roleObjID, err := bson.ObjectIDFromHex(roleID)
 	if err != nil {
 		log.Println("ObjectID FromHex err")
