@@ -73,8 +73,8 @@ func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError 
 	return nil
 }
 
-func (s *Service) AddPermissionToRole(ctx context.Context, dto ModifyPermissionDTO, id string) (string, *werror.WError) {
-	roleId, err := s.repo.AddPermissionToRole(ctx, dto, id)
+func (s *Service) AddPermission(ctx context.Context, dto ModifyPermissionDTO, id string) (string, *werror.WError) {
+	roleId, err := s.repo.AddPermission(ctx, dto, id)
 	if err != nil {
 		return "", werror.NewFromError(err).
 			SetCode(http.StatusBadRequest)

@@ -107,7 +107,7 @@ func (h *Handler) DeleteRoleById(ctx *gin.Context) {
 	})
 }
 
-func (h *Handler) AddPermissionToRole(ctx *gin.Context) {
+func (h *Handler) AddPermission(ctx *gin.Context) {
 	id := ctx.Param("role_id")
 	if len(id) == 0 {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -126,7 +126,7 @@ func (h *Handler) AddPermissionToRole(ctx *gin.Context) {
 		return
 	}
 
-	roleId, err := h.service.AddPermissionToRole(ctx, permissionDTO, id)
+	roleId, err := h.service.AddPermission(ctx, permissionDTO, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to add permission to role",
