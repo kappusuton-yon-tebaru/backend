@@ -45,6 +45,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/users", app.UserHandler.CreateUser)
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
 	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
+	r.PUT("/users/:user_id/roles/:role_id", app.UserHandler.RemoveRole)
 
 	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
 	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)
