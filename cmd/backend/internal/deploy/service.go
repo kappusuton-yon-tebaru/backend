@@ -87,6 +87,7 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) (string,
 		return "", werr
 	}
 
+	deployContexts := []sharedDeploy.DeployContext{}
 	for i, service := range req.Services {
 		jobId := resp.JobIds[i]
 
@@ -103,24 +104,46 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) (string,
 			}
 		}
 
-		deployCtx := sharedDeploy.DeployContext{
-			Id:            jobId,
-			ProjectId:     req.ProjectId,
-			ServiceName:   utils.ToKebabCase(service.ServiceName),
-			ImageUri:      fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
-			Port:          service.Port,
-			Namespace:     deployenv.GetNamespaceName(project.ResourceName, req.DeploymentEnv),
-			Environments:  envs,
-			DeploymentEnv: req.DeploymentEnv,
-			HealthCheck:   (*sharedDeploy.DeployHealthCheckContext)(service.Healthcheck),
+		serviceName := utils.ToKebabCase(service.ServiceName)
+		namespace := deployenv.GetNamespaceName(project.ResourceName, req.DeploymentEnv)
+
+		replacedEnvs, err := utils.ReplaceVariable(envs, func(params []string) (string, error) {
+			if len(params) >= 3 &&
+				strings.ToLower(params[0]) == "service" &&
+				strings.ToLower(params[2]) == "host" {
+				return fmt.Sprintf("%s-service.%s.svc.cluster.local",
+					utils.ToKebabCase(params[1]),
+					namespace,
+				), nil
+			}
+
+			return "", errors.New("invalid resource substitution")
+		})
+
+		if errors.Is(err, utils.ErrBadVariable) {
+			return "", werror.NewFromError(err).SetMessage(err.Error()).SetCode(http.StatusBadRequest)
+		} else if err != nil {
+			return "", werror.NewFromError(err)
 		}
 
+		deployContexts = append(deployContexts, sharedDeploy.DeployContext{
+			Id:            jobId,
+			ProjectId:     req.ProjectId,
+			ServiceName:   serviceName,
+			ImageUri:      fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, service.Tag),
+			Port:          service.Port,
+			Namespace:     namespace,
+			Environments:  replacedEnvs,
+			DeploymentEnv: req.DeploymentEnv,
+			HealthCheck:   (*sharedDeploy.DeployHealthCheckContext)(service.Healthcheck),
+		})
+	}
+
+	for _, deployCtx := range deployContexts {
 		bs, err := json.Marshal(deployCtx)
 		if err != nil {
 			return "", nil
 		}
-
-		fmt.Println(string(bs))
 
 		if err := s.rmq.Publish(ctx, enum.DeployContextRoutingKey, bs); err != nil {
 			s.logger.Error("error occured while publishing deploy context", zap.Error(err))

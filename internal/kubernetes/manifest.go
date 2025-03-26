@@ -171,6 +171,7 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 					WithServiceAccountName(SystemServiceAccount).
 					WithContainers(
 						accorev1.Container().
+							WithImagePullPolicy(apicorev1.PullAlways).
 							WithName(dto.ServiceName).
 							WithPorts(port).
 							WithImage(dto.ImageUri).
