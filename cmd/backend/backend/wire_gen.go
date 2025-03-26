@@ -89,7 +89,7 @@ func Initialize() (*App, error) {
 	}
 	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	roleRepository := role.NewRepository(database)
-	roleService := role.NewService(roleRepository)
+	roleService := role.NewService(roleRepository, userRepository)
 	roleHandler := role2.NewHandler(roleService)
 	roleusergroupRepository := roleusergroup.NewRepository(database)
 	roleusergroupService := roleusergroup.NewService(roleusergroupRepository)
