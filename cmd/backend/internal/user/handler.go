@@ -80,3 +80,30 @@ func (h *Handler) AddRole(ctx *gin.Context) {
 		"roleId": roleId,
 	})
 }
+
+func (h *Handler) RemoveRole(ctx *gin.Context) {
+	role_id := ctx.Param("role_id")
+	if len(role_id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+	user_id := ctx.Param("user_id")
+	if len(user_id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	err := h.service.RemoveRole(ctx, user_id,role_id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message": "deleted",
+	})
+}

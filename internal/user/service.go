@@ -66,3 +66,19 @@ func (s *Service) AddRole(ctx context.Context, userId string, roleId string) (st
 
 	return roleId, nil
 }
+
+func (s *Service) RemoveRole(ctx context.Context, userId string, roleId string) *werror.WError {
+	count, err := s.repo.RemoveRole(ctx, userId, roleId)
+	if err != nil {
+		return werror.NewFromError(err).
+		SetCode(http.StatusBadRequest)
+	}
+
+	if count == 0 {
+		return werror.New().
+			SetCode(http.StatusNotFound).
+			SetMessage("not found")
+	}
+
+	return nil
+}

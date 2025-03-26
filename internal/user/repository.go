@@ -138,3 +138,30 @@ func (r *Repository) AddRole(ctx context.Context, userID string, roleID string) 
 
 	return userObjID.Hex(), nil
 }
+func (r *Repository) RemoveRole(ctx context.Context, userID string, roleID string) (int64, error) {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectID FromHex err")
+		return 0, err
+	}
+
+	userObjID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Println("ObjectID FromHex err")
+		return 0, err
+	}
+
+	update := bson.M{
+		"$pull": bson.M{
+			"role_ids": roleObjID,
+		},
+	}
+
+	result, err := r.user.UpdateOne(ctx, bson.M{"_id": userObjID}, update)
+	if err != nil {
+		log.Println("Error removing role from user:", err)
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
+}
