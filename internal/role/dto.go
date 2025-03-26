@@ -28,7 +28,7 @@ type UpdateRoleDTO struct {
 	RoleName string 		`json:"role_name" bson:"role_name"`
 }
 
-type CreatePermissionDTO struct {
+type ModifyPermissionDTO struct {
 	PermissionName string                 `json:"permission_name" bson:"permission_name"`
 	Action          enum.PermissionActions `json:"action" bson:"action"`
 	ResourceId     bson.ObjectID          `json:"resource_id" bson:"resource_id"`
@@ -43,15 +43,19 @@ func DTOToRole(role RoleDTO) models.Role {
 	}
 }
 
+func DTOToPermission(perm PermDTO) models.Perm {
+	return models.Perm{
+		Id:            perm.Id.Hex(), 
+		PermissionName: perm.PermissionName,
+		Action:        perm.Action,
+		ResourceId:    perm.ResourceId.Hex(), 
+	}
+}
+
 func mapPermissions(perms []PermDTO) []models.Perm {
 	mapped := make([]models.Perm, len(perms))
 	for i, perm := range perms {
-		mapped[i] = models.Perm{
-			Id:            perm.Id.Hex(), // Convert ObjectID to string
-			PermissionName: perm.PermissionName,
-			Action:        perm.Action,
-			ResourceId:    perm.ResourceId.Hex(), // Convert ObjectID to string
-		}
+		mapped[i] = DTOToPermission(perm)
 	}
 	return mapped
 }

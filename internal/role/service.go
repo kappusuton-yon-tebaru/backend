@@ -73,7 +73,7 @@ func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError 
 	return nil
 }
 
-func (s *Service) AddPermissionToRole(ctx context.Context, dto CreatePermissionDTO, id string) (string, *werror.WError) {
+func (s *Service) AddPermissionToRole(ctx context.Context, dto ModifyPermissionDTO, id string) (string, *werror.WError) {
 	roleId, err := s.repo.AddPermissionToRole(ctx, dto, id)
 	if err != nil {
 		return "", werror.NewFromError(err).
@@ -83,7 +83,7 @@ func (s *Service) AddPermissionToRole(ctx context.Context, dto CreatePermissionD
 	return roleId, nil
 }
 
-func (s *Service) UpdatePermission(ctx context.Context, dto CreatePermissionDTO, roleId string, permId string) (string, *werror.WError) {
+func (s *Service) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleId string, permId string) (string, *werror.WError) {
 	roleId, err := s.repo.UpdatePermission(ctx, dto, roleId, permId)
 	if err != nil {
 		return "", werror.NewFromError(err).
