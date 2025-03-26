@@ -45,6 +45,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
+	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
 
 	r.POST("/auth/register", app.AuthHandler.Register)
 	r.POST("/auth/login", app.AuthHandler.Login)

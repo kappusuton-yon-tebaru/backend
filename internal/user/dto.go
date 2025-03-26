@@ -9,6 +9,7 @@ type UserDTO struct {
 	Id       bson.ObjectID `bson:"_id"`
 	Email    string        `bson:"email"`
 	Password string        `bson:"password"`
+	RoleIds []bson.ObjectID `bson:"role_ids"`
 }
 
 type UserCredentialDTO struct {
@@ -21,5 +22,14 @@ func DTOToUser(user UserDTO) models.User {
 		Id:       user.Id.Hex(),
 		Email:    user.Email,
 		Password: user.Password,
+		RoleIds: mapRoles(user.RoleIds),
 	}
+}
+
+func mapRoles(roles []bson.ObjectID) []string {
+	mapped := make([]string, len(roles))
+	for i, role := range roles {
+		mapped[i] = role.Hex()
+	}
+	return mapped
 }
