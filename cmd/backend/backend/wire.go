@@ -13,7 +13,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
@@ -21,7 +20,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
@@ -42,7 +40,6 @@ import (
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
-	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
@@ -50,7 +47,6 @@ import (
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
-	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
 	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
@@ -72,8 +68,6 @@ type App struct {
 	UserGroupHandler            *usergroup.Handler
 	ResourceHandler             *resource.Handler
 	RoleHandler                 *role.Handler
-	PermissionHandler           *permission.Handler
-	RolePermissionHandler       *rolepermission.Handler
 	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
@@ -103,8 +97,6 @@ func New(
 	UserGroupHandler *usergroup.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
-	PermissionHandler *permission.Handler,
-	RolePermissionHandler *rolepermission.Handler,
 	RoleUserGroupHandler *roleusergroup.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
@@ -133,8 +125,6 @@ func New(
 		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
-		PermissionHandler,
-		RolePermissionHandler,
 		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
@@ -180,12 +170,6 @@ func Initialize() (*App, error) {
 		sharedRole.NewRepository,
 		sharedRole.NewService,
 		role.NewHandler,
-		sharedPermission.NewRepository,
-		sharedPermission.NewService,
-		permission.NewHandler,
-		sharedRolePermission.NewRepository,
-		sharedRolePermission.NewService,
-		rolepermission.NewHandler,
 		sharedRoleUserGroup.NewRepository,
 		sharedRoleUserGroup.NewService,
 		roleusergroup.NewHandler,

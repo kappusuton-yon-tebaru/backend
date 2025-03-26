@@ -72,14 +72,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.PUT("/roles/:role_id/permissions/:perm_id", app.RoleHandler.UpdatePermission)
 	r.DELETE("/roles/:role_id/permissions/:perm_id", app.RoleHandler.DeletePermission)
 
-	// r.GET("/permissions", app.PermissionHandler.GetAllPermissions)
-	// r.POST("/permissions", app.PermissionHandler.CreatePermission)
-	// r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
-
-	// r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
-	// r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
-	// r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
-
 	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
 	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
 	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)

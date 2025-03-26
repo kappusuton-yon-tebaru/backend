@@ -116,7 +116,7 @@ func (h *Handler) AddPermissionToRole(ctx *gin.Context) {
 		return
 	}
 
-	var permissionDTO role.CreatePermissionDTO
+	var permissionDTO role.ModifyPermissionDTO
 
 	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
@@ -157,7 +157,7 @@ func (h *Handler) UpdatePermission(ctx *gin.Context) {
 		return
 	}
 
-	var permissionDTO role.CreatePermissionDTO
+	var permissionDTO role.ModifyPermissionDTO
 
 	if err := ctx.ShouldBindJSON(&permissionDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
