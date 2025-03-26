@@ -18,11 +18,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -42,11 +40,9 @@ import (
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
-	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
-	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -60,10 +56,8 @@ type App struct {
 	ServiceDeployment           *svcdeploy.Handler
 	ServiceDeploymentEnv        *svcdeployenv.Handler
 	UserHandler                 *user.Handler
-	UserGroupHandler            *usergroup.Handler
 	ResourceHandler             *resource.Handler
 	RoleHandler                 *role.Handler
-	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
 	JobHandler                  *job.Handler
@@ -86,10 +80,8 @@ func New(
 	ServiceDeployment *svcdeploy.Handler,
 	ServiceDeploymentEnv *svcdeployenv.Handler,
 	UserHandler *user.Handler,
-	UserGroupHandler *usergroup.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
-	RoleUserGroupHandler *roleusergroup.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
 	JobHandler *job.Handler,
@@ -111,10 +103,8 @@ func New(
 		ServiceDeployment,
 		ServiceDeploymentEnv,
 		UserHandler,
-		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
-		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 		JobHandler,
@@ -147,18 +137,12 @@ func Initialize() (*App, error) {
 		sharedUser.NewRepository,
 		sharedUser.NewService,
 		user.NewHandler,
-		sharedUserGroup.NewRepository,
-		sharedUserGroup.NewService,
-		usergroup.NewHandler,
 		sharedResource.NewRepository,
 		sharedResource.NewService,
 		resource.NewHandler,
 		sharedRole.NewRepository,
 		sharedRole.NewService,
 		role.NewHandler,
-		sharedRoleUserGroup.NewRepository,
-		sharedRoleUserGroup.NewService,
-		roleusergroup.NewHandler,
 		sharedProjectRepository.NewRepository,
 		sharedProjectRepository.NewService,
 		projectrepository.NewHandler,

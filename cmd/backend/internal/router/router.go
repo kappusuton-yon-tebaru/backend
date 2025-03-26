@@ -47,12 +47,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
 	r.PUT("/users/:user_id/roles/:role_id", app.UserHandler.RemoveRole)
 
-	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
-	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)
-	r.DELETE("/usergroups/:group_id", app.UserGroupHandler.DeleteUserGroupById)
-	r.POST("/usergroups/:id/user", app.UserGroupHandler.AddUserToUserGroup)
-	r.DELETE("/usergroups/:group_id/user/:user_id", app.UserGroupHandler.DeleteUserFromUserGroupById)
-
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
 	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
@@ -68,10 +62,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/roles/:role_id/permissions", app.RoleHandler.AddPermission)
 	r.PUT("/roles/:role_id/permissions/:perm_id", app.RoleHandler.UpdatePermission)
 	r.DELETE("/roles/:role_id/permissions/:perm_id", app.RoleHandler.DeletePermission)
-
-	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
-	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
-	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.GET("/projrepos/project/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoryByProjectId)

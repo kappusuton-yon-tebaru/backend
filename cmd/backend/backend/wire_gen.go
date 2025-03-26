@@ -22,11 +22,9 @@ import (
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	roleusergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
-	usergroup2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
 	"github.com/kappusuton-yon-tebaru/backend/internal/image"
@@ -40,11 +38,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
-	"github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -77,9 +73,6 @@ func Initialize() (*App, error) {
 	userRepository := user.NewRepository(database)
 	userService := user.NewService(userRepository)
 	userHandler := user2.NewHandler(userService)
-	usergroupRepository := usergroup.NewRepository(database)
-	usergroupService := usergroup.NewService(usergroupRepository)
-	usergroupHandler := usergroup2.NewHandler(usergroupService)
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
@@ -91,9 +84,6 @@ func Initialize() (*App, error) {
 	roleRepository := role.NewRepository(database)
 	roleService := role.NewService(roleRepository, userRepository)
 	roleHandler := role2.NewHandler(roleService)
-	roleusergroupRepository := roleusergroup.NewRepository(database)
-	roleusergroupService := roleusergroup.NewService(roleusergroupRepository)
-	roleusergroupHandler := roleusergroup2.NewHandler(roleusergroupService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
 	projectrepositoryHandler := projectrepository2.NewHandler(projectrepositoryService, validatorValidator)
@@ -128,7 +118,7 @@ func Initialize() (*App, error) {
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, usergroupHandler, resourceHandler, roleHandler, roleusergroupHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
+	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler)
 	return app, nil
 }
 
@@ -143,10 +133,8 @@ type App struct {
 	ServiceDeployment           *svcdeploy2.Handler
 	ServiceDeploymentEnv        *svcdeployenv2.Handler
 	UserHandler                 *user2.Handler
-	UserGroupHandler            *usergroup2.Handler
 	ResourceHandler             *resource2.Handler
 	RoleHandler                 *role2.Handler
-	RoleUserGroupHandler        *roleusergroup2.Handler
 	ProjectRepositoryHandler    *projectrepository2.Handler
 	ResourceRelationshipHandler *resourcerelationship2.Handler
 	JobHandler                  *job2.Handler
@@ -169,10 +157,8 @@ func New(
 	ServiceDeployment *svcdeploy2.Handler,
 	ServiceDeploymentEnv *svcdeployenv2.Handler,
 	UserHandler *user2.Handler,
-	UserGroupHandler *usergroup2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
-	RoleUserGroupHandler *roleusergroup2.Handler,
 	ProjectRepositoryHandler *projectrepository2.Handler,
 	ResourceRelationshipHandler *resourcerelationship2.Handler,
 	JobHandler *job2.Handler,
@@ -194,10 +180,8 @@ func New(
 		ServiceDeployment,
 		ServiceDeploymentEnv,
 		UserHandler,
-		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
-		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 		JobHandler,
