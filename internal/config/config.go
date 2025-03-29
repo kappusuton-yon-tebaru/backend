@@ -30,17 +30,19 @@ type DockerHubConfig struct {
 }
 
 type Config struct {
-	Agent             AgentConfig     `mapstructure:",squash"`
-	Backend           BackendConfig   `mapstructure:",squash"`
-	DockerHub         DockerHubConfig `mapstructure:",squash"`
-	MongoUri          string          `mapstructure:"MONGO_URI"`
-	InCluster         bool            `mapstructure:"IN_CLUSTER"`
-	Development       bool            `mapstructure:"DEVELOPMENT"`
-	ConsumerConfig    ConsumerConfig  `mapstructure:",squash"`
-	KubeNamespace     string          `mapstructure:"KUBE_NAMESPACE"`
-	MongoDatabaseName string          `mapstructure:"MONGO_DATABASE_NAME"`
-	ClientID          string          `mapstructure:"GITHUB_CLIENT_ID"`
-	ClientSecret      string          `mapstructure:"GITHUB_CLIENT_SECRET"`
+	Agent                  AgentConfig     `mapstructure:",squash"`
+	Backend                BackendConfig   `mapstructure:",squash"`
+	DockerHub              DockerHubConfig `mapstructure:",squash"`
+	MongoUri               string          `mapstructure:"MONGO_URI"`
+	InCluster              bool            `mapstructure:"IN_CLUSTER"`
+	Development            bool            `mapstructure:"DEVELOPMENT"`
+	ConsumerConfig         ConsumerConfig  `mapstructure:",squash"`
+	KubeNamespace          string          `mapstructure:"KUBE_NAMESPACE"`
+	MongoDatabaseName      string          `mapstructure:"MONGO_DATABASE_NAME"`
+	ClientID               string          `mapstructure:"GITHUB_CLIENT_ID"`
+	ClientSecret           string          `mapstructure:"GITHUB_CLIENT_SECRET"`
+	SessionExpiresInSecond int             `mapstructure:"SESSION_EXPIRES_IN_SECOND"`
+	JwtSecret              string          `mapstructure:"JWT_SECRET"`
 }
 
 func Load() (*Config, error) {

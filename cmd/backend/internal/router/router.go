@@ -33,7 +33,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 		r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	r.GET("/", app.GreetingHandler.Greeting)
+	authenticated := r.Group("/", app.Middleware.Authentication())
+
+	authenticated.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/images", app.ImageHandler.GetAllImages)
 	r.DELETE("/image/:id", app.ImageHandler.DeleteImage)
@@ -42,8 +44,11 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/svcdeploy/:id", app.ServiceDeployment.DeleteServiceDeployment)
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
-	r.POST("/users", app.UserHandler.CreateUser)
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
+
+	r.POST("/auth/register", app.AuthHandler.Register)
+	r.POST("/auth/login", app.AuthHandler.Login)
+	r.POST("/auth/logout", app.AuthHandler.Logout)
 
 	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
 	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)

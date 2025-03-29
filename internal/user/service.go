@@ -4,18 +4,21 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Service struct {
-	repo *Repository
+	repo   *Repository
+	logger *logger.Logger
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, logger *logger.Logger) *Service {
 	return &Service{
 		repo,
+		logger,
 	}
 }
 
@@ -26,15 +29,6 @@ func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	}
 
 	return users, nil
-}
-
-func (s *Service) CreateUser(ctx context.Context, dto CreateUserDTO) (any, error) {
-	id, err := s.repo.CreateUser(ctx, dto)
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
 }
 
 func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError {
