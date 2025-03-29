@@ -114,7 +114,7 @@ func Initialize() (*App, error) {
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
-	rmqRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig, loggerLogger)
 	if err != nil {
 		return nil, err
 	}

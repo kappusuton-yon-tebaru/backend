@@ -35,7 +35,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	rmqRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig, loggerLogger)
 	if err != nil {
 		return nil, err
 	}
