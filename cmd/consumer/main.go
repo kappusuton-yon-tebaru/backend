@@ -19,7 +19,7 @@ func main() {
 	app.Logger.Info("builder consumer initalizing")
 
 	app.Logger.Info("connecting to rmq", zap.String("queue_name", app.Config.ConsumerConfig.OrganizationName), zap.String("queue_uri", app.Config.ConsumerConfig.QueueUri))
-	msgs, err := app.RmqClient.Ch.Consume(app.Config.ConsumerConfig.OrganizationName, "agent-consumer", false, false, false, false, nil)
+	msgs, err := app.RmqClient.Consume(app.Config.ConsumerConfig.OrganizationName, "agent-consumer")
 	if err != nil {
 		panic(err)
 	}
@@ -51,13 +51,8 @@ func main() {
 	}()
 
 	<-utils.WaitForTermination(app.Logger, func() {
-		app.Logger.Info("closing rmq channel")
-		if err := app.RmqClient.Ch.Close(); err != nil {
-			app.Logger.Error("error occured while closing rmq channel", zap.Error(err))
-		}
-
 		app.Logger.Info("closing rmq connection")
-		if err := app.RmqClient.Conn.Close(); err != nil {
+		if err := app.RmqClient.Close(); err != nil {
 			app.Logger.Error("error occured while closing rmq connection", zap.Error(err))
 		}
 	})

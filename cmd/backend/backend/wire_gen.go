@@ -114,11 +114,11 @@ func Initialize() (*App, error) {
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
-	builderRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	buildService := build.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService)
+	buildService := build.NewService(rmqRmq, jobService, loggerLogger, projectrepositoryService)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
 	monitoringHandler := monitoring.NewHandler(loggerLogger)
 	reverseProxy, err := reverseproxy.New(configConfig)
@@ -128,7 +128,7 @@ func Initialize() (*App, error) {
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
-	deployService := deploy.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
+	deployService := deploy.NewService(rmqRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
 	deployHandler := deploy.NewHandler(deployService, validatorValidator)
 	authRepository, err := auth.NewRepository(database)
 	if err != nil {

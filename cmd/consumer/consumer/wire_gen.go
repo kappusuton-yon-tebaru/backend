@@ -35,7 +35,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	builderRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func Initialize() (*App, error) {
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
 	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service, deployenvService)
 	deployHandler := deploy.NewHandler(loggerLogger, deployService)
-	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler, deployHandler)
+	app := New(loggerLogger, configConfig, kubernetesKubernetes, rmqRmq, handler, deployHandler)
 	return app, nil
 }
 
@@ -63,7 +63,7 @@ type App struct {
 	Logger        *logger.Logger
 	Config        *config.Config
 	KubeClient    *kubernetes.Kubernetes
-	RmqClient     *rmq.BuilderRmq
+	RmqClient     *rmq.Rmq
 	BuildHandler  *build.Handler
 	DeployHandler *deploy.Handler
 }
@@ -72,7 +72,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
-	RmqClient *rmq.BuilderRmq,
+	RmqClient *rmq.Rmq,
 	BuildHandler *build.Handler,
 	DeployHandler *deploy.Handler,
 ) *App {

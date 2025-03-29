@@ -12,13 +12,13 @@ const (
 	exchangeName = "amq.topic"
 )
 
-type BuilderRmq struct {
-	Conn  *amqp091.Connection
-	Ch    *amqp091.Channel
-	Queue amqp091.Queue
+type Rmq struct {
+	conn  *amqp091.Connection
+	ch    *amqp091.Channel
+	queue amqp091.Queue
 }
 
-func New(cfg *config.Config) (*BuilderRmq, error) {
+func New(cfg *config.Config) (*Rmq, error) {
 	conn, err := amqp091.Dial(cfg.ConsumerConfig.QueueUri)
 	if err != nil {
 		return nil, err
@@ -44,15 +44,27 @@ func New(cfg *config.Config) (*BuilderRmq, error) {
 		panic(err)
 	}
 
-	return &BuilderRmq{
+	return &Rmq{
 		conn,
 		ch,
 		queue,
 	}, nil
 }
 
-func (r *BuilderRmq) Publish(ctx context.Context, key string, body []byte) error {
-	err := r.Ch.PublishWithContext(ctx, exchangeName, fmt.Sprintf("%s.%s", r.Queue.Name, key), false, false, amqp091.Publishing{
+func (r *Rmq) Close() error {
+	if err := r.ch.Close(); err != nil {
+		return err
+	}
+
+	if err := r.conn.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Rmq) Publish(ctx context.Context, key string, body []byte) error {
+	err := r.ch.PublishWithContext(ctx, exchangeName, fmt.Sprintf("%s.%s", r.queue.Name, key), false, false, amqp091.Publishing{
 		ContentType: "text/plain",
 		Body:        body,
 	})
@@ -62,4 +74,13 @@ func (r *BuilderRmq) Publish(ctx context.Context, key string, body []byte) error
 	}
 
 	return nil
+}
+
+func (r *Rmq) Consume(queueName, consumerName string) (<-chan amqp091.Delivery, error) {
+	msgs, err := r.ch.Consume(queueName, consumerName, false, false, false, false, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return msgs, nil
 }
