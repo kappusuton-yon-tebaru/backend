@@ -21,7 +21,7 @@ func (kube *Kubernetes) NewPodClient(namespace string) Pod {
 
 func (p Pod) Create(ctx context.Context, pod *apicorev1.Pod) (*apicorev1.Pod, error) {
 	createdPod, err := p.client.Create(ctx, pod, apimetav1.CreateOptions{
-		FieldManager: "system",
+		FieldManager: SystemServiceAccount,
 	})
 	if err != nil {
 		return nil, err

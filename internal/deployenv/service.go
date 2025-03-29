@@ -68,7 +68,7 @@ func (s *Service) CreateDeploymentEnv(ctx context.Context, dto ModifyDeploymentE
 	}
 
 	saClient := s.kube.NewServiceAccountClient(name)
-	err = saClient.Create(ctx, "system")
+	err = saClient.Create(ctx, kubernetes.SystemServiceAccount)
 	if err != nil {
 		s.logger.Error("error occured while creating service account", zap.String("namespace", project.ResourceName), zap.Error(err))
 		return werror.NewFromError(err)

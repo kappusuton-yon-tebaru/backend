@@ -21,7 +21,7 @@ func (kube *Kubernetes) NewServiceClient(namespace string) Service {
 
 func (s Service) Apply(ctx context.Context, svc *accorev1.ServiceApplyConfiguration) (*apicorev1.Service, error) {
 	appliedService, err := s.client.Apply(ctx, svc, apimetav1.ApplyOptions{
-		FieldManager: "system",
+		FieldManager: SystemServiceAccount,
 	})
 	if err != nil {
 		return nil, err
