@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	app, err := builderconsumer.Initialize()
+	app, err := consumer.Initialize()
 	if err != nil {
 		panic(err)
 	}
