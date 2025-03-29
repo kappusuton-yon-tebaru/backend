@@ -105,6 +105,7 @@ func (h *Handler) ListDeployment(ctx *gin.Context) {
 	deployments, werr := h.service.ListDeployment(ctx, queryParam, deployFilter)
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+		return
 	}
 
 	ctx.JSON(http.StatusOK, deployments)
