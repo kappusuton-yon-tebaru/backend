@@ -48,11 +48,31 @@ func (p Pod) Get(ctx context.Context, name string) (*apicorev1.Pod, error) {
 	return pod, nil
 }
 
-func (p Pod) GetLogString(ctx context.Context, pod, container string) (string, error) {
-	logs := p.client.GetLogs(pod, &apicorev1.PodLogOptions{
-		Container: container,
-	})
-	log, err := logs.Do(ctx).Raw()
+type PodLogBuilder struct {
+	pod    string
+	opt    *apicorev1.PodLogOptions
+	client v1.PodInterface
+}
+
+func (p Pod) GetLog(pod string, opts ...PodLogOptions) PodLogBuilder {
+	logOpt := &apicorev1.PodLogOptions{
+		Timestamps: true,
+	}
+
+	for _, opt := range opts {
+		opt(logOpt)
+	}
+
+	return PodLogBuilder{
+		pod,
+		logOpt,
+		p.client,
+	}
+}
+
+func (p PodLogBuilder) String(ctx context.Context) (string, error) {
+	req := p.client.GetLogs(p.pod, p.opt)
+	log, err := req.DoRaw(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -60,13 +80,10 @@ func (p Pod) GetLogString(ctx context.Context, pod, container string) (string, e
 	return string(log), err
 }
 
-func (p Pod) GetLogStream(ctx context.Context, pod, container string) (io.ReadCloser, error) {
-	logs := p.client.GetLogs(pod, &apicorev1.PodLogOptions{
-		Container: container,
-		Follow:    true,
-	})
-
-	reader, err := logs.Stream(ctx)
+func (p PodLogBuilder) Stream(ctx context.Context) (io.ReadCloser, error) {
+	p.opt.Follow = true
+	req := p.client.GetLogs(p.pod, p.opt)
+	reader, err := req.Stream(ctx)
 	if err != nil {
 		return nil, err
 	}

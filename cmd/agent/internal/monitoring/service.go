@@ -59,7 +59,7 @@ func (s *Service) GetPodLogs(ctx context.Context, name string) (*streamer.Stream
 			}
 		}
 
-		reader, err := podClient.GetLogStream(ctx, name, "kaniko")
+		reader, err := podClient.GetLog(name, kubernetes.WithContainer("kaniko")).Stream(ctx)
 		if err != nil {
 			s.logger.Error("error occured while getting pod log reader", zap.String("name", name), zap.Error(err))
 			return
