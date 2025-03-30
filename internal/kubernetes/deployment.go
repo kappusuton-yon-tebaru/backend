@@ -38,8 +38,6 @@ func (d Deployment) List(ctx context.Context, filter DeploymentFilter) (*apiapps
 		fmt.Sprintf("project_id=%s", filter.ProjectId),
 	}
 
-	fmt.Println(strings.Join(filters, ","))
-
 	deployments, err := d.client.List(ctx, apimetav1.ListOptions{
 		LabelSelector: strings.Join(filters, ","),
 	})
