@@ -25,9 +25,8 @@ type ConsumerConfig struct {
 	OrganizationName string `mapstructure:"CONSUMER_ORGANIZATION_NAME"`
 }
 
-type SidecarLogger struct {
-	Namespace   string `mapstructure:"SIDECAR_LOGGER_NAMESPACE"`
-	ServiceName string `mapstructure:"SIDECAR_LOGGER_SERVICE_NAME"`
+type PodLogger struct {
+	LogExpiresInSecond int32 `mapstructure:"SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND"`
 }
 
 type DockerHubConfig struct {
@@ -48,7 +47,7 @@ type Config struct {
 	ClientSecret           string          `mapstructure:"GITHUB_CLIENT_SECRET"`
 	SessionExpiresInSecond int             `mapstructure:"SESSION_EXPIRES_IN_SECOND"`
 	JwtSecret              string          `mapstructure:"JWT_SECRET"`
-	SidecarLogger          SidecarLogger   `mapstructure:",squash"`
+	PodLogger              PodLogger       `mapstructure:",squash"`
 }
 
 func Load() (*Config, error) {

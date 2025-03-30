@@ -86,6 +86,8 @@ spec:
               value: "<@CONSUMER_QUEUE_URI>"
             - name: CONSUMER_ORGANIZATION_NAME
               value: "<@CONSUMER_ORGANIZATION_NAME>"
+            - name: SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND
+              value: "<@SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND>"
 ---
 apiVersion: v1
 kind: Service
@@ -150,3 +152,5 @@ spec:
               value: "<@CONSUMER_QUEUE_URI>"
             - name: CONSUMER_ORGANIZATION_NAME
               value: "<@CONSUMER_ORGANIZATION_NAME>"
+            - name: SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND
+              value: "<@SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND>"
