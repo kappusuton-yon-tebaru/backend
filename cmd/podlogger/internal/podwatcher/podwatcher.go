@@ -9,6 +9,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
+	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,12 +21,12 @@ type PodWatcher struct {
 	container        string
 }
 
-func NewPodWatcher(kube *kubernetes.Kubernetes, namespace, pod, container string) *PodWatcher {
+func NewPodWatcher(kube *kubernetes.Kubernetes, pod *apicorev1.Pod, container string) *PodWatcher {
 	return &PodWatcher{
 		kube,
 		(*apimetav1.Time)(nil),
-		namespace,
-		pod,
+		pod.Namespace,
+		pod.Name,
 		container,
 	}
 }
