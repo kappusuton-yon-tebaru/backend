@@ -15,6 +15,100 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/ecr/images": {
+            "get": {
+                "description": "List all ecr images by project id and service name",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ECR"
+                ],
+                "summary": "List all ecr images by project id and service name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Service Name",
+                        "name": "service_name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "created_at",
+                            "name"
+                        ],
+                        "type": "string",
+                        "description": "Sort by",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "description": "Sort order",
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Query on image_tag",
+                        "name": "query",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-cmd_backend_internal_ecr_ECRImageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/jobs": {
             "get": {
                 "description": "List all job parents",
@@ -528,6 +622,228 @@ const docTemplate = `{
                 }
             }
         },
+        "/regproviders": {
+            "get": {
+                "description": "List all registry providers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regproviders"
+                ],
+                "summary": "List all registry providers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "created_at",
+                            "name"
+                        ],
+                        "type": "string",
+                        "description": "Sort by",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "description": "Sort order",
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Query on name",
+                        "name": "query",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-github_com_kappusuton-yon-tebaru_backend_internal_models_RegistryProviders"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create registry provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regproviders"
+                ],
+                "summary": "Create registry provider",
+                "parameters": [
+                    {
+                        "description": "Create Registry Provider Request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_regproviders.CreateRegistryProvidersRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/cmd_backend_internal_regproviders.CreateRegistryProvidersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/regproviders/unbind": {
+            "get": {
+                "description": "List all registry providers without project binding to it",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regproviders"
+                ],
+                "summary": "List all registry providers without project binding to it",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/regproviders/{id}": {
+            "get": {
+                "description": "List registry provider by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regproviders"
+                ],
+                "summary": "List registry provider by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registry Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete registry provider",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regproviders"
+                ],
+                "summary": "Delete registry provider",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registry Provider ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/setting/workerpool": {
             "get": {
                 "description": "Get worker pool setting",
@@ -699,6 +1015,48 @@ const docTemplate = `{
                 }
             }
         },
+        "cmd_backend_internal_ecr.ECRImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "cmd_backend_internal_regproviders.CreateRegistryProvidersRequest": {
+            "type": "object",
+            "required": [
+                "ecr_credential",
+                "name",
+                "organization_id",
+                "uri"
+            ],
+            "properties": {
+                "ecr_credential": {
+                    "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "cmd_backend_internal_regproviders.CreateRegistryProvidersResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "deploy.DeleteDeploymentRequest": {
             "type": "object",
             "required": [
@@ -837,6 +1195,25 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential": {
+            "type": "object",
+            "required": [
+                "access_key",
+                "aws_region",
+                "secret_access_key"
+            ],
+            "properties": {
+                "access_key": {
+                    "type": "string"
+                },
+                "aws_region": {
+                    "type": "string"
+                },
+                "secret_access_key": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_kappusuton-yon-tebaru_backend_internal_models.Job": {
             "type": "object",
             "properties": {
@@ -870,6 +1247,72 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-cmd_backend_internal_ecr_ECRImageResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cmd_backend_internal_ecr.ECRImageResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-github_com_kappusuton-yon-tebaru_backend_internal_models_RegistryProviders": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "ecr_credential": {
+                    "$ref": "#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uri": {
                     "type": "string"
                 }
             }

@@ -67,6 +67,34 @@ definitions:
     - service_name
     - tag
     type: object
+  cmd_backend_internal_ecr.ECRImageResponse:
+    properties:
+      image_tag:
+        type: string
+    type: object
+  cmd_backend_internal_regproviders.CreateRegistryProvidersRequest:
+    properties:
+      ecr_credential:
+        $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential'
+      name:
+        type: string
+      organization_id:
+        type: string
+      uri:
+        type: string
+    required:
+    - ecr_credential
+    - name
+    - organization_id
+    - uri
+    type: object
+  cmd_backend_internal_regproviders.CreateRegistryProvidersResponse:
+    properties:
+      id:
+        type: string
+      message:
+        type: string
+    type: object
   deploy.DeleteDeploymentRequest:
     properties:
       deployment_env:
@@ -158,6 +186,19 @@ definitions:
       service_name:
         type: string
     type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential:
+    properties:
+      access_key:
+        type: string
+      aws_region:
+        type: string
+      secret_access_key:
+        type: string
+    required:
+    - access_key
+    - aws_region
+    - secret_access_key
+    type: object
   github_com_kappusuton-yon-tebaru_backend_internal_models.Job:
     properties:
       created_at:
@@ -182,6 +223,49 @@ definitions:
       name:
         type: string
     type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-cmd_backend_internal_ecr_ECRImageResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/cmd_backend_internal_ecr.ECRImageResponse'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ? github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-github_com_kappusuton-yon-tebaru_backend_internal_models_RegistryProviders
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders:
+    properties:
+      created_at:
+        type: string
+      ecr_credential:
+        $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.ECRCredential'
+      id:
+        type: string
+      name:
+        type: string
+      organization_id:
+        type: string
+      updated_at:
+        type: string
+      uri:
+        type: string
+    type: object
   setting.SetWorkerPoolRequest:
     properties:
       pool_size:
@@ -202,6 +286,70 @@ info:
   title: Snapping Service
   version: "1.0"
 paths:
+  /ecr/images:
+    get:
+      description: List all ecr images by project id and service name
+      parameters:
+      - description: Project ID
+        in: query
+        name: project_id
+        required: true
+        type: string
+      - description: Service Name
+        in: query
+        name: service_name
+        required: true
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - created_at
+        - name
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Query on image_tag
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-cmd_backend_internal_ecr_ECRImageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List all ecr images by project id and service name
+      tags:
+      - ECR
   /jobs:
     get:
       description: List all job parents
@@ -554,6 +702,154 @@ paths:
       summary: Create deployment environment in project
       tags:
       - Deployment Environment
+  /regproviders:
+    get:
+      description: List all registry providers
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Sort by
+        enum:
+        - created_at
+        - name
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+      - description: Query on name
+        in: query
+        name: query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Paginated-github_com_kappusuton-yon-tebaru_backend_internal_models_RegistryProviders'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List all registry providers
+      tags:
+      - regproviders
+    post:
+      description: Create registry provider
+      parameters:
+      - description: Create Registry Provider Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/cmd_backend_internal_regproviders.CreateRegistryProvidersRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_regproviders.CreateRegistryProvidersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Create registry provider
+      tags:
+      - regproviders
+  /regproviders/{id}:
+    delete:
+      description: Delete registry provider
+      parameters:
+      - description: Registry Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Delete registry provider
+      tags:
+      - regproviders
+    get:
+      description: List registry provider by ID
+      parameters:
+      - description: Registry Provider ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List registry provider by ID
+      tags:
+      - regproviders
+  /regproviders/unbind:
+    get:
+      description: List all registry providers without project binding to it
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.RegistryProviders'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: List all registry providers without project binding to it
+      tags:
+      - regproviders
   /setting/workerpool:
     get:
       description: Get worker pool setting
