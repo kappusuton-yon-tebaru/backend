@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
+	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
-	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
-	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 )
 
 type Handler struct {
-	service *resource.Service
+	service   *resource.Service
 	validator *validator.Validator
 }
 

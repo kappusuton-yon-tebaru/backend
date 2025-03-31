@@ -45,16 +45,12 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
+	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
+	r.PUT("/users/:user_id/roles/:role_id", app.UserHandler.RemoveRole)
 
 	r.POST("/auth/register", app.AuthHandler.Register)
 	r.POST("/auth/login", app.AuthHandler.Login)
 	r.POST("/auth/logout", app.AuthHandler.Logout)
-
-	r.GET("/usergroups", app.UserGroupHandler.GetAllUserGroups)
-	r.POST("/usergroups", app.UserGroupHandler.CreateUserGroup)
-	r.DELETE("/usergroups/:group_id", app.UserGroupHandler.DeleteUserGroupById)
-	r.POST("/usergroups/:id/user", app.UserGroupHandler.AddUserToUserGroup)
-	r.DELETE("/usergroups/:group_id/user/:user_id", app.UserGroupHandler.DeleteUserFromUserGroupById)
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
@@ -66,19 +62,11 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
 	r.POST("/roles", app.RoleHandler.CreateRole)
-	r.DELETE("/roles/:id", app.RoleHandler.DeleteRoleById)
-
-	r.GET("/permissions", app.PermissionHandler.GetAllPermissions)
-	r.POST("/permissions", app.PermissionHandler.CreatePermission)
-	r.DELETE("/permissions/:id", app.PermissionHandler.DeletePermissionById)
-
-	r.GET("/rolepermissions", app.RolePermissionHandler.GetAllRolePermissions)
-	r.POST("/rolepermissions", app.RolePermissionHandler.CreateRolePermission)
-	r.DELETE("/rolepermissions/:id", app.RolePermissionHandler.DeleteRolePermissionById)
-
-	r.GET("/roleusergroups", app.RoleUserGroupHandler.GetAllRoleUserGroups)
-	r.POST("/roleusergroups", app.RoleUserGroupHandler.CreateRoleUserGroup)
-	r.DELETE("/roleusergroups/:id", app.RoleUserGroupHandler.DeleteRoleUserGroupById)
+	r.PUT("/roles/:role_id", app.RoleHandler.UpdateRole)
+	r.DELETE("/roles/:role_id", app.RoleHandler.DeleteRoleById)
+	r.POST("/roles/:role_id/permissions", app.RoleHandler.AddPermission)
+	r.PUT("/roles/:role_id/permissions/:perm_id", app.RoleHandler.UpdatePermission)
+	r.DELETE("/roles/:role_id/permissions/:perm_id", app.RoleHandler.DeletePermission)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.GET("/projrepos/project/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoryByProjectId)

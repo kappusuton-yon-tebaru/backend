@@ -13,7 +13,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/permission"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
@@ -21,13 +20,9 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/rolepermission"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/roleusergroup"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/usergroup"
-
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -42,7 +37,6 @@ import (
 	sharedJob "github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
-	sharedPermission "github.com/kappusuton-yon-tebaru/backend/internal/permission"
 	sharedProjectEnvironment "github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	sharedProjectRepository "github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	sharedRegProviders "github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
@@ -50,12 +44,9 @@ import (
 	sharedResourceRelationship "github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	sharedRole "github.com/kappusuton-yon-tebaru/backend/internal/role"
-	sharedRolePermission "github.com/kappusuton-yon-tebaru/backend/internal/rolepermission"
-	sharedRoleUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/roleusergroup"
 	sharedSvcDeploy "github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
 	sharedSvcDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	sharedUser "github.com/kappusuton-yon-tebaru/backend/internal/user"
-	sharedUserGroup "github.com/kappusuton-yon-tebaru/backend/internal/usergroup"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -69,12 +60,8 @@ type App struct {
 	ServiceDeployment           *svcdeploy.Handler
 	ServiceDeploymentEnv        *svcdeployenv.Handler
 	UserHandler                 *user.Handler
-	UserGroupHandler            *usergroup.Handler
 	ResourceHandler             *resource.Handler
 	RoleHandler                 *role.Handler
-	PermissionHandler           *permission.Handler
-	RolePermissionHandler       *rolepermission.Handler
-	RoleUserGroupHandler        *roleusergroup.Handler
 	ProjectRepositoryHandler    *projectrepository.Handler
 	ResourceRelationshipHandler *resourcerelationship.Handler
 	JobHandler                  *job.Handler
@@ -100,12 +87,8 @@ func New(
 	ServiceDeployment *svcdeploy.Handler,
 	ServiceDeploymentEnv *svcdeployenv.Handler,
 	UserHandler *user.Handler,
-	UserGroupHandler *usergroup.Handler,
 	ResourceHandler *resource.Handler,
 	RoleHandler *role.Handler,
-	PermissionHandler *permission.Handler,
-	RolePermissionHandler *rolepermission.Handler,
-	RoleUserGroupHandler *roleusergroup.Handler,
 	ProjectRepositoryHandler *projectrepository.Handler,
 	ResourceRelationshipHandler *resourcerelationship.Handler,
 	JobHandler *job.Handler,
@@ -130,12 +113,8 @@ func New(
 		ServiceDeployment,
 		ServiceDeploymentEnv,
 		UserHandler,
-		UserGroupHandler,
 		ResourceHandler,
 		RoleHandler,
-		PermissionHandler,
-		RolePermissionHandler,
-		RoleUserGroupHandler,
 		ProjectRepositoryHandler,
 		ResourceRelationshipHandler,
 		JobHandler,
@@ -171,24 +150,12 @@ func Initialize() (*App, error) {
 		sharedUser.NewRepository,
 		sharedUser.NewService,
 		user.NewHandler,
-		sharedUserGroup.NewRepository,
-		sharedUserGroup.NewService,
-		usergroup.NewHandler,
 		sharedResource.NewRepository,
 		sharedResource.NewService,
 		resource.NewHandler,
 		sharedRole.NewRepository,
 		sharedRole.NewService,
 		role.NewHandler,
-		sharedPermission.NewRepository,
-		sharedPermission.NewService,
-		permission.NewHandler,
-		sharedRolePermission.NewRepository,
-		sharedRolePermission.NewService,
-		rolepermission.NewHandler,
-		sharedRoleUserGroup.NewRepository,
-		sharedRoleUserGroup.NewService,
-		roleusergroup.NewHandler,
 		sharedProjectRepository.NewRepository,
 		sharedProjectRepository.NewService,
 		projectrepository.NewHandler,

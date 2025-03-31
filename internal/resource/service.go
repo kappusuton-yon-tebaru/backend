@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
-	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
+	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
