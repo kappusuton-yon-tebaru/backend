@@ -26,7 +26,7 @@ type ConsumerConfig struct {
 }
 
 type PodLogger struct {
-	LogExpiresInSecond int32 `mapstructure:"SIDECAR_LOGGER_LOG_EXPIRES_IN_SECOND"`
+	LogExpiresInSecond int32 `mapstructure:"POD_LOGGER_LOG_EXPIRES_IN_SECOND"`
 }
 
 type DockerHubConfig struct {
