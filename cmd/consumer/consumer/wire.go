@@ -16,6 +16,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 )
 
 type App struct {
@@ -62,6 +64,8 @@ func Initialize() (*App, error) {
 		resource.NewService,
 		resource.NewRepository,
 		resourcerelationship.NewRepository,
+		role.NewRepository,
+		user.NewRepository,
 		New,
 	)
 
