@@ -14,6 +14,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -442,7 +443,15 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		ResourceName: repo.FullName,
 		ResourceType: "PROJECT",
 	}
-	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id)
+	userID,err := utils.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id,userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

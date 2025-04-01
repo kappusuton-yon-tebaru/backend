@@ -17,6 +17,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -47,7 +49,12 @@ func Initialize() (*App, error) {
 	}
 	repository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
-	resourceService := resource.NewService(repository, resourcerelationshipRepository)
+	roleRepository := role.NewRepository(database)
+	userRepository, err := user.NewRepository(database)
+	if err != nil {
+		return nil, err
+	}
+	resourceService := resource.NewService(repository, resourcerelationshipRepository, roleRepository, userRepository)
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
 	deployService := deploy.NewService(kubernetesKubernetes, resourceService)
 	deployHandler := deploy.NewHandler(deployenvService, deployService, validatorValidator)

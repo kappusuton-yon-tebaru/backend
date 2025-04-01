@@ -115,3 +115,23 @@ func (r *Repository) DeleteResourceRelationship(ctx context.Context, filter map[
 
 	return result.DeletedCount, nil
 }
+func (r *Repository) GetParentIdByChildId(ctx context.Context,childId string) (string, error) {
+	objId, err := bson.ObjectIDFromHex(childId)
+	if err != nil {
+		log.Println("ChildID FromHex err")
+		return "", err
+	}
+
+	filter := bson.M{
+		"child_resource_id": objId,
+	}
+
+	var result ResourceRelationshipDTO
+	err = r.resourceRela.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		log.Println("Error finding parent ID:", err)
+		return "", err
+	}
+
+	return result.ParentResourceId.Hex(), nil
+}

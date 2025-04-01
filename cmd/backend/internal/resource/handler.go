@@ -128,7 +128,16 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		return
 	}
 
-	resourceId, err := h.service.CreateResource(ctx, resourceDTO, id)
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	resourceId, err := h.service.CreateResource(ctx, resourceDTO, id, userID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create resource",
