@@ -5,6 +5,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
 	_ "github.com/kappusuton-yon-tebaru/backend/cmd/backend/docs"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -48,12 +49,12 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/auth/logout", app.AuthHandler.Logout)
 
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
-	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
-	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
+	authenticated.GET("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetResourceByID)
+	authenticated.GET("/resources/children/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetChildrenResourcesByParentID)
 	authenticated.POST("/resources", app.ResourceHandler.CreateResource) // ?parent_id={id}
-	r.PUT("/resources/:id", app.ResourceHandler.UpdateResource)
-	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
-	r.DELETE("/resources/cascade/:id", app.ResourceHandler.CascadeDeleteResource)
+	authenticated.PUT("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.UpdateResource)
+	authenticated.DELETE("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.DeleteResource)
+	authenticated.DELETE("/resources/cascade/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.CascadeDeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
 	r.POST("/roles", app.RoleHandler.CreateRole)
