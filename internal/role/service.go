@@ -122,3 +122,12 @@ func (s *Service) DeletePermission(ctx context.Context, roleId string, permId st
 
 	return nil
 }
+
+func (s *Service) GetUserPermissions(ctx context.Context, userId string) ([]models.Permission, error) {
+	permissions, err := s.roleRepo.GetUserPermissions(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+}
