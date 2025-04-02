@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/cmd/podlogger/internal/podwatcher"
+	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
@@ -26,6 +28,7 @@ const (
 )
 
 type Handler struct {
+	mode           enum.PodLoggerMode
 	logger         *logger.Logger
 	loggingService *logging.Service
 	kube           *kubernetes.Kubernetes
@@ -33,8 +36,9 @@ type Handler struct {
 	sync.Mutex
 }
 
-func NewHandler(kube *kubernetes.Kubernetes, logger *logger.Logger, loggingService *logging.Service) *Handler {
+func NewHandler(config *config.Config, kube *kubernetes.Kubernetes, logger *logger.Logger, loggingService *logging.Service) *Handler {
 	return &Handler{
+		mode:           config.PodLogger.Mode,
 		logger:         logger,
 		loggingService: loggingService,
 		kube:           kube,
@@ -64,7 +68,7 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 	term := make(chan struct{})
 
 	go func() {
-		podWatcher := podwatcher.NewPodWatcher(h.kube, pod, container)
+		podWatcher := podwatcher.NewPodWatcher(h.kube, h.logger, pod, container)
 
 		ch := make(chan logging.InsertLogDTO, BufferSize)
 		chunkLogCh := utils.DebouncerChannel(ch, DebouncedInterval, BufferSize)
@@ -92,16 +96,27 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 				maps.Copy(log.Attribute, attrs)
 			}
 
-			werr := h.loggingService.BatchInsertLog(context.Background(), chunk)
-			if werr != nil {
-				h.logger.Info(
-					"error occured while inserting logs",
-					zap.Error(werr.Err),
-					zap.String("pod", pod.Name),
-					zap.Duration("next_retry", InsertRetryTimeout),
-				)
+			switch h.mode {
+			case enum.PodLoggerModeMongoDb:
+				werr := h.loggingService.BatchInsertLog(context.Background(), chunk)
+				if werr != nil {
+					h.logger.Info(
+						"error occured while inserting logs",
+						zap.Error(werr.Err),
+						zap.String("pod", pod.Name),
+						zap.Duration("next_retry", InsertRetryTimeout),
+					)
 
-				go h.retryInsertion(pod.Name, chunk)
+					go h.retryInsertion(pod.Name, chunk)
+				}
+			default:
+				for _, log := range chunk {
+					h.logger.Info(
+						log.Log,
+						zap.Time("timestamp", log.Timestamp),
+						zap.Any("attribute", log.Attribute),
+					)
+				}
 			}
 		}
 	}()

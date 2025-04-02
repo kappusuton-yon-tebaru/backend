@@ -40,7 +40,7 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	service := logging.NewService(repository, loggerLogger)
-	handler := podevent.NewHandler(kubernetesKubernetes, loggerLogger, service)
+	handler := podevent.NewHandler(configConfig, kubernetesKubernetes, loggerLogger, service)
 	app := New(loggerLogger, configConfig, kubernetesKubernetes, database, service, handler)
 	return app, nil
 }

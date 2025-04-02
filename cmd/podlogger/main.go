@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	app.Logger.Info("pod logger ready to collect logs")
+	app.Logger.Info("pod logger ready to collect logs", zap.String("mode", string(app.Config.PodLogger.Mode)))
 
 	<-utils.WaitForTermination(app.Logger, func() {
 		app.Logger.Info("stopping pod informer")

@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
+	"go.uber.org/zap"
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -16,15 +18,17 @@ import (
 type PodWatcher struct {
 	kube             *kubernetes.Kubernetes
 	lastLogTimestamp *apimetav1.Time
+	logger           *logger.Logger
 	namespace        string
 	pod              string
 	container        string
 }
 
-func NewPodWatcher(kube *kubernetes.Kubernetes, pod *apicorev1.Pod, container string) *PodWatcher {
+func NewPodWatcher(kube *kubernetes.Kubernetes, logger *logger.Logger, pod *apicorev1.Pod, container string) *PodWatcher {
 	return &PodWatcher{
 		kube,
 		(*apimetav1.Time)(nil),
+		logger,
 		pod.Namespace,
 		pod.Name,
 		container,
@@ -38,6 +42,8 @@ func (w *PodWatcher) WatchLog(ctx context.Context, out chan<- logging.InsertLogD
 		return err
 	}
 	defer reader.Close()
+
+	w.logger.Info("watching pod log", zap.String("pod", w.pod))
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {

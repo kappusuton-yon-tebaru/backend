@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/spf13/viper"
 )
 
@@ -26,7 +27,8 @@ type ConsumerConfig struct {
 }
 
 type PodLogger struct {
-	LogExpiresInSecond int32 `mapstructure:"POD_LOGGER_LOG_EXPIRES_IN_SECOND"`
+	Mode               enum.PodLoggerMode `mapstructure:"POD_LOGGER_MODE"`
+	LogExpiresInSecond int32              `mapstructure:"POD_LOGGER_LOG_EXPIRES_IN_SECOND"`
 }
 
 type DockerHubConfig struct {

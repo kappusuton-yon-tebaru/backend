@@ -189,3 +189,5 @@ spec:
               value: "<@MONGO_DATABASE_NAME>"
             - name: POD_LOGGER_LOG_EXPIRES_IN_SECOND
               value: "<@POD_LOGGER_LOG_EXPIRES_IN_SECOND>"
+            - name: POD_LOGGER_MODE
+              value: "<@POD_LOGGER_MODE>"
