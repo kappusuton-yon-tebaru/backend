@@ -2,6 +2,7 @@ package logging
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
@@ -84,7 +85,10 @@ func (r *Repository) GetLog(ctx context.Context, queryParam query.QueryParam) ([
 
 	if queryParam.Filter != nil {
 		filter := *queryParam.Filter
-		filters["attribute"] = filter
+		for key, value := range filter {
+			attrKey := fmt.Sprintf("attribute.%s", key)
+			filters[attrKey] = value
+		}
 	}
 
 	cursor, err := r.log.Find(ctx, filters, opts)

@@ -101,6 +101,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/project/:id/build", app.BuildHandler.Build)
 	r.POST("/project/:id/deploy", app.DeployHandler.Deploy)
 	r.DELETE("/project/:id/deploy", app.ReverseProxyHandler.Forward())
+	r.GET("/project/:id/deploy/log", app.DeployHandler.GetDeploymentLog)
 
 	r.GET("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
 	r.POST("/project/:id/deployenv", app.ReverseProxyHandler.Forward())

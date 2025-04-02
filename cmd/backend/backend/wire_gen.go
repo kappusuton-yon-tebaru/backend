@@ -135,7 +135,7 @@ func Initialize() (*App, error) {
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
 	deployService := deploy.NewService(rmqRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
-	deployHandler := deploy.NewHandler(deployService, validatorValidator)
+	deployHandler := deploy.NewHandler(deployService, loggingService, validatorValidator)
 	authRepository, err := auth.NewRepository(database)
 	if err != nil {
 		return nil, err
