@@ -51,7 +51,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/resources", app.ResourceHandler.GetAllResources)
 	authenticated.GET("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetResourceByID)
 	authenticated.GET("/resources/children/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetChildrenResourcesByParentID)
-	authenticated.POST("/resources", app.ResourceHandler.CreateResource) // ?parent_id={id}
+	authenticated.POST("/resources", app.ResourceHandler.CreateResource) 
 	authenticated.PUT("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.UpdateResource)
 	authenticated.DELETE("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.DeleteResource)
 	authenticated.DELETE("/resources/cascade/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.CascadeDeleteResource)
