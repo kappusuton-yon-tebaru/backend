@@ -1,4 +1,4 @@
-package logging
+package job
 
 import "github.com/kappusuton-yon-tebaru/backend/internal/models"
 

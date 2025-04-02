@@ -81,7 +81,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
-	r.GET("/jobs/:id/log", app.LoggingHandler.GetJobLog)
+	r.GET("/jobs/:id/log", app.JobHandler.GetJobLog)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
 	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)
