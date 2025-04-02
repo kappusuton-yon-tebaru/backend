@@ -40,11 +40,10 @@ func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, er
 	return id, nil
 }
 
-func (s *Service) UpdateRole(ctx context.Context, dto UpdateRoleDTO, id string) (string, *werror.WError) {
+func (s *Service) UpdateRole(ctx context.Context, dto UpdateRoleDTO, id string) (string, error) {
 	roleId, err := s.roleRepo.UpdateRole(ctx, dto, id)
 	if err != nil {
-		return "", werror.NewFromError(err).
-			SetCode(http.StatusBadRequest)
+		return "", err
 	}
 
 	return roleId, nil
@@ -87,21 +86,19 @@ func (s *Service) DeleteRoleById(ctx context.Context, id string) *werror.WError 
 	return nil
 }
 
-func (s *Service) AddPermission(ctx context.Context, dto ModifyPermissionDTO, id string) (string, *werror.WError) {
+func (s *Service) AddPermission(ctx context.Context, dto ModifyPermissionDTO, id string) (string, error) {
 	roleId, err := s.roleRepo.AddPermission(ctx, dto, id)
 	if err != nil {
-		return "", werror.NewFromError(err).
-			SetCode(http.StatusBadRequest)
+		return "", err
 	}
 
 	return roleId, nil
 }
 
-func (s *Service) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleId string, permId string) (string, *werror.WError) {
+func (s *Service) UpdatePermission(ctx context.Context, dto ModifyPermissionDTO, roleId string, permId string) (string, error) {
 	roleId, err := s.roleRepo.UpdatePermission(ctx, dto, roleId, permId)
 	if err != nil {
-		return "", werror.NewFromError(err).
-			SetCode(http.StatusBadRequest)
+		return "", err
 	}
 
 	return roleId, nil
