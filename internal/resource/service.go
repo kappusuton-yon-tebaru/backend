@@ -119,7 +119,7 @@ func (s *Service) AddDefaultRoleToUser(ctx context.Context, userId string, orgId
 	return nil
 }
 
-func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, parentID string, userID string) (string, error) {
+func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, userID string) (string, error) {
 	resourceId, err := s.repo.CreateResource(ctx, dto)
 	if err != nil {
 		fmt.Println("Error creating resource:", err)
@@ -127,7 +127,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, par
 	}
 	
 	// If creating org no need to create rela
-	if parentID == "" {
+	if dto.ParentId == "" {
 		err := s.AddDefaultRoleToUser(ctx, userID, resourceId, resourceId)
 		if err != nil {
 			fmt.Println("Error adding default role to user:", err)
@@ -135,7 +135,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, par
 		}
 		return resourceId, nil
 	}
-	pID, err := bson.ObjectIDFromHex(parentID)
+	pID, err := bson.ObjectIDFromHex(dto.ParentId)
 	if err != nil {
 		fmt.Println("Invalid parent ID:", err)
 		return "", err
@@ -148,16 +148,16 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, par
 		fmt.Println("Error getting parent resource:", err)
 		return "", err
 	}
-	// if creating project space use orgId as parentId
+	// if creating project space use orgId as dto.
 	if( parentResource.ResourceType == enum.ResourceTypeOrganization ){
-		err = s.AddDefaultRoleToUser(ctx, userID, parentID, resourceId)
+		err = s.AddDefaultRoleToUser(ctx, userID, dto.ParentId, resourceId)
 		if err != nil {
 			fmt.Println("Error adding default role to user:", err)
 			return "", err
 		}
 	} else {
 		// get orgId from project space id (parentID) first 
-		orgId, err := s.resourceRelaRepo.GetParentIdByChildId(ctx, parentID)
+		orgId, err := s.resourceRelaRepo.GetParentIdByChildId(ctx, dto.ParentId)
 		if err != nil {
 			fmt.Println("Error getting orgId from project space id:", err)
 			return "", err

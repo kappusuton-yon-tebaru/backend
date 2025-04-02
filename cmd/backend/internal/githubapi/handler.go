@@ -440,6 +440,7 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 	// create project from repo name
 	project := resource.CreateResourceDTO{
+		ParentId: 	project_space_id,
 		ResourceName: repo.FullName,
 		ResourceType: "PROJECT",
 	}
@@ -451,7 +452,7 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 		})
 		return
 	}
-	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id,userID)
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
