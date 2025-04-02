@@ -54,7 +54,7 @@ func (h *Handler) GetResourceByID(ctx *gin.Context) {
 }
 
 func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
-	parentId := ctx.Param("parent_id")
+	parentId := ctx.Param("id")
 	if parentId == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
 	}

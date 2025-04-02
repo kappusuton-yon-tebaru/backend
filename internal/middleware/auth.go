@@ -8,6 +8,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/auth"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"go.uber.org/zap"
 )
@@ -16,13 +17,15 @@ type Middleware struct {
 	config      *config.Config
 	authService *auth.Service
 	logger      *logger.Logger
+	roleService *role.Service
 }
 
-func NewMiddleware(config *config.Config, authService *auth.Service, logger *logger.Logger) *Middleware {
+func NewMiddleware(config *config.Config, authService *auth.Service, logger *logger.Logger, roleService *role.Service) *Middleware {
 	return &Middleware{
 		config,
 		authService,
 		logger,
+		roleService,
 	}
 }
 

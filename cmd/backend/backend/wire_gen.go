@@ -136,7 +136,7 @@ func Initialize() (*App, error) {
 	}
 	authService := auth.NewService(configConfig, authRepository, userRepository, loggerLogger)
 	authHandler := auth2.NewHandler(configConfig, authService, validatorValidator)
-	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger)
+	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger, roleService)
 	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, deployHandler, authHandler, middlewareMiddleware)
 	return app, nil
 }
