@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 )
 
 type Handler struct {
@@ -208,4 +209,22 @@ func (h *Handler) DeletePermission(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, map[string]any{
 		"message": "deleted",
 	})
+}
+func (h *Handler) GetUserPermissions(ctx *gin.Context) {
+	userId,err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	permissions, err := h.service.GetUserPermissions(ctx, userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, permissions)
 }
