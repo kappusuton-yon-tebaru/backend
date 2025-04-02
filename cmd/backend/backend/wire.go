@@ -12,6 +12,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
+	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/logging"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
@@ -23,6 +24,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
+	sharedLogging "github.com/kappusuton-yon-tebaru/backend/internal/logging"
+
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -76,6 +79,7 @@ type App struct {
 	GithubAPIHandler            *githubapi.Handler
 	AuthHandler                 *auth.Handler
 	Middleware                  *middleware.Middleware
+	LoggingHandler              *logging.Handler
 }
 
 func New(
@@ -103,6 +107,7 @@ func New(
 	DeployHandler *deploy.Handler,
 	AuthHandler *auth.Handler,
 	Middleware *middleware.Middleware,
+	LoggingHandler *logging.Handler,
 ) *App {
 	return &App{
 		Logger,
@@ -129,6 +134,7 @@ func New(
 		GithubAPIHandler,
 		AuthHandler,
 		Middleware,
+		LoggingHandler,
 	}
 }
 
@@ -192,6 +198,9 @@ func Initialize() (*App, error) {
 		sharedAuth.NewService,
 		sharedAuth.NewRepository,
 		middleware.NewMiddleware,
+		sharedLogging.NewRepository,
+		sharedLogging.NewService,
+		logging.NewHandler,
 		New,
 	)
 
