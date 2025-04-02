@@ -12,7 +12,7 @@ func (m *Middleware) HavePermission(allowedAction enum.PermissionActions) gin.Ha
 	return func(ctx *gin.Context) {
 		resourceId := ctx.Param("id")
 		if resourceId == "" {
-			ctx.Next() // assume using get all data endpoint where the permission will be checked in the query
+			ctx.Next() // assume using get all or post endpoint where the permission will be checked in the handler
 			return
 		}
 

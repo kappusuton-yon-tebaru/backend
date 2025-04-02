@@ -10,19 +10,22 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
-	service   *resource.Service
-	validator *validator.Validator
+	service     *resource.Service
+	validator   *validator.Validator
+	roleService *role.Service
 }
 
-func NewHandler(service *resource.Service, validator *validator.Validator) *Handler {
+func NewHandler(service *resource.Service, validator *validator.Validator, roleService *role.Service) *Handler {
 	return &Handler{
 		service,
 		validator,
+		roleService,
 	}
 }
 
@@ -133,6 +136,29 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 			"error":   err.Error(),
 		})
 		return
+	}
+	if resourceDTO.ParentId != "" { // user is NOT creating an org
+		permissions, err := h.roleService.GetUserPermissions(ctx, userID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]any{
+				"message": "failed to get user permissions",
+				"error":   err.Error(),
+			})
+			return
+		}
+		havePermission := false
+		for _, permission := range permissions {
+			if permission.ResourceId == resourceDTO.ParentId && permission.Action == enum.PermissionActionsWrite{
+				havePermission = true
+				break
+			}
+		}
+		if !havePermission {
+			ctx.JSON(http.StatusForbidden, map[string]any{
+				"message": "user does not have permission to create this resource",
+			})
+			return
+		}
 	}
 
 	resourceId, err := h.service.CreateResource(ctx, resourceDTO, userID)
