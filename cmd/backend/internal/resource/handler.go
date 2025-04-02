@@ -116,8 +116,6 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 }
 
 func (h *Handler) CreateResource(ctx *gin.Context) {
-	id := ctx.DefaultQuery("parent_id", "")
-
 	var resourceDTO resource.CreateResourceDTO
 
 	if err := ctx.ShouldBindJSON(&resourceDTO); err != nil {
@@ -137,7 +135,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		return
 	}
 
-	resourceId, err := h.service.CreateResource(ctx, resourceDTO, id, userID)
+	resourceId, err := h.service.CreateResource(ctx, resourceDTO, userID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create resource",
