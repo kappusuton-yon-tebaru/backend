@@ -107,8 +107,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
 	r.DELETE("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
 
-	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
-
 	r.GET("/setting/workerpool", app.ReverseProxyHandler.Forward())
 	r.POST("/setting/workerpool", app.ReverseProxyHandler.Forward())
 

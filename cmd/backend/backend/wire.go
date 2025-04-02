@@ -12,7 +12,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
@@ -73,7 +72,6 @@ type App struct {
 	DockerHubHandler            *dockerhub.Handler
 	BuildHandler                *build.Handler
 	DeployHandler               *deploy.Handler
-	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi.Handler
 	AuthHandler                 *auth.Handler
@@ -99,7 +97,6 @@ func New(
 	ECRHandler *ecr.Handler,
 	DockerHubHandler *dockerhub.Handler,
 	BuildHandler *build.Handler,
-	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi.Handler,
 	DeployHandler *deploy.Handler,
@@ -126,7 +123,6 @@ func New(
 		DockerHubHandler,
 		BuildHandler,
 		DeployHandler,
-		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
 		AuthHandler,
@@ -183,7 +179,6 @@ func Initialize() (*App, error) {
 		rmq.New,
 		build.NewService,
 		build.NewHandler,
-		monitoring.NewHandler,
 		reverseproxy.New,
 		sharedGithubAPI.NewRepository,
 		sharedGithubAPI.NewService,
