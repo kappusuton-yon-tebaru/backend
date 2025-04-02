@@ -34,9 +34,11 @@ func NewHandler(service *Service, loggingService *logging.Service, validator *va
 //	@Description	Deploy services in project
 //	@Tags			Deployment
 //	@Param			projectId	path	string			true	"Project Id"
-//	@Param			request		body	DeployRequest	true	"Optional fields:\n - deployment_env (service will be deployed on __default__ if null)\n - services.\*.port\n - services.\*.secret_name\n - services.\*.health_check"
+//	@Param			request		body	DeployRequest	true	"Optional fields:\n - deployment_env (service will be deployed on `default` if null)\n - services.\*.port\n - services.\*.secret_name\n - services.\*.health_check"
 //	@Produce		json
-//	@Success		200 {object} DeployResponse
+//	@Success		200	{object}	DeployResponse
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) Deploy(ctx *gin.Context) {
 	req := DeployRequest{
 		ProjectId:     ctx.Param("id"),
@@ -67,6 +69,22 @@ func (h *Handler) Deploy(ctx *gin.Context) {
 	})
 }
 
+// Log deployment
+//
+//	@Router			/project/{projectId}/deploy/log [get]
+//	@Summary		Log deployment
+//	@Description	Log deployment
+//	@Tags			Deployment
+//	@Param			projectId		path	string	true	"Project Id"
+//	@Param			service_name	query	string	true	"Service Name"
+//	@Param			deploy_env		query	string	false	"Deployment Env defaults to `default`"
+//	@Param			cursor			query	string	false	"Cursor"
+//	@Param			limit			query	int		false	"Limit"									Default(10)
+//	@Param			direction		query	string	false	"Cursor direction defaults to `newer`"	Enums(newer, older)
+//	@Produce		json
+//	@Success		200	{object}	GetLogResponse
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) GetDeploymentLog(ctx *gin.Context) {
 	getLogParam := GetLogQuerParam{DeployEnv: "default"}
 	err := ctx.ShouldBindQuery(&getLogParam)

@@ -182,6 +182,20 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jobs)
 }
 
+// Log jobs
+//
+//	@Router			/jobs/{jobId}/log [get]
+//	@Summary		Log jobs
+//	@Description	Log jobs
+//	@Tags			Jobs
+//	@Param			jobId		path	string	true	"Job Id"
+//	@Param			cursor		query	string	false	"Cursor"
+//	@Param			limit		query	int		false	"Limit"									Default(10)
+//	@Param			direction	query	string	false	"Cursor direction defaults to `newer`"	Enums(newer, older)
+//	@Produce		json
+//	@Success		200	{object}	GetLogResponse
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) GetJobLog(ctx *gin.Context) {
 	filter := query.Filter{"job_id": ctx.Param("id")}
 
