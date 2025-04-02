@@ -5,7 +5,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log"]
-    verbs: ["create", "delete", "get"]
+    verbs: ["create", "delete", "get", "watch", "list"]
   - apiGroups: ["apps"]
     resources: ["deployments"]
     verbs: ["get", "create", "delete", "patch", "list"]
@@ -28,15 +28,15 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system-role-default
-roleRef:
-  kind: ClusterRole
-  name: system-role
-  apiGroup: rbac.authorization.k8s.io
+  name: system-role-kube-system
 subjects:
   - kind: ServiceAccount
     name: system
     namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system-role
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -152,5 +152,40 @@ spec:
               value: "<@CONSUMER_QUEUE_URI>"
             - name: CONSUMER_ORGANIZATION_NAME
               value: "<@CONSUMER_ORGANIZATION_NAME>"
+            - name: POD_LOGGER_LOG_EXPIRES_IN_SECOND
+              value: "<@POD_LOGGER_LOG_EXPIRES_IN_SECOND>"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podlogger-deployment
+  namespace: kube-system
+  labels:
+    app: podlogger
+    platform: snapping-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: podlogger
+  template:
+    metadata:
+      labels:
+        app: podlogger
+        platform: snapping-service
+    spec:
+      serviceAccountName: system
+      containers:
+        - name: podlogger
+          image: <@POD_LOGGER_IMAGE_URI>
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+            - name: DEVELOPMENT
+              value: "false"
+            - name: MONGO_URI
+              value: "<@MONGO_URI>"
+            - name: MONGO_DATABASE_NAME
+              value: "<@MONGO_DATABASE_NAME>"
             - name: POD_LOGGER_LOG_EXPIRES_IN_SECOND
               value: "<@POD_LOGGER_LOG_EXPIRES_IN_SECOND>"
