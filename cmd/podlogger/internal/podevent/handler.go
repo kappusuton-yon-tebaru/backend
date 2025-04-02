@@ -77,7 +77,7 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 					return
 				default:
 					if err := podWatcher.WatchLog(context.Background(), ch); err != nil {
-						h.logger.Error("error occured while getting pod log", zap.String("pod", pod.Name), zap.Error(err))
+						h.logger.Error("error occured while getting pod log", zap.String("pod", pod.Name), zap.Duration("retry", ReconnectTimeout), zap.Error(err))
 						time.Sleep(ReconnectTimeout)
 						continue
 					}
