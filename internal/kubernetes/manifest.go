@@ -172,11 +172,12 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 			WithTemplate(accorev1.PodTemplateSpec().
 				WithLabels(map[string]string{
 					"app":                 dto.ServiceName,
+					"job_id":              dto.Id,
 					"project_id":          dto.ProjectId,
 					"service_name":        dto.ServiceName,
 					"deployment_env":      dto.DeploymentEnv,
 					"watchlog":            "true",
-					"watchlog.attributes": "project_id.service_name.deployment_env",
+					"watchlog.attributes": "project_id.service_name.deployment_env.job_id",
 				}).
 				WithSpec(accorev1.PodSpec().
 					WithServiceAccountName(SystemServiceAccount).
