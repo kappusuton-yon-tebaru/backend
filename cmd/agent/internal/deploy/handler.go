@@ -9,6 +9,7 @@ import (
 	sharedDeployEnv "github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
+	_ "github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
@@ -36,11 +37,11 @@ func NewHandler(sharedService *sharedDeployEnv.Service, service *Service, valida
 //	@Tags			Deployment
 //	@Param			projectId	path	string	true	"Project Id"
 //	@Produce		json
-//	@Param			page			query		int		false	"Page"															Default(1)
-//	@Param			limit			query		int		false	"Limit"															Default(10)
-//	@Param			sort_by			query		string	false	"Sort by"														Enums(age, service_name, status)
-//	@Param			sort_order		query		string	false	"Sort order"													Enums(asc, desc)
-//	@Param			deployment_env	query		string	false	"Deployment Environment defaults to 'default' if not specified"	Enums(asc, desc)
+//	@Param			page			query		int		false	"Page"			Default(1)
+//	@Param			limit			query		int		false	"Limit"			Default(10)
+//	@Param			sort_by			query		string	false	"Sort by"		Enums(age, service_name, status)
+//	@Param			sort_order		query		string	false	"Sort order"	Enums(asc, desc)
+//	@Param			deployment_env	query		string	false	"Deployment Environment defaults to 'default' if not specified"
 //	@Param			query			query		string	false	"Query on service_name"
 //	@Success		200				{object}	PaginatedDeployment
 //	@Failure		400				{object}	httputils.ErrResponse
@@ -111,6 +112,20 @@ func (h *Handler) ListDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, deployments)
 }
 
+// Get service deployment
+//
+//	@Router			/project/{projectId}/deploy/{serviceName} [get]
+//	@Summary		Get service deployment
+//	@Description	Get service deployment
+//	@Tags			Deployment
+//	@Param			projectId		path	string	true	"Project Id"
+//	@Param			serviceName		path	string	true	"Service Name"
+//	@Param			deployment_env	query	string	false	"Deployment Environment defaults to 'default' if not specified"
+//	@Produce		json
+//	@Success		200	{object}	models.Deployment
+//	@Failure		400	{object}	httputils.ErrResponse
+//	@Failure		404	{object}	httputils.ErrResponse
+//	@Failure		500	{object}	httputils.ErrResponse
 func (h *Handler) GetServiceDeployment(ctx *gin.Context) {
 	dto := GetServiceDeployment{
 		ProjectId:     ctx.Param("id"),
@@ -125,13 +140,13 @@ func (h *Handler) GetServiceDeployment(ctx *gin.Context) {
 		return
 	}
 
-	deployments, werr := h.service.GetServiceDeployment(ctx, dto)
+	deployment, werr := h.service.GetServiceDeployment(ctx, dto)
 	if werr != nil {
 		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, deployments)
+	ctx.JSON(http.StatusOK, deployment)
 }
 
 // Delete deployment in project

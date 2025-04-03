@@ -10,6 +10,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
+	_ "github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
@@ -105,7 +106,7 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 //
 //	@Router				/jobs/{jobParentId}/parent [get]
 //	@Summary			List jobs by job parent id
-//	@DescriptionList	jobs by job parent id
+//	@DescriptionList	List jobs by job parent id
 //	@Tags				Jobs
 //	@Produce			json
 //	@Param				jobParentId	path		string	true	"Job Parent Id"
@@ -182,6 +183,18 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jobs)
 }
 
+// Get job by id
+//
+//	@Router				/jobs/{jobId} [get]
+//	@Summary			Get job by id
+//	@DescriptionList	Get job by id
+//	@Tags				Jobs
+//	@Produce			json
+//	@Param				jobId	path		string	true	"Job Id"
+//	@Success			200		{object}	models.Job
+//	@Failure			400		{object}	httputils.ErrResponse
+//	@Failure			404		{object}	httputils.ErrResponse
+//	@Failure			500		{object}	httputils.ErrResponse
 func (h *Handler) GetJobById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

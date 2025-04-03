@@ -368,6 +368,36 @@ paths:
       summary: List all job parents
       tags:
       - Jobs
+  /jobs/{jobId}:
+    get:
+      parameters:
+      - description: Job Id
+        in: path
+        name: jobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Job'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Get job by id
+      tags:
+      - Jobs
   /jobs/{jobId}/log:
     get:
       description: Log jobs
@@ -411,7 +441,7 @@ paths:
       summary: Log jobs
       tags:
       - Jobs
-  /jobs/{jobParentId}:
+  /jobs/{jobParentId}/parent:
     get:
       parameters:
       - description: Job Parent Id
@@ -569,9 +599,6 @@ paths:
         name: sort_order
         type: string
       - description: Deployment Environment defaults to 'default' if not specified
-        enum:
-        - asc
-        - desc
         in: query
         name: deployment_env
         type: string
@@ -632,6 +659,46 @@ paths:
           schema:
             $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
       summary: Deploy services in project
+      tags:
+      - Deployment
+  /project/{projectId}/deploy/{serviceName}:
+    get:
+      description: Get service deployment
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: Service Name
+        in: path
+        name: serviceName
+        required: true
+        type: string
+      - description: Deployment Environment defaults to 'default' if not specified
+        in: query
+        name: deployment_env
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Get service deployment
       tags:
       - Deployment
   /project/{projectId}/deploy/log:
