@@ -69,7 +69,7 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 	}
 
 	deployments = utils.Filter(deployments, func(d models.Deployment) bool {
-		return strings.HasPrefix(d.ServiceName, queryParam.QueryFilter.Query)
+		return strings.Contains(d.ServiceName, queryParam.QueryFilter.Query)
 	})
 
 	slices.SortFunc(deployments, func(a, b models.Deployment) int {
