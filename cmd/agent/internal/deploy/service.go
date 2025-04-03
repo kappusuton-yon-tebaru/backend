@@ -100,6 +100,46 @@ func (s *Service) ListDeployment(ctx context.Context, queryParam query.QueryPara
 	}, nil
 }
 
+func (s *Service) GetServiceDeployment(ctx context.Context, dto GetServiceDeployment) (models.Deployment, *werror.WError) {
+	project, werr := s.resourceService.GetResourceByID(ctx, dto.ProjectId)
+	if werr != nil {
+		return models.Deployment{}, werr
+	}
+
+	namespace := deployenv.GetNamespaceName(project.ResourceName, dto.DeploymentEnv)
+	deployClient := s.kube.NewDeploymentClient(namespace)
+	results, err := deployClient.ListByServiceName(ctx, kubernetes.ServiceDeploymentFilter(dto))
+	if err != nil {
+		return models.Deployment{}, werror.NewFromError(err)
+	}
+
+	if len(results.Items) == 0 {
+		return models.Deployment{}, werror.New().SetMessage("deployment not found").SetCode(http.StatusBadRequest)
+	}
+
+	deploy := results.Items[0]
+
+	age := time.Since(deploy.CreationTimestamp.Time)
+	condition := deployClient.GetCondition(&deploy)
+
+	status := enum.DeploymentStatusUnhealthy
+	if condition.Available.Status == v1.ConditionTrue {
+		status = enum.DeploymentStatusHealthy
+	}
+
+	deployment := models.Deployment{
+		ProjectId:     dto.ProjectId,
+		ProjectName:   project.ResourceName,
+		DeploymentEnv: dto.DeploymentEnv,
+		ServiceName:   strings.TrimSuffix(deploy.Name, "-deployment"),
+		Age:           age,
+		StringAge:     age.Truncate(time.Second).String(),
+		Status:        status,
+	}
+
+	return deployment, nil
+}
+
 func (s *Service) DeleteDeployment(ctx context.Context, dto DeleteDeploymentRequest) *werror.WError {
 	project, werr := s.resourceService.GetResourceByID(ctx, dto.ProjectId)
 	if werr != nil {

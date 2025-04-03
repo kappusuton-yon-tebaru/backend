@@ -111,6 +111,29 @@ func (h *Handler) ListDeployment(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, deployments)
 }
 
+func (h *Handler) GetServiceDeployment(ctx *gin.Context) {
+	dto := GetServiceDeployment{
+		ProjectId:     ctx.Param("id"),
+		DeploymentEnv: "default",
+		ServiceName:   utils.ToKebabCase(ctx.Param("serviceName")),
+	}
+	err := ctx.ShouldBindQuery(&dto)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid query",
+		})
+		return
+	}
+
+	deployments, werr := h.service.GetServiceDeployment(ctx, dto)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, deployments)
+}
+
 // Delete deployment in project
 //
 //	@Router			/project/{projectId}/deploy [delete]
