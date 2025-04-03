@@ -44,7 +44,7 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	repository := job.NewRepository(database)
-	service := job.NewService(repository)
+	service := job.NewService(repository, loggerLogger)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
 	resourceRepository := resource.NewRepository(database)

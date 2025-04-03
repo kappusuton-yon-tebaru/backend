@@ -103,7 +103,7 @@ func (h *Handler) GetAllJobParents(ctx *gin.Context) {
 
 // List jobs by job parent id
 //
-//	@Router				/jobs/{jobParentId} [get]
+//	@Router				/jobs/{jobParentId}/parent [get]
 //	@Summary			List jobs by job parent id
 //	@DescriptionList	jobs by job parent id
 //	@Tags				Jobs
@@ -180,6 +180,24 @@ func (h *Handler) GetAllJobsByParentId(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, jobs)
+}
+
+func (h *Handler) GetJobById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	job, werr := h.service.GetJobById(ctx, id)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, job)
 }
 
 // Log jobs

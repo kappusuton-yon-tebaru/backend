@@ -97,7 +97,7 @@ func Initialize() (*App, error) {
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
 	jobRepository := job.NewRepository(database)
-	jobService := job.NewService(jobRepository)
+	jobService := job.NewService(jobRepository, loggerLogger)
 	loggingRepository, err := logging.NewRepository(configConfig, database)
 	if err != nil {
 		return nil, err

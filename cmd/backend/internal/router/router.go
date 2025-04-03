@@ -80,7 +80,8 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
-	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
+	r.GET("/jobs/:id/parent", app.JobHandler.GetAllJobsByParentId)
+	r.GET("/jobs/:id", app.JobHandler.GetJobById)
 	r.GET("/jobs/:id/log", app.JobHandler.GetJobLog)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
