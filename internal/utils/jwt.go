@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -42,8 +41,6 @@ func ParseToken(tokenString string, jwtSecret string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Println(token.Claims)
 
 	claim, ok := token.Claims.(*models.SessionClaim)
 	if !ok {

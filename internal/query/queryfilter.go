@@ -43,3 +43,19 @@ func NewSortQueryWithDefault(defaultKey string, defaultOrder enum.SortOrder) Sor
 		SortOrder: defaultOrder,
 	}
 }
+
+type CursorPagination struct {
+	Cursor    *string                        `form:"cursor"`
+	Direction enum.CursorPaginationDirection `form:"direction" validate:"oneof=newer older"`
+	Limit     int                            `form:"limit"`
+}
+
+func NewCursorPaginationWithDefault(defaultCursor *string, defaultLimit int, defaultDirection enum.CursorPaginationDirection) CursorPagination {
+	return CursorPagination{
+		Cursor:    defaultCursor,
+		Limit:     defaultLimit,
+		Direction: defaultDirection,
+	}
+}
+
+type Filter map[string]string

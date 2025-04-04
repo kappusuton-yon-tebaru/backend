@@ -3,6 +3,7 @@ package validator
 import (
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -26,7 +27,13 @@ func New() (*Validator, error) {
 	}
 
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		return field.Tag.Get("json")
+		tag := field.Tag.Get("json")
+
+		if len(strings.TrimSpace(tag)) == 0 {
+			tag = field.Tag.Get("form")
+		}
+
+		return tag
 	})
 
 	err = validate.RegisterValidation("kebabnum", func(fl validator.FieldLevel) bool {

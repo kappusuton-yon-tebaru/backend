@@ -38,7 +38,22 @@ func (d Deployment) List(ctx context.Context, filter DeploymentFilter) (*apiapps
 		fmt.Sprintf("project_id=%s", filter.ProjectId),
 	}
 
-	fmt.Println(strings.Join(filters, ","))
+	deployments, err := d.client.List(ctx, apimetav1.ListOptions{
+		LabelSelector: strings.Join(filters, ","),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return deployments, nil
+}
+
+func (d Deployment) ListByServiceName(ctx context.Context, filter ServiceDeploymentFilter) (*apiappsv1.DeploymentList, error) {
+	filters := []string{
+		fmt.Sprintf("deployment_env=%s", filter.DeploymentEnv),
+		fmt.Sprintf("project_id=%s", filter.ProjectId),
+		fmt.Sprintf("service_name=%s", filter.ServiceName),
+	}
 
 	deployments, err := d.client.List(ctx, apimetav1.ListOptions{
 		LabelSelector: strings.Join(filters, ","),

@@ -2,24 +2,30 @@ package job
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/werror"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.uber.org/zap"
 )
 
 type PaginatedJobs = models.Paginated[models.Job]
 
 type Service struct {
-	repo *Repository
+	repo   *Repository
+	logger *logger.Logger
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, logger *logger.Logger) *Service {
 	return &Service{
 		repo,
+		logger,
 	}
 }
 
@@ -102,6 +108,25 @@ func (s *Service) GetAllJobsByParentId(ctx context.Context, id string, queryPara
 		Total: dtos.Total,
 		Data:  jobs,
 	}, nil
+}
+
+func (s *Service) GetJobById(ctx context.Context, id string) (models.Job, *werror.WError) {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return models.Job{}, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid job id")
+	}
+
+	job, err := s.repo.GetJobById(ctx, objId)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return models.Job{}, werror.New().SetMessage("job not found").SetCode(http.StatusNotFound)
+	} else if err != nil {
+		s.logger.Error("error occured while getting job by id", zap.String("job_id", id), zap.Error(err))
+		return models.Job{}, werror.NewFromError(err)
+	}
+
+	return job, nil
 }
 
 func (s *Service) CreateGroupJobs(ctx context.Context, dto CreateJobGroupDTO) (CreateGroupJobsResponse, *werror.WError) {

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/spf13/viper"
 )
 
@@ -23,6 +24,11 @@ type BackendConfig struct {
 type ConsumerConfig struct {
 	QueueUri         string `mapstructure:"CONSUMER_QUEUE_URI"`
 	OrganizationName string `mapstructure:"CONSUMER_ORGANIZATION_NAME"`
+}
+
+type PodLogger struct {
+	Mode               enum.PodLoggerMode `mapstructure:"POD_LOGGER_MODE"`
+	LogExpiresInSecond int32              `mapstructure:"POD_LOGGER_LOG_EXPIRES_IN_SECOND"`
 }
 
 type DockerHubConfig struct {
@@ -43,6 +49,7 @@ type Config struct {
 	ClientSecret           string          `mapstructure:"GITHUB_CLIENT_SECRET"`
 	SessionExpiresInSecond int             `mapstructure:"SESSION_EXPIRES_IN_SECOND"`
 	JwtSecret              string          `mapstructure:"JWT_SECRET"`
+	PodLogger              PodLogger       `mapstructure:",squash"`
 }
 
 func Load() (*Config, error) {

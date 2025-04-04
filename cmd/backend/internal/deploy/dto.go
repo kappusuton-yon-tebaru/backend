@@ -1,5 +1,7 @@
 package deploy
 
+import "github.com/kappusuton-yon-tebaru/backend/internal/models"
+
 type DeployRequest struct {
 	ProjectId     string        `swaggerignore:"true"`
 	DeploymentEnv string        `json:"deployment_env" validate:"omitempty"`
@@ -21,4 +23,13 @@ type HealthCheckInfo struct {
 
 type DeployResponse struct {
 	ParentId string `json:"parent_id"`
+}
+
+type GetLogQuerParam struct {
+	DeployEnv   string `form:"deploy_env" validate:"kebabnum"`
+	ServiceName string `form:"service_name" validate:"required"`
+}
+
+type GetLogResponse struct {
+	Data []models.Log `json:"data"`
 }

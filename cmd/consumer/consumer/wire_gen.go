@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package builderconsumer
+package consumer
 
 import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/consumer/internal/build"
@@ -35,7 +35,7 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	builderRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig, loggerLogger)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func Initialize() (*App, error) {
 		return nil, err
 	}
 	repository := job.NewRepository(database)
-	service := job.NewService(repository)
+	service := job.NewService(repository, loggerLogger)
 	buildService := build.NewService(configConfig, kubernetesKubernetes, loggerLogger, service)
 	handler := build.NewHandler(loggerLogger, buildService)
 	resourceRepository := resource.NewRepository(database)
@@ -53,7 +53,7 @@ func Initialize() (*App, error) {
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
 	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service, deployenvService)
 	deployHandler := deploy.NewHandler(loggerLogger, deployService)
-	app := New(loggerLogger, configConfig, kubernetesKubernetes, builderRmq, handler, deployHandler)
+	app := New(loggerLogger, configConfig, kubernetesKubernetes, rmqRmq, handler, deployHandler)
 	return app, nil
 }
 
@@ -63,7 +63,7 @@ type App struct {
 	Logger        *logger.Logger
 	Config        *config.Config
 	KubeClient    *kubernetes.Kubernetes
-	RmqClient     *rmq.BuilderRmq
+	RmqClient     *rmq.Rmq
 	BuildHandler  *build.Handler
 	DeployHandler *deploy.Handler
 }
@@ -72,7 +72,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
-	RmqClient *rmq.BuilderRmq,
+	RmqClient *rmq.Rmq,
 	BuildHandler *build.Handler,
 	DeployHandler *deploy.Handler,
 ) *App {

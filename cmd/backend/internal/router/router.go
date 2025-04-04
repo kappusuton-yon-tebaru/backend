@@ -80,7 +80,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
-	r.GET("/jobs/:id", app.JobHandler.GetAllJobsByParentId)
+	r.GET("/jobs/:id/parent", app.JobHandler.GetAllJobsByParentId)
+	r.GET("/jobs/:id", app.JobHandler.GetJobById)
+	r.GET("/jobs/:id/log", app.JobHandler.GetJobLog)
 
 	r.GET("/regproviders", app.RegisterProviderHandler.GetAllRegProviders)
 	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)
@@ -100,12 +102,12 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/project/:id/build", app.BuildHandler.Build)
 	r.POST("/project/:id/deploy", app.DeployHandler.Deploy)
 	r.DELETE("/project/:id/deploy", app.ReverseProxyHandler.Forward())
+	r.GET("/project/:id/deploy/log", app.DeployHandler.GetDeploymentLog)
+	r.GET("/project/:id/deploy/:serviceName", app.ReverseProxyHandler.Forward())
 
 	r.GET("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
 	r.POST("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
 	r.DELETE("/project/:id/deployenv", app.ReverseProxyHandler.Forward())
-
-	r.GET("/ws/job/:id/log", app.MonitoringHandler.StreamJobLog)
 
 	r.GET("/setting/workerpool", app.ReverseProxyHandler.Forward())
 	r.POST("/setting/workerpool", app.ReverseProxyHandler.Forward())

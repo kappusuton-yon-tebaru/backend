@@ -129,6 +129,52 @@ func (r *Repository) GetAllJobsByParentId(ctx context.Context, id bson.ObjectID,
 	return dto, nil
 }
 
+func (r *Repository) GetJobById(ctx context.Context, id bson.ObjectID) (models.Job, error) {
+	pipeline := []map[string]any{
+		{
+			"$match": map[string]any{
+				"_id": id,
+				"parent_job_id": map[string]any{
+					"$ne": bson.NilObjectID,
+				},
+			},
+		},
+		{
+			"$lookup": map[string]any{
+				"from":         "resources",
+				"localField":   "project_id",
+				"foreignField": "_id",
+				"as":           "project",
+			},
+		},
+		{
+			"$unwind": map[string]any{
+				"path":                       "$project",
+				"preserveNullAndEmptyArrays": true,
+			},
+		},
+	}
+
+	cur, err := r.job.Aggregate(ctx, pipeline)
+	if err != nil {
+		return models.Job{}, err
+	}
+
+	defer cur.Close(ctx)
+
+	if !cur.Next(ctx) {
+		return models.Job{}, mongo.ErrNoDocuments
+	}
+
+	var dto JobDTO
+	err = cur.Decode(&dto)
+	if err != nil {
+		return models.Job{}, err
+	}
+
+	return DTOToJob(dto), nil
+}
+
 func (r *Repository) CreateJob(ctx context.Context, dto CreateJobDTO) (string, error) {
 	result, err := r.job.InsertOne(ctx, dto)
 	if err != nil {

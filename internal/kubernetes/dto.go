@@ -41,6 +41,12 @@ type DeploymentFilter struct {
 	DeploymentEnv string
 }
 
+type ServiceDeploymentFilter struct {
+	ProjectId     string
+	DeploymentEnv string
+	ServiceName   string
+}
+
 type DeploymentCondition struct {
 	Available      *v1.DeploymentCondition
 	Progressing    *v1.DeploymentCondition

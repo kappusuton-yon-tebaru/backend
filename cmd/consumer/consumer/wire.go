@@ -1,7 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
-package builderconsumer
+package consumer
 
 import (
 	"github.com/google/wire"
@@ -22,7 +22,7 @@ type App struct {
 	Logger        *logger.Logger
 	Config        *config.Config
 	KubeClient    *kubernetes.Kubernetes
-	RmqClient     *rmq.BuilderRmq
+	RmqClient     *rmq.Rmq
 	BuildHandler  *build.Handler
 	DeployHandler *deploy.Handler
 }
@@ -31,7 +31,7 @@ func New(
 	Logger *logger.Logger,
 	Config *config.Config,
 	KubeClient *kubernetes.Kubernetes,
-	RmqClient *rmq.BuilderRmq,
+	RmqClient *rmq.Rmq,
 	BuildHandler *build.Handler,
 	DeployHandler *deploy.Handler,
 ) *App {

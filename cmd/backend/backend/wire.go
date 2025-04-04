@@ -12,7 +12,6 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
@@ -23,6 +22,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
+
 	// sharedECR "github.com/kappusuton-yon-tebaru/backend/internal/ecr"
 	// sharedDockerHub "github.com/kappusuton-yon-tebaru/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
@@ -71,7 +72,6 @@ type App struct {
 	DockerHubHandler            *dockerhub.Handler
 	BuildHandler                *build.Handler
 	DeployHandler               *deploy.Handler
-	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi.Handler
 	AuthHandler                 *auth.Handler
@@ -97,7 +97,6 @@ func New(
 	ECRHandler *ecr.Handler,
 	DockerHubHandler *dockerhub.Handler,
 	BuildHandler *build.Handler,
-	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi.Handler,
 	DeployHandler *deploy.Handler,
@@ -124,7 +123,6 @@ func New(
 		DockerHubHandler,
 		BuildHandler,
 		DeployHandler,
-		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
 		AuthHandler,
@@ -181,7 +179,6 @@ func Initialize() (*App, error) {
 		rmq.New,
 		build.NewService,
 		build.NewHandler,
-		monitoring.NewHandler,
 		reverseproxy.New,
 		sharedGithubAPI.NewRepository,
 		sharedGithubAPI.NewService,
@@ -192,6 +189,8 @@ func Initialize() (*App, error) {
 		sharedAuth.NewService,
 		sharedAuth.NewRepository,
 		middleware.NewMiddleware,
+		logging.NewRepository,
+		logging.NewService,
 		New,
 	)
 
