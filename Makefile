@@ -32,6 +32,9 @@ push:
 	@docker push public.ecr.aws/r2n4f6g5/consumer:latest
 	@docker push public.ecr.aws/r2n4f6g5/podlogger:latest
 
+test:
+	@go test -v ./...
+
 lint:
 	@golangci-lint run --timeout=5m
 
