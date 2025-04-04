@@ -3,6 +3,7 @@ package rmq
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
@@ -15,6 +16,7 @@ const (
 )
 
 type Rmq struct {
+	wg        sync.WaitGroup
 	logger    *logger.Logger
 	conn      *amqp091.Connection
 	ch        *amqp091.Channel
@@ -24,6 +26,7 @@ type Rmq struct {
 
 func New(cfg *config.Config, logger *logger.Logger) (*Rmq, error) {
 	rmq := &Rmq{
+		sync.WaitGroup{},
 		logger,
 		nil,
 		nil,
@@ -41,6 +44,9 @@ func New(cfg *config.Config, logger *logger.Logger) (*Rmq, error) {
 }
 
 func (r *Rmq) connect() error {
+	r.wg.Add(1)
+	defer r.wg.Done()
+
 	conn, err := amqp091.Dial(r.queueUri)
 	if err != nil {
 		return err
@@ -107,6 +113,7 @@ func (r *Rmq) Close() error {
 }
 
 func (r *Rmq) Publish(ctx context.Context, key string, body []byte) error {
+	r.wg.Wait()
 	err := r.ch.PublishWithContext(ctx, exchangeName, fmt.Sprintf("%s.%s", r.queueName, key), false, false, amqp091.Publishing{
 		ContentType: "text/plain",
 		Body:        body,
@@ -120,6 +127,7 @@ func (r *Rmq) Publish(ctx context.Context, key string, body []byte) error {
 }
 
 func (r *Rmq) Consume(queueName, consumerName string) (<-chan amqp091.Delivery, error) {
+	r.wg.Wait()
 	msgs, err := r.ch.Consume(queueName, consumerName, false, false, false, false, nil)
 	if err != nil {
 		return nil, err
