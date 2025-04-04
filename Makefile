@@ -10,12 +10,6 @@ docs:
 	@swag fmt
 	@swag init --parseDependency -g ./cmd/backend/main.go -o ./cmd/backend/docs
 
-neogen:
-	@go run tools/wire/main.go \
-		./cmd/agent/agent \
-		./cmd/backend/backend \
-		./cmd/consumer/consumer
-
 dev-agent:
 	@air -c ./cmd/agent/.air.toml
 
@@ -37,6 +31,9 @@ push:
 	@docker push public.ecr.aws/r2n4f6g5/agent:latest
 	@docker push public.ecr.aws/r2n4f6g5/consumer:latest
 	@docker push public.ecr.aws/r2n4f6g5/podlogger:latest
+
+test:
+	@go test -v ./...
 
 lint:
 	@golangci-lint run --timeout=5m

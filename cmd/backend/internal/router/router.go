@@ -33,15 +33,9 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 		r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	authenticated := r.Group("/", app.Middleware.Authentication())
-
-	authenticated.GET("/", app.GreetingHandler.Greeting)
-
-	r.GET("/images", app.ImageHandler.GetAllImages)
-	r.DELETE("/image/:id", app.ImageHandler.DeleteImage)
-
-	r.GET("/svcdeploys", app.ServiceDeployment.GetAllServiceDeployments)
-	r.DELETE("/svcdeploy/:id", app.ServiceDeployment.DeleteServiceDeployment)
+	// example for authenticated route
+	// authenticated := r.Group("/", app.Middleware.Authentication())
+	// authenticated.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
@@ -89,10 +83,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/regproviders/:id", app.RegisterProviderHandler.GetRegProviderById)
 	r.POST("/regproviders", app.RegisterProviderHandler.CreateRegProvider)
 	r.DELETE("/regproviders/:id", app.RegisterProviderHandler.DeleteRegProvider)
-
-	r.GET("/projectenvs", app.ProjectEnvironmentHandler.GetAllProjectEnvs)
-	r.POST("/projectenvs", app.ProjectEnvironmentHandler.CreateProjectEnv)
-	r.DELETE("/projectenvs/:id", app.ProjectEnvironmentHandler.DeleteProjectEnv)
 
 	r.GET("/ecr/images", app.ECRHandler.GetECRImages)
 
