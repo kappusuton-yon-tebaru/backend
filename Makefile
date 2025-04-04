@@ -10,12 +10,6 @@ docs:
 	@swag fmt
 	@swag init --parseDependency -g ./cmd/backend/main.go -o ./cmd/backend/docs
 
-neogen:
-	@go run tools/wire/main.go \
-		./cmd/agent/agent \
-		./cmd/backend/backend \
-		./cmd/consumer/consumer
-
 dev-agent:
 	@air -c ./cmd/agent/.air.toml
 
