@@ -74,10 +74,18 @@ func (r *Repository) GetResourceByFilter(ctx context.Context, filter map[string]
 	return DTOToResource(resource), nil
 }
 
-func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string) (models.Paginated[ResourceDTO], error) {
+func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string, ids []string) (models.Paginated[ResourceDTO], error) {
 	objId, err := bson.ObjectIDFromHex(parentId)
 	if err != nil {
 		return models.Paginated[ResourceDTO]{}, err
+	}
+	viewAbleIds := make([]bson.ObjectID, 0)
+	for _, id := range ids {
+		objId, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			return models.Paginated[ResourceDTO]{}, err
+		}
+		viewAbleIds = append(viewAbleIds, objId)
 	}
 	pipeline := utils.NewFilterAggregationPipeline(queryParam,
 		[]map[string]any{
@@ -97,6 +105,11 @@ func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.
 			{
 				"$match": map[string]any{
 					"relationships.parent_resource_id": objId,
+				},
+			},
+			{
+				"$match": map[string]any{
+					"_id": map[string]any{"$in": viewAbleIds},
 				},
 			},
 		},

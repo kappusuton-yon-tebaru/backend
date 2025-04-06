@@ -51,7 +51,7 @@ func (h *Handler) GetAllResources(ctx *gin.Context) {
 		resourceIds = append(resourceIds, permission.ResourceId)
 	}
 
-	resources, err := h.service.GetAllResources(ctx,resourceIds)
+	resources, err := h.service.GetAllResources(ctx, resourceIds)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -130,7 +130,27 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 		WithSortQuery(sortFilter).
 		WithQueryFilter(queryFilter)
 
-	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId)
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	permissions, err := h.roleService.GetUserPermissions(ctx, userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user permissions",
+			"error":   err.Error(),
+		})
+		return
+	}
+	resourceIds := make([]string, 0)
+	for _, permission := range permissions {
+		resourceIds = append(resourceIds, permission.ResourceId)
+	}
+	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId,resourceIds)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -169,7 +189,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		}
 		havePermission := false
 		for _, permission := range permissions {
-			if permission.ResourceId == resourceDTO.ParentId && permission.Action == enum.PermissionActionsWrite{
+			if permission.ResourceId == resourceDTO.ParentId && permission.Action == enum.PermissionActionsWrite {
 				havePermission = true
 				break
 			}

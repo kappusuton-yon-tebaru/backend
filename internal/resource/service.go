@@ -73,8 +73,8 @@ func (s *Service) GetResourceByID(ctx context.Context, id string) (models.Resour
 	return resource, nil
 }
 
-func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, queryParam query.QueryParam, parentId string) (PaginatedResources, error) {
-	dtos, err := s.repo.GetResourcesByFilter(ctx, queryParam, parentId)
+func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, queryParam query.QueryParam, parentId string, ids []string) (PaginatedResources, error) {
+	dtos, err := s.repo.GetResourcesByFilter(ctx, queryParam, parentId,ids)
 	if err != nil {
 		return PaginatedResources{}, err
 	}
