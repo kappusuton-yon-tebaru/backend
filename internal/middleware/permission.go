@@ -58,7 +58,6 @@ func (m *Middleware) HavePermission(allowedAction enum.PermissionActions) gin.Ha
 		ctx.AbortWithStatusJSON(http.StatusForbidden, map[string]any{
 			"error": "user does not have permission to access this resource",
 		})
-		return
 
 	}
 }
