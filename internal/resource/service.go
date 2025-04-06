@@ -91,8 +91,8 @@ func (s *Service) GetChildrenResourcesByParentID(ctx context.Context, queryParam
 		Data:  resources,
 	}, nil
 }
-
-func (s *Service) AddDefaultRoleToUser(ctx context.Context, userId string, orgId string, resourceId string) (error) {
+// use this only when creating org 
+func (s *Service) AddDefaultRoleToUser(ctx context.Context, userId string, orgId string, resourceId string, name string) (error) {
 	orgID, err := bson.ObjectIDFromHex(orgId)
 	if err != nil {
 		fmt.Println("Invalid org ID:", err)
@@ -106,7 +106,7 @@ func (s *Service) AddDefaultRoleToUser(ctx context.Context, userId string, orgId
 	// Create default role for the resource
 	defaultRoleDTO := role.CreateRoleDTO{
 		OrgId:    orgID,
-		RoleName: "Owner",
+		RoleName: "Owner of " + name,
 	}
 	roleId, err := s.roleRepo.CreateRole(ctx, defaultRoleDTO)
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *Service) AddDefaultRoleToUser(ctx context.Context, userId string, orgId
 	}
 	// add default permission to role
 	defaultPermisionDTO := role.ModifyPermissionDTO{
-		PermissionName: "Owner",
+		PermissionName: "Owner of " + name,
 		Action:         enum.PermissionActionsWrite,
 		ResourceId: resourceID,
 	}
@@ -139,7 +139,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, use
 	
 	// If creating org no need to create rela
 	if dto.ParentId == "" {
-		err := s.AddDefaultRoleToUser(ctx, userID, resourceId, resourceId)
+		err := s.AddDefaultRoleToUser(ctx, userID, resourceId, resourceId, dto.ResourceName)
 		if err != nil {
 			fmt.Println("Error adding default role to user:", err)
 			return "", err
@@ -161,7 +161,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, use
 	}
 	// if creating project space use orgId as dto.
 	if( parentResource.ResourceType == enum.ResourceTypeOrganization ){
-		err = s.AddDefaultRoleToUser(ctx, userID, dto.ParentId, resourceId)
+		err = s.AddDefaultRoleToUser(ctx, userID, dto.ParentId, resourceId, dto.ResourceName)
 		if err != nil {
 			fmt.Println("Error adding default role to user:", err)
 			return "", err
@@ -173,7 +173,7 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, use
 			fmt.Println("Error getting orgId from project space id:", err)
 			return "", err
 		}
-		err = s.AddDefaultRoleToUser(ctx, userID, orgId, resourceId) 
+		err = s.AddDefaultRoleToUser(ctx, userID, orgId, resourceId, dto.ResourceName) 
 		if err != nil {
 			fmt.Println("Error adding default role to user:", err)
 			return "", err
