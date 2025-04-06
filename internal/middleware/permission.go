@@ -7,7 +7,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 )
-
+// Check if the user has allowed action on that resourceId
 func (m *Middleware) HavePermission(allowedAction enum.PermissionActions) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		resourceId := ctx.Param("id")
@@ -29,13 +29,14 @@ func (m *Middleware) HavePermission(allowedAction enum.PermissionActions) gin.Ha
 		}
 
 		for _, permission := range permissions {
+			// Check if user has permission that relates to the resourceId
 			if permission.ResourceId == resourceId {
-				if allowedAction == enum.PermissionActionsRead {
+				if allowedAction == enum.PermissionActionsRead { // if allowedAction is read, check if permission is read or write
 					if permission.Action == enum.PermissionActionsRead || permission.Action == enum.PermissionActionsWrite {
 						ctx.Next()
 						return
 					}
-				} else if allowedAction == enum.PermissionActionsWrite {
+				} else if allowedAction == enum.PermissionActionsWrite { // if allowedAction is write, check if permission is write
 					if permission.Action == enum.PermissionActionsWrite {
 						ctx.Next()
 						return

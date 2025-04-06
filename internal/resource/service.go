@@ -33,8 +33,19 @@ func NewService(repo *Repository, resourceRelaRepo *resourcerelationship.Reposit
 	}
 }
 
-func (s *Service) GetAllResources(ctx context.Context) ([]models.Resource, error) {
-	resources, err := s.repo.GetAllResources(ctx)
+func (s *Service) GetAllResources(ctx context.Context, ids []string) ([]models.Resource, error) {
+	objIds := make([]bson.ObjectID, 0)
+	for _, id := range ids {
+		objId, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			return []models.Resource{}, werror.NewFromError(err).
+				SetCode(http.StatusBadRequest).
+				SetMessage("invalid id")
+		}
+		objIds = append(objIds, objId)
+	}
+	filter := map[string]any{"_id": map[string]any{"$in": objIds}}
+	resources, err := s.repo.GetAllResources(ctx,filter)
 	if err != nil {
 		return nil, err
 	}

@@ -31,8 +31,8 @@ func NewRepository(db *mongo.Database) *Repository {
 	}
 }
 
-func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, error) {
-	cur, err := r.resource.Find(ctx, bson.D{})
+func (r *Repository) GetAllResources(ctx context.Context, filter map[string]any) ([]models.Resource, error) {
+	cur, err := r.resource.Find(ctx, filter)
 	if err != nil {
 		log.Println("Error in Find:", err)
 		return nil, err

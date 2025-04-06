@@ -48,7 +48,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/auth/login", app.AuthHandler.Login)
 	r.POST("/auth/logout", app.AuthHandler.Logout)
 
-	r.GET("/resources", app.ResourceHandler.GetAllResources)
+	authenticated.GET("/resources", app.ResourceHandler.GetAllResources)
 	authenticated.GET("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetResourceByID)
 	authenticated.GET("/resources/children/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetChildrenResourcesByParentID)
 	authenticated.POST("/resources", app.ResourceHandler.CreateResource) 
@@ -70,10 +70,10 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.PATCH("/projrepos/:id", app.ProjectRepositoryHandler.UpdateProjectRepositoryRegistryProvider)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
-	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
-	r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourceRelationshipByParentID)
-	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
-	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
+	// r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
+	// r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourceRelationshipByParentID)
+	// r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
+	// r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.GET("/jobs/:id/parent", app.JobHandler.GetAllJobsByParentId)
