@@ -42,7 +42,6 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
 	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
 	r.PUT("/users/:user_id/roles/:role_id", app.UserHandler.RemoveRole)
-	authenticated.GET("/users/me/permissions", app.RoleHandler.GetUserPermissions)
 
 	r.POST("/auth/register", app.AuthHandler.Register)
 	r.POST("/auth/login", app.AuthHandler.Login)
@@ -57,16 +56,17 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	authenticated.DELETE("/resources/cascade/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.CascadeDeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
-	r.POST("/roles", app.RoleHandler.CreateRole)
-	r.PUT("/roles/:role_id", app.RoleHandler.UpdateRole)
-	r.DELETE("/roles/:role_id", app.RoleHandler.DeleteRoleById)
-	r.POST("/roles/:role_id/permissions", app.RoleHandler.AddPermission)
-	r.PUT("/roles/:role_id/permissions/:perm_id", app.RoleHandler.UpdatePermission)
-	r.DELETE("/roles/:role_id/permissions/:perm_id", app.RoleHandler.DeletePermission)
+	authenticated.POST("/roles", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.CreateRole)
+	authenticated.PUT("/roles/:role_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.UpdateRole)
+	authenticated.DELETE("/roles/:role_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.DeleteRoleById)
+	authenticated.POST("/roles/:role_id/permissions", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.AddPermission)
+	authenticated.PUT("/roles/:role_id/permissions/:perm_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.UpdatePermission)
+	authenticated.DELETE("/roles/:role_id/permissions/:perm_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.DeletePermission)
+	authenticated.GET("/roles/me/permissions", app.RoleHandler.GetUserPermissions)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.GET("/projrepos/project/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoryByProjectId)
-	// r.POST("/projrepos/:id", app.ProjectRepositoryHandler.CreateProjectRepository)
+	r.POST("/projrepos/:id", app.ProjectRepositoryHandler.CreateProjectRepository)
 	// r.PATCH("/projrepos/:id", app.ProjectRepositoryHandler.UpdateProjectRepositoryRegistryProvider)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 

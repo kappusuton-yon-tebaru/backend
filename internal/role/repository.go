@@ -52,6 +52,23 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
+func (r *Repository) GetRoleByFilter(ctx context.Context, filter bson.M) (models.Role, error) {
+	var role RoleDTO
+
+	err := r.role.FindOne(ctx, filter).Decode(&role)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// No document found, return an empty Role
+			return models.Role{}, nil
+		}
+		log.Println("Error in FindOne:", err)
+		return models.Role{}, err
+	}
+
+	// Convert DTO to the actual model
+	return DTOToRole(role), nil
+}	
+
 func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
 		"role_name":   dto.RoleName,

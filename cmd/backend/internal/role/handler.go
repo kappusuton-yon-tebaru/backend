@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 )
 
 type Handler struct {
-	service *role.Service
+	service     *role.Service
 }
 
 func NewHandler(service *role.Service) *Handler {
@@ -38,7 +39,36 @@ func (h *Handler) CreateRole(ctx *gin.Context) {
 		})
 		return
 	}
-
+	// Check if user have write permissions for the organization
+	userId, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	permissions, err := h.service.GetUserPermissions(ctx, userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user permissions",
+			"error":   err.Error(),
+		})
+		return
+	}
+	havePermission := false
+	for _, permission := range permissions {
+		if permission.ResourceId == roleDTO.OrgId.Hex() && permission.Action == enum.PermissionActionsWrite {
+			havePermission = true
+			break
+		}
+	}
+	if !havePermission {
+		ctx.JSON(http.StatusForbidden, map[string]any{
+			"message": "user does not have permission to create role in this organization",
+		})
+		return
+	}
 	id, err := h.service.CreateRole(ctx, roleDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
@@ -211,7 +241,7 @@ func (h *Handler) DeletePermission(ctx *gin.Context) {
 	})
 }
 func (h *Handler) GetUserPermissions(ctx *gin.Context) {
-	userId,err := utils.GetUserID(ctx)
+	userId, err := utils.GetUserID(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to get user id",

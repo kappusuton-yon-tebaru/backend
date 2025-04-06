@@ -149,7 +149,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		})
 		return
 	}
-
+	// Check user permission to create resource under parentId
 	userID, err := utils.GetUserID(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
@@ -176,7 +176,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		}
 		if !havePermission {
 			ctx.JSON(http.StatusForbidden, map[string]any{
-				"message": "user does not have permission to create this resource",
+				"message": "user does not have permission to create resource in this organization",
 			})
 			return
 		}

@@ -31,6 +31,24 @@ func (s *Service) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
+func (s *Service) GetRoleById(ctx context.Context, id string) (models.Role, error) {
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return models.Role{}, werror.NewFromError(err).
+			SetCode(http.StatusBadRequest).
+			SetMessage("invalid id")
+	}
+	filter := map[string]any{
+		"_id": objId,
+	}
+	role, err := s.roleRepo.GetRoleByFilter(ctx, filter)
+	if err != nil {
+		return models.Role{}, err
+	}
+
+	return role, nil
+}
+
 func (s *Service) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	id, err := s.roleRepo.CreateRole(ctx, dto)
 	if err != nil {
