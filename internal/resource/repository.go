@@ -21,6 +21,7 @@ type Repository struct {
 	resource     *mongo.Collection
 	resourceRela *mongo.Collection
 	projectRepo  *mongo.Collection
+	role         *mongo.Collection
 }
 
 func NewRepository(db *mongo.Database) *Repository {
@@ -28,6 +29,7 @@ func NewRepository(db *mongo.Database) *Repository {
 		resource:     db.Collection("resources"),
 		resourceRela: db.Collection("resource_relationships"),
 		projectRepo:  db.Collection("projects_repositories"),
+		role:         db.Collection("roles"),
 	}
 }
 
@@ -273,6 +275,30 @@ func (r *Repository) CascadeDeleteResource(ctx context.Context, resourceID strin
 		log.Println("r.resourceRela.DeleteMany err")
 
 		return err
+	}
+	// Delete Roles and permissions
+	if resourceType == enum.ResourceTypeOrganization {
+		// If deleting org -> delete all roles that is in this org
+		_, err = r.role.DeleteMany(ctx, map[string]any{"org_id": objId})
+		if err != nil {
+			log.Println("r.role.DeleteMany err")
+
+			return err
+		}
+	} else {
+		// Delete all permissions associated with this resource ID
+		update := bson.M{
+			"$pull": bson.M{
+				"permissions": bson.M{"resource_id": objId},
+			},
+		}
+
+		// Apply the update to all roles
+		_, err = r.role.UpdateMany(ctx, bson.M{}, update)
+		if err != nil {
+			log.Println("Error deleting permissions with resource_id:", err)
+			return err
+		}
 	}
 
 	// Delete the resource itself
