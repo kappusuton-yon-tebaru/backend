@@ -169,7 +169,6 @@ func (s *Service) CreateResource(ctx context.Context, dto CreateResourceDTO, use
 		}
 	}
 	// create resource relationship
-	
 	childID, err := bson.ObjectIDFromHex(resourceId)
 	if err != nil {
 		fmt.Println("Invalid child ID:", err)
