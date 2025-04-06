@@ -158,7 +158,7 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		})
 		return
 	}
-	if resourceDTO.ParentId != "" { // user is NOT creating an org
+	if resourceDTO.ParentId != "" { // user is NOT creating an org, must check if user has permission to create resource under parentId
 		permissions, err := h.roleService.GetUserPermissions(ctx, userID)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, map[string]any{

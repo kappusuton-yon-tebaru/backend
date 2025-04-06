@@ -405,7 +405,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 
 // create repo in github then project and projectrepo
 func (h *Handler) CreateRepository(c *gin.Context) {
-	project_space_id := c.Param("project_space_id")
+	project_space_id := c.Param("id")
 	var req models.CreateRepoRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
