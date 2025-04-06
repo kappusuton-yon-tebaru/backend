@@ -35,7 +35,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	}
 
 	// example for authenticated route
-	// authenticated := r.Group("/", app.Middleware.Authentication())
+	authenticated := r.Group("/", app.Middleware.Authentication())
 	// authenticated.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
