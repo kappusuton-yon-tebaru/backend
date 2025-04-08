@@ -93,6 +93,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.GET("/regproviders/unbind", app.RegisterProviderHandler.GetAllRegProvidersWithoutProject)
 	r.GET("/regproviders/:id", app.RegisterProviderHandler.GetRegProviderById)
 	r.POST("/regproviders", app.RegisterProviderHandler.CreateRegProvider)
+	r.PATCH("/regproviders/:id", app.RegisterProviderHandler.UpdateRegProvider)
 	r.DELETE("/regproviders/:id", app.RegisterProviderHandler.DeleteRegProvider)
 
 	r.GET("/projectenvs", app.ProjectEnvironmentHandler.GetAllProjectEnvs)

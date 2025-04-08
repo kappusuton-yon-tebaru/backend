@@ -44,7 +44,7 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 
 	log.Println(projectRepo)
 	log.Println(projectRepo.RegistryProvider.Name)
-	log.Println(projectRepo.RegistryProvider.DockerhubCredential.Username)
+	log.Println(projectRepo.RegistryProvider.Credential.DockerhubCredential.Username)
 
 	// var req GetDockerHubImagesRequest
 	// if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -56,7 +56,7 @@ func (h *Handler) GetDockerHubImages(ctx *gin.Context) {
 	// }
 
 	// images, err := h.service.GetDockerHubImages(namespace, projectRepo.RegistryProvider.Name, serviceName)
-	images, err := h.service.GetDockerHubImages(projectRepo.RegistryProvider.DockerhubCredential.Username, projectRepo.RegistryProvider.Name, serviceName)
+	images, err := h.service.GetDockerHubImages(projectRepo.RegistryProvider.Credential.DockerhubCredential.Username, projectRepo.RegistryProvider.Name, serviceName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "internal server error",

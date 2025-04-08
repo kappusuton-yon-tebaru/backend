@@ -135,12 +135,11 @@ func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	}
 
 	dto := regproviders.CreateRegistryProvidersDTO{
-		Name:                req.Name,
-		Uri:                 req.Uri,
-		ProviderType:        req.ProviderType,
-		ECRCredential:       req.ECRCredential,
-		DockerhubCredential: req.DockerhubCredential,
-		OrganizationId:      req.OrganizationId,
+		Name:           req.Name,
+		Uri:            req.Uri,
+		ProviderType:   req.ProviderType,
+		Credential:     req.Credential,
+		OrganizationId: req.OrganizationId,
 	}
 
 	id, werr := h.service.CreateRegistryProviders(ctx, dto)
@@ -152,6 +151,63 @@ func (h *Handler) CreateRegProvider(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, CreateRegistryProvidersResponse{
 		Message: "registry provider created successfully",
 		Id:      id,
+	})
+}
+
+func (h *Handler) UpdateRegProvider(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"message": "empty id",
+		})
+		return
+	}
+
+	var req UpdateRegistryProvidersRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: "invalid body",
+		})
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		ctx.JSON(http.StatusBadRequest, httputils.ErrResponse{
+			Message: strings.Join(h.validator.Translate(err), ", "),
+		})
+		return
+	}
+
+	dto := regproviders.UpdateRegistryProvidersDTO{}
+
+	if req.Name != "" {
+		dto.Name = req.Name
+	}
+
+	if req.Uri != "" {
+		dto.Uri = req.Uri
+	}
+
+	if req.ProviderType != "" {
+		dto.ProviderType = req.ProviderType
+	}
+
+	if req.Credential != nil {
+		dto.Credential = req.Credential
+	}
+
+	if req.OrganizationId.Hex() != "" {
+		dto.OrganizationId = req.OrganizationId
+	}
+
+	werr := h.service.UpdateRegistryProviders(ctx, id, dto)
+	if werr != nil {
+		ctx.JSON(httputils.ErrorResponseFromWErr(werr))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, map[string]any{
+		"message": "updated",
 	})
 }
 

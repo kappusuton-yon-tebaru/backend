@@ -125,14 +125,13 @@ func (r *Repository) GetRegistryProviderById(ctx context.Context, filter map[str
 
 func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegistryProvidersDTO) (string, error) {
 	request := CreateRegistryProvidersDTO{
-		Name:                dto.Name,
-		Uri:                 dto.Uri,
-		ProviderType:        dto.ProviderType,
-		ECRCredential:       dto.ECRCredential,
-		DockerhubCredential: dto.DockerhubCredential,
-		OrganizationId:      dto.OrganizationId,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
+		Name:           dto.Name,
+		Uri:            dto.Uri,
+		ProviderType:   dto.ProviderType,
+		Credential:     dto.Credential,
+		OrganizationId: dto.OrganizationId,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 
 	result, err := r.regProviders.InsertOne(ctx, request)
@@ -143,6 +142,52 @@ func (r *Repository) CreateRegistryProviders(ctx context.Context, dto CreateRegi
 	id := result.InsertedID.(bson.ObjectID)
 
 	return id.Hex(), nil
+}
+
+func (r *Repository) UpdateRegistryProviders(ctx context.Context, id bson.ObjectID, dto UpdateRegistryProvidersDTO) (int64, error) {
+	filter := map[string]any{
+		"_id": id,
+	}
+
+	updateFields := bson.M{
+		"updated_at": time.Now(),
+	}
+
+	if dto.Name != "" {
+		updateFields["name"] = dto.Name
+	}
+
+	if dto.Uri != "" {
+		updateFields["uri"] = dto.Uri
+	}
+
+	if dto.ProviderType != "" {
+		updateFields["provider_type"] = dto.ProviderType
+	}
+
+	if dto.OrganizationId != bson.NilObjectID {
+		updateFields["organization_id"] = dto.OrganizationId
+	}
+
+	if dto.ProviderType == models.ProviderType(models.ECR) {
+		updateFields["credential"] = bson.M{
+			"ecr_credential": *dto.Credential.ECRCredential,
+		}
+	} else if dto.ProviderType == models.ProviderType(models.DockerHub) {
+		updateFields["credential"] = bson.M{
+			"dockerhub_credential": *dto.Credential.DockerhubCredential,
+		}
+	}
+
+	result, err := r.regProviders.UpdateOne(ctx, filter, bson.M{
+		"$set": updateFields,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return result.MatchedCount, nil
 }
 
 func (r *Repository) DeleteRegistryProviders(ctx context.Context, filter map[string]any) (int64, error) {

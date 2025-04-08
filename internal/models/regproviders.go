@@ -2,16 +2,27 @@ package models
 
 import "time"
 
+type ProviderType string
+
+const (
+	ECR       ProviderType = "ECR"
+	DockerHub ProviderType = "DockerHub"
+)
+
 type RegistryProviders struct {
-	Id                  string               `json:"id"`
-	Name                string               `json:"name"`
-	Uri                 string               `json:"uri"`
-	ProviderType        string               `json:"provider_type"`
-	ECRCredential       *ECRCredential       `json:"ecr_credential"`
-	DockerhubCredential *DockerhubCredential `json:"dockerhub_credential"`
-	OrganizationId      string               `json:"organization_id"`
-	CreatedAt           time.Time            `json:"created_at"`
-	UpdatedAt           time.Time            `json:"updated_at"`
+	Id             string       `json:"id"`
+	Name           string       `json:"name"`
+	Uri            string       `json:"uri"`
+	ProviderType   ProviderType `json:"provider_type"`
+	Credential     *Credential  `json:"credential"`
+	OrganizationId string       `json:"organization_id"`
+	CreatedAt      time.Time    `json:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at"`
+}
+
+type Credential struct {
+	ECRCredential       *ECRCredential       `json:"ecr_credential,omitempty" bson:"ecr_credential,omitempty"`
+	DockerhubCredential *DockerhubCredential `json:"dockerhub_credential,omitempty" bson:"dockerhub_credential,omitempty"`
 }
 
 type ECRCredential struct {

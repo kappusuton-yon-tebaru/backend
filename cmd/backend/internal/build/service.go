@@ -93,7 +93,7 @@ func (s *Service) BuildImage(ctx context.Context, req BuildRequest) (string, *we
 			RepoRoot:      fmt.Sprintf("apps/%s", service.ServiceName),
 			Destination:   fmt.Sprintf("%s:%s", projRepo.RegistryProvider.Uri, utils.ToKebabCase(service.Tag)),
 			Dockerfile:    "Dockerfile",
-			ECRCredential: projRepo.RegistryProvider.ECRCredential,
+			ECRCredential: projRepo.RegistryProvider.Credential.ECRCredential,
 		}
 
 		bs, err := json.Marshal(buildCtx)

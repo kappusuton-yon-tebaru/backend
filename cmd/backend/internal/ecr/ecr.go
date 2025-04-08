@@ -31,7 +31,7 @@ func (r *ECRRepository) GetImages(ctx context.Context, registry models.RegistryP
 	repoName := GetRepoName(repoURI)
 
 	if isPublic {
-		client := aws.NewConfig(*registry.ECRCredential, registry.ECRCredential.Region).ECRPublic()
+		client := aws.NewConfig(*registry.Credential.ECRCredential, registry.Credential.ECRCredential.Region).ECRPublic()
 		tags, err := client.DescribeImageTags(ctx, repoName)
 		if err != nil {
 			return PaginatedECRImages{}, err
@@ -55,7 +55,7 @@ func (r *ECRRepository) GetImages(ctx context.Context, registry models.RegistryP
 			Data:  paginatedImages,
 		}, nil
 	} else {
-		client := aws.NewConfig(*registry.ECRCredential, registry.ECRCredential.Region).ECRPrivate()
+		client := aws.NewConfig(*registry.Credential.ECRCredential, registry.Credential.ECRCredential.Region).ECRPrivate()
 		tags, err := client.ListImages(ctx, repoName)
 		if err != nil {
 			return PaginatedECRImages{}, err

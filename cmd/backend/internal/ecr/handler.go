@@ -47,7 +47,7 @@ func (h *Handler) GetECRImages(ctx *gin.Context) {
 		return
 	}
 
-	if projectRepo.RegistryProvider.ECRCredential == nil {
+	if projectRepo.RegistryProvider.Credential.ECRCredential == nil {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid ecr credential",
 		})

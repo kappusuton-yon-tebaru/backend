@@ -19,7 +19,7 @@ dev-agent:
 	@air -c ./cmd/agent/.air.toml
 
 dev-backend:
-	@air -c ./cmd/backend/.air.toml
+	@air.exe -c ./cmd/backend/.air.toml
 
 dev-consumer:
 	@air -c ./cmd/consumer/.air.toml

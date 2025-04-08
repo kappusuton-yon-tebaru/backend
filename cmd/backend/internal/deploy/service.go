@@ -64,7 +64,7 @@ func (s *Service) DeployService(ctx context.Context, req DeployRequest) (string,
 			SetCode(http.StatusBadRequest)
 	}
 
-	secretManager := aws.NewConfig(*projRepo.RegistryProvider.ECRCredential, "ap-southeast-1").SecretsManager()
+	secretManager := aws.NewConfig(*projRepo.RegistryProvider.Credential.ECRCredential, "ap-southeast-1").SecretsManager()
 
 	jobs := []job.CreateJobDTO{}
 	for _, service := range req.Services {
