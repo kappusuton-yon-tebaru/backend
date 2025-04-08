@@ -47,7 +47,11 @@ func CreateBuilderPodManifest(config BuildImageDTO) (*apicorev1.Pod, error) {
 		ObjectMeta: apimetav1.ObjectMeta{
 			Name: "worker-" + config.Id,
 			Labels: map[string]string{
-				"platform": "snapping-service",
+				"platform":            "snapping-service",
+				"job_id":              config.Id,
+				"watchlog":            "true",
+				"watchlog.container":  "kaniko",
+				"watchlog.attributes": "job_id",
 			},
 		},
 		Spec: apicorev1.PodSpec{
@@ -166,7 +170,15 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 				WithMatchLabels(map[string]string{"app": dto.ServiceName})).
 			WithRevisionHistoryLimit(0).
 			WithTemplate(accorev1.PodTemplateSpec().
-				WithLabels(map[string]string{"app": dto.ServiceName}).
+				WithLabels(map[string]string{
+					"app":                 dto.ServiceName,
+					"job_id":              dto.Id,
+					"project_id":          dto.ProjectId,
+					"service_name":        dto.ServiceName,
+					"deployment_env":      dto.DeploymentEnv,
+					"watchlog":            "true",
+					"watchlog.attributes": "project_id.service_name.deployment_env.job_id",
+				}).
 				WithSpec(accorev1.PodSpec().
 					WithServiceAccountName(SystemServiceAccount).
 					WithContainers(

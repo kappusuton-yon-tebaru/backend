@@ -13,37 +13,28 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/dockerhub"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/ecr"
 	githubapi2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/githubapi"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/greeting"
-	image2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/image"
 	job2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/job"
-	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/monitoring"
-	projectenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectenv"
 	projectrepository2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/projectrepository"
 	regproviders2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/regproviders"
 	resource2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resource"
 	resourcerelationship2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/reverseproxy"
 	role2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/role"
-	svcdeploy2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeploy"
-	svcdeployenv2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/svcdeployenv"
 	user2 "github.com/kappusuton-yon-tebaru/backend/cmd/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/auth"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
 	"github.com/kappusuton-yon-tebaru/backend/internal/githubapi"
-	"github.com/kappusuton-yon-tebaru/backend/internal/image"
 	"github.com/kappusuton-yon-tebaru/backend/internal/job"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logging"
 	"github.com/kappusuton-yon-tebaru/backend/internal/middleware"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
-	"github.com/kappusuton-yon-tebaru/backend/internal/projectenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/regproviders"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
 	"github.com/kappusuton-yon-tebaru/backend/internal/role"
-	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeploy"
-	"github.com/kappusuton-yon-tebaru/backend/internal/svcdeployenv"
 	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -60,36 +51,26 @@ func Initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	handler := greeting.New()
 	database, err := mongodb.NewMongoDB(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	repository := image.NewRepository(database)
-	service := image.NewService(repository)
-	imageHandler := image2.NewHandler(service)
-	svcdeployRepository := svcdeploy.NewRepository(database)
-	svcdeployService := svcdeploy.NewService(svcdeployRepository)
-	svcdeployHandler := svcdeploy2.NewHandler(svcdeployService)
-	svcdeployenvRepository := svcdeployenv.NewRepository(database)
-	svcdeployenvService := svcdeployenv.NewService(svcdeployenvRepository)
-	svcdeployenvHandler := svcdeployenv2.NewHandler(svcdeployenvService)
-	userRepository, err := user.NewRepository(database)
+	repository, err := user.NewRepository(database)
 	if err != nil {
 		return nil, err
 	}
-	userService := user.NewService(userRepository, loggerLogger)
+	service := user.NewService(repository, loggerLogger)
 	validatorValidator, err := validator.New()
 	if err != nil {
 		return nil, err
 	}
-	userHandler := user2.NewHandler(userService, validatorValidator)
+	handler := user2.NewHandler(service, validatorValidator)
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
 	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
 	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	roleRepository := role.NewRepository(database)
-	roleService := role.NewService(roleRepository, userRepository)
+	roleService := role.NewService(roleRepository, repository)
 	roleHandler := role2.NewHandler(roleService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
@@ -97,30 +78,31 @@ func Initialize() (*App, error) {
 	resourcerelationshipService := resourcerelationship.NewService(resourcerelationshipRepository)
 	resourcerelationshipHandler := resourcerelationship2.NewHandler(resourcerelationshipService)
 	jobRepository := job.NewRepository(database)
-	jobService := job.NewService(jobRepository)
-	jobHandler := job2.NewHandler(jobService, validatorValidator)
+	jobService := job.NewService(jobRepository, loggerLogger)
+	loggingRepository, err := logging.NewRepository(configConfig, database)
+	if err != nil {
+		return nil, err
+	}
+	loggingService := logging.NewService(loggingRepository, loggerLogger)
+	jobHandler := job2.NewHandler(jobService, loggingService, validatorValidator)
 	regprovidersRepository, err := regproviders.NewRepository(database)
 	if err != nil {
 		return nil, err
 	}
 	regprovidersService := regproviders.NewService(regprovidersRepository)
 	regprovidersHandler := regproviders2.NewHandler(regprovidersService, validatorValidator)
-	projectenvRepository := projectenv.NewRepository(database)
-	projectenvService := projectenv.NewService(projectenvRepository)
-	projectenvHandler := projectenv2.NewHandler(projectenvService)
 	ecrRepository := ecr.NewECRRepository()
 	ecrService := ecr.NewService(ecrRepository)
 	ecrHandler := ecr.NewHandler(ecrService, projectrepositoryService, validatorValidator)
 	dockerHubRepository := dockerhub.NewDockerHubRepository(configConfig)
 	dockerhubService := dockerhub.NewService(dockerHubRepository)
 	dockerhubHandler := dockerhub.NewHandler(dockerhubService, projectrepositoryService)
-	builderRmq, err := rmq.New(configConfig)
+	rmqRmq, err := rmq.New(configConfig, loggerLogger)
 	if err != nil {
 		return nil, err
 	}
-	buildService := build.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService)
+	buildService := build.NewService(rmqRmq, jobService, loggerLogger, projectrepositoryService)
 	buildHandler := build.NewHandler(validatorValidator, buildService)
-	monitoringHandler := monitoring.NewHandler(loggerLogger)
 	reverseProxy, err := reverseproxy.New(configConfig)
 	if err != nil {
 		return nil, err
@@ -128,16 +110,16 @@ func Initialize() (*App, error) {
 	githubapiRepository := githubapi.NewRepository(configConfig)
 	githubapiService := githubapi.NewService(githubapiRepository)
 	githubapiHandler := githubapi2.NewHandler(configConfig, githubapiService, projectrepositoryService, resourceService, validatorValidator)
-	deployService := deploy.NewService(builderRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
-	deployHandler := deploy.NewHandler(deployService, validatorValidator)
+	deployService := deploy.NewService(rmqRmq, jobService, loggerLogger, projectrepositoryService, resourceService)
+	deployHandler := deploy.NewHandler(deployService, loggingService, validatorValidator)
 	authRepository, err := auth.NewRepository(database)
 	if err != nil {
 		return nil, err
 	}
-	authService := auth.NewService(configConfig, authRepository, userRepository, loggerLogger)
+	authService := auth.NewService(configConfig, authRepository, repository, loggerLogger)
 	authHandler := auth2.NewHandler(configConfig, authService, validatorValidator)
 	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger)
-	app := New(loggerLogger, configConfig, handler, database, imageHandler, svcdeployHandler, svcdeployenvHandler, userHandler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, projectenvHandler, ecrHandler, dockerhubHandler, buildHandler, monitoringHandler, reverseProxy, githubapiHandler, deployHandler, authHandler, middlewareMiddleware)
+	app := New(loggerLogger, configConfig, database, handler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, ecrHandler, dockerhubHandler, buildHandler, reverseProxy, githubapiHandler, deployHandler, authHandler, middlewareMiddleware)
 	return app, nil
 }
 
@@ -146,11 +128,7 @@ func Initialize() (*App, error) {
 type App struct {
 	Logger                      *logger.Logger
 	Config                      *config.Config
-	GreetingHandler             *greeting.Handler
 	MongoDatabase               *mongo.Database
-	ImageHandler                *image2.Handler
-	ServiceDeployment           *svcdeploy2.Handler
-	ServiceDeploymentEnv        *svcdeployenv2.Handler
 	UserHandler                 *user2.Handler
 	ResourceHandler             *resource2.Handler
 	RoleHandler                 *role2.Handler
@@ -158,12 +136,10 @@ type App struct {
 	ResourceRelationshipHandler *resourcerelationship2.Handler
 	JobHandler                  *job2.Handler
 	RegisterProviderHandler     *regproviders2.Handler
-	ProjectEnvironmentHandler   *projectenv2.Handler
 	ECRHandler                  *ecr.Handler
 	DockerHubHandler            *dockerhub.Handler
 	BuildHandler                *build.Handler
 	DeployHandler               *deploy.Handler
-	MonitoringHandler           *monitoring.Handler
 	ReverseProxyHandler         *reverseproxy.ReverseProxy
 	GithubAPIHandler            *githubapi2.Handler
 	AuthHandler                 *auth2.Handler
@@ -173,11 +149,7 @@ type App struct {
 func New(
 	Logger *logger.Logger,
 	Config *config.Config,
-	GreetingHandler *greeting.Handler,
 	MongoDatabase *mongo.Database,
-	ImageHandler *image2.Handler,
-	ServiceDeployment *svcdeploy2.Handler,
-	ServiceDeploymentEnv *svcdeployenv2.Handler,
 	UserHandler *user2.Handler,
 	ResourceHandler *resource2.Handler,
 	RoleHandler *role2.Handler,
@@ -185,11 +157,9 @@ func New(
 	ResourceRelationshipHandler *resourcerelationship2.Handler,
 	JobHandler *job2.Handler,
 	RegisterProviderHandler *regproviders2.Handler,
-	ProjectEnvironmentHandler *projectenv2.Handler,
 	ECRHandler *ecr.Handler,
 	DockerHubHandler *dockerhub.Handler,
 	BuildHandler *build.Handler,
-	MonitoringHandler *monitoring.Handler,
 	ReverseProxyHandler *reverseproxy.ReverseProxy,
 	GithubAPIHandler *githubapi2.Handler,
 	DeployHandler *deploy.Handler,
@@ -199,11 +169,7 @@ func New(
 	return &App{
 		Logger,
 		Config,
-		GreetingHandler,
 		MongoDatabase,
-		ImageHandler,
-		ServiceDeployment,
-		ServiceDeploymentEnv,
 		UserHandler,
 		ResourceHandler,
 		RoleHandler,
@@ -211,12 +177,10 @@ func New(
 		ResourceRelationshipHandler,
 		JobHandler,
 		RegisterProviderHandler,
-		ProjectEnvironmentHandler,
 		ECRHandler,
 		DockerHubHandler,
 		BuildHandler,
 		DeployHandler,
-		MonitoringHandler,
 		ReverseProxyHandler,
 		GithubAPIHandler,
 		AuthHandler,

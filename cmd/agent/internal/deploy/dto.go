@@ -14,3 +14,9 @@ type ListDeploymentQuery struct {
 type DeploymentResponse struct {
 	Message string `json:"message"`
 }
+
+type GetServiceDeployment struct {
+	ProjectId     string
+	DeploymentEnv string `form:"deployment_env"`
+	ServiceName   string
+}

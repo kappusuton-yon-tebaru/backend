@@ -68,6 +68,13 @@ definitions:
       parent_id:
         type: string
     type: object
+  cmd_backend_internal_deploy.GetLogResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Log'
+        type: array
+    type: object
   cmd_backend_internal_deploy.HealthCheckInfo:
     properties:
       path:
@@ -94,6 +101,13 @@ definitions:
     required:
     - service_name
     - tag
+    type: object
+  cmd_backend_internal_job.GetLogResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Log'
+        type: array
     type: object
   deploy.DeleteDeploymentRequest:
     properties:
@@ -208,6 +222,15 @@ definitions:
       id:
         type: string
       name:
+        type: string
+    type: object
+  github_com_kappusuton-yon-tebaru_backend_internal_models.Log:
+    properties:
+      id:
+        type: string
+      log:
+        type: string
+      timestamp:
         type: string
     type: object
   setting.SetWorkerPoolRequest:
@@ -345,7 +368,80 @@ paths:
       summary: List all job parents
       tags:
       - Jobs
-  /jobs/{jobParentId}:
+  /jobs/{jobId}:
+    get:
+      parameters:
+      - description: Job Id
+        in: path
+        name: jobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Job'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Get job by id
+      tags:
+      - Jobs
+  /jobs/{jobId}/log:
+    get:
+      description: Log jobs
+      parameters:
+      - description: Job Id
+        in: path
+        name: jobId
+        required: true
+        type: string
+      - description: Cursor
+        in: query
+        name: cursor
+        type: string
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Cursor direction defaults to `newer`
+        enum:
+        - newer
+        - older
+        in: query
+        name: direction
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_job.GetLogResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Log jobs
+      tags:
+      - Jobs
+  /jobs/{jobParentId}/parent:
     get:
       parameters:
       - description: Job Parent Id
@@ -503,9 +599,6 @@ paths:
         name: sort_order
         type: string
       - description: Deployment Environment defaults to 'default' if not specified
-        enum:
-        - asc
-        - desc
         in: query
         name: deployment_env
         type: string
@@ -541,7 +634,7 @@ paths:
         type: string
       - description: |-
           Optional fields:
-           - deployment_env (service will be deployed on __default__ if null)
+           - deployment_env (service will be deployed on `default` if null)
            - services.\*.port
            - services.\*.secret_name
            - services.\*.health_check
@@ -557,7 +650,107 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/cmd_backend_internal_deploy.DeployResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
       summary: Deploy services in project
+      tags:
+      - Deployment
+  /project/{projectId}/deploy/{serviceName}:
+    get:
+      description: Get service deployment
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: Service Name
+        in: path
+        name: serviceName
+        required: true
+        type: string
+      - description: Deployment Environment defaults to 'default' if not specified
+        in: query
+        name: deployment_env
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_models.Deployment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Get service deployment
+      tags:
+      - Deployment
+  /project/{projectId}/deploy/log:
+    get:
+      description: Log deployment
+      parameters:
+      - description: Project Id
+        in: path
+        name: projectId
+        required: true
+        type: string
+      - description: Service Name
+        in: query
+        name: service_name
+        required: true
+        type: string
+      - description: Deployment Env defaults to `default`
+        in: query
+        name: deploy_env
+        type: string
+      - description: Cursor
+        in: query
+        name: cursor
+        type: string
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Cursor direction defaults to `newer`
+        enum:
+        - newer
+        - older
+        in: query
+        name: direction
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cmd_backend_internal_deploy.GetLogResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_kappusuton-yon-tebaru_backend_internal_httputils.ErrResponse'
+      summary: Log deployment
       tags:
       - Deployment
   /project/{projectId}/deployenv:

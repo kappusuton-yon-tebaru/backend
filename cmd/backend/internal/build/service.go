@@ -20,13 +20,13 @@ import (
 )
 
 type Service struct {
-	rmq                *rmq.BuilderRmq
+	rmq                *rmq.Rmq
 	jobService         *job.Service
 	logger             *logger.Logger
 	projectRepoService *projectrepository.Service
 }
 
-func NewService(rmq *rmq.BuilderRmq, jobService *job.Service, logger *logger.Logger, projectRepoService *projectrepository.Service) *Service {
+func NewService(rmq *rmq.Rmq, jobService *job.Service, logger *logger.Logger, projectRepoService *projectrepository.Service) *Service {
 	return &Service{
 		rmq,
 		jobService,

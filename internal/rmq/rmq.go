@@ -3,56 +3,118 @@ package rmq
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 )
 
 const (
 	exchangeName = "amq.topic"
 )
 
-type BuilderRmq struct {
-	Conn  *amqp091.Connection
-	Ch    *amqp091.Channel
-	Queue amqp091.Queue
+type Rmq struct {
+	wg        sync.WaitGroup
+	logger    *logger.Logger
+	conn      *amqp091.Connection
+	ch        *amqp091.Channel
+	queueUri  string
+	queueName string
 }
 
-func New(cfg *config.Config) (*BuilderRmq, error) {
-	conn, err := amqp091.Dial(cfg.ConsumerConfig.QueueUri)
-	if err != nil {
+func New(cfg *config.Config, logger *logger.Logger) (*Rmq, error) {
+	rmq := &Rmq{
+		sync.WaitGroup{},
+		logger,
+		nil,
+		nil,
+		cfg.ConsumerConfig.QueueUri,
+		cfg.ConsumerConfig.OrganizationName,
+	}
+
+	if err := rmq.connect(); err != nil {
 		return nil, err
+	}
+
+	go rmq.autoReconnect()
+
+	return rmq, nil
+}
+
+func (r *Rmq) connect() error {
+	r.wg.Add(1)
+	defer r.wg.Done()
+
+	conn, err := amqp091.Dial(r.queueUri)
+	if err != nil {
+		return err
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = ch.Qos(1, 0, true)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	queue, err := ch.QueueDeclare(cfg.ConsumerConfig.OrganizationName, true, false, false, false, nil)
+	queue, err := ch.QueueDeclare(r.queueName, true, false, false, false, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = ch.QueueBind(queue.Name, fmt.Sprintf("%s.*", queue.Name), exchangeName, false, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	return &BuilderRmq{
-		conn,
-		ch,
-		queue,
-	}, nil
+	r.conn = conn
+	r.ch = ch
+
+	r.logger.Info("rmq connection established", zap.Error(err))
+
+	return nil
 }
 
-func (r *BuilderRmq) Publish(ctx context.Context, key string, body []byte) error {
-	err := r.Ch.PublishWithContext(ctx, exchangeName, fmt.Sprintf("%s.%s", r.Queue.Name, key), false, false, amqp091.Publishing{
+func (r *Rmq) autoReconnect() {
+	for {
+		sig := r.conn.NotifyClose(make(chan *amqp091.Error))
+
+		for {
+			err, ok := <-sig
+			if !ok {
+				break
+			}
+
+			r.logger.Error("rmq connection closed", zap.Error(err))
+
+			if err := r.connect(); err != nil {
+				r.logger.Error("cannot reestablish rmq connection", zap.Error(err))
+				return
+			}
+		}
+	}
+}
+
+func (r *Rmq) Close() error {
+	if err := r.ch.Close(); err != nil {
+		return err
+	}
+
+	if err := r.conn.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Rmq) Publish(ctx context.Context, key string, body []byte) error {
+	r.wg.Wait()
+	err := r.ch.PublishWithContext(ctx, exchangeName, fmt.Sprintf("%s.%s", r.queueName, key), false, false, amqp091.Publishing{
 		ContentType: "text/plain",
 		Body:        body,
 	})
@@ -62,4 +124,14 @@ func (r *BuilderRmq) Publish(ctx context.Context, key string, body []byte) error
 	}
 
 	return nil
+}
+
+func (r *Rmq) Consume(queueName, consumerName string) (<-chan amqp091.Delivery, error) {
+	r.wg.Wait()
+	msgs, err := r.ch.Consume(queueName, consumerName, false, false, false, false, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return msgs, nil
 }
