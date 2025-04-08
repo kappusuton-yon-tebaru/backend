@@ -26,9 +26,10 @@ type CreateRoleDTO struct {
 
 type UpdateRoleDTO struct {
 	RoleName string `json:"role_name" bson:"role_name"`
+	Permissions []ModifyPermissionDTO `bson:"permissions"`
 }
 
-type ModifyPermissionDTO struct {
+type  ModifyPermissionDTO struct {
 	PermissionName string                 `json:"permission_name" bson:"permission_name"`
 	Action         enum.PermissionActions `json:"action" bson:"action"`
 	ResourceId     bson.ObjectID          `json:"resource_id" bson:"resource_id"`

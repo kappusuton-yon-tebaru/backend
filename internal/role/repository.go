@@ -49,6 +49,28 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 	return roles, nil
 }
 
+func (r *Repository) GetRoleByID(ctx context.Context, roleID string) (models.Role, error) {
+	objID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectIDFromHex err:", err)
+		return models.Role{}, err
+	}
+
+	var roleDTO RoleDTO
+	err = r.role.FindOne(ctx, bson.M{"_id": objID}).Decode(&roleDTO)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return models.Role{}, fmt.Errorf("role not found")
+		}
+		log.Println("Error finding role:", err)
+		return models.Role{}, fmt.Errorf("error finding role: %v", err)
+	}
+
+	role := DTOToRole(roleDTO)
+
+	return role, nil
+}
+
 func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
 		"role_name":   dto.RoleName,
@@ -71,12 +93,36 @@ func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID s
 		log.Println("ObjectIDFromHex err")
 		return "", err
 	}
+
+	// Convert incoming permissions to the correct format
+	newPermissions := make([]bson.M, 0, len(dto.Permissions))
+	for _, perm := range dto.Permissions {
+		resourceObjID := perm.ResourceId
+		if err != nil {
+			log.Printf("Invalid resource_id: %v\n", perm.ResourceId)
+			return "", fmt.Errorf("invalid resource_id: %v", perm.ResourceId)
+		}
+
+		if !enum.IsValidPermissionActions(perm.Action) {
+			return "", fmt.Errorf("invalid action: %v", perm.Action)
+		}
+
+		newPermissions = append(newPermissions, bson.M{
+			"_id":             bson.NewObjectID(),
+			"permission_name": perm.PermissionName,
+			"action":          perm.Action,
+			"resource_id":     resourceObjID,
+		})
+	}
+
 	update := bson.M{
 		"$set": bson.M{
 			"role_name":  dto.RoleName,
+			"permissions": newPermissions,
 			"updated_at": time.Now(),
 		},
 	}
+
 	// Update the role in MongoDB
 	result, err := r.role.UpdateOne(ctx, bson.M{"_id": objID}, update)
 	if err != nil {
@@ -84,13 +130,13 @@ func (r *Repository) UpdateRole(ctx context.Context, dto UpdateRoleDTO, roleID s
 		return "", fmt.Errorf("error updating role: %v", err)
 	}
 
-	// Check if any document was modified
 	if result.MatchedCount == 0 {
 		return "", fmt.Errorf("role not found")
 	}
 
 	return objID.Hex(), nil
 }
+
 
 func (r *Repository) DeleteRole(ctx context.Context, filter bson.M) (int64, error) {
 	result, err := r.role.DeleteOne(ctx, filter)

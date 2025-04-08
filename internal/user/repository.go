@@ -187,3 +187,107 @@ func (r *Repository) RemoveRoleInAllUser(ctx context.Context, roleID string) (in
 
 	return result.ModifiedCount, nil
 }
+
+func (r *Repository) GetUsersByRoleID(ctx context.Context, roleID string) ([]models.User, error) {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("ObjectID FromHex error:", err)
+		return nil, err
+	}
+
+	filter := bson.M{
+		"role_ids": bson.M{
+			"$in": []bson.ObjectID{roleObjID},
+		},
+	}
+
+	cursor, err := r.user.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []models.User
+	for cursor.Next(ctx) {
+		var dto UserDTO
+		if err := cursor.Decode(&dto); err != nil {
+			return nil, err
+		}
+		users = append(users, DTOToUser(dto))
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *Repository) UpdateUserRoles(ctx context.Context, roleID string, userIDs []string) error {
+	roleObjID, err := bson.ObjectIDFromHex(roleID)
+	if err != nil {
+		log.Println("Invalid roleID:", err)
+		return err
+	}
+
+	userIDMap := make(map[bson.ObjectID]bool)
+	for _, id := range userIDs {
+		oid, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			log.Println("Invalid userID:", id)
+			continue
+		}
+		userIDMap[oid] = true
+	}
+
+	cur, err := r.user.Find(ctx, bson.M{
+		"role_ids": roleObjID,
+	})
+	if err != nil {
+		log.Println("Error finding users by role_id:", err)
+		return err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		var userDTO UserDTO
+		if err := cur.Decode(&userDTO); err != nil {
+			log.Println("Decode error:", err)
+			continue
+		}
+
+		if !userIDMap[userDTO.Id] {
+			update := bson.M{
+				"$pull": bson.M{"role_ids": roleObjID},
+			}
+			_, err := r.user.UpdateByID(ctx, userDTO.Id, update)
+			if err != nil {
+				log.Println("Error removing role from user:", err)
+			}
+		}
+	}
+
+	for _, id := range userIDs {
+		oid, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			continue
+		}
+
+		filter := bson.M{
+			"_id": oid,
+			"role_ids": bson.M{
+				"$ne": roleObjID,
+			},
+		}
+		update := bson.M{
+			"$push": bson.M{"role_ids": roleObjID},
+		}
+		_, err = r.user.UpdateOne(ctx, filter, update)
+		if err != nil {
+			log.Println("Error adding role to user:", err)
+		}
+	}
+
+	return nil
+}
+

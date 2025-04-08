@@ -27,6 +27,16 @@ func (h *Handler) GetAllRoles(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, roles)
 }
 
+func (h *Handler) GetRoleById(ctx *gin.Context) {
+	id := ctx.Param("role_id")
+	role, err := h.service.GetRoleByID(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, role)
+}
+
 func (h *Handler) CreateRole(ctx *gin.Context) {
 	var roleDTO role.CreateRoleDTO
 

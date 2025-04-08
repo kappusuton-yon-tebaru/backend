@@ -47,6 +47,8 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/users/:id", app.UserHandler.DeleteUserById)
 	r.POST("/users/:user_id/roles/:role_id", app.UserHandler.AddRole)
 	r.PUT("/users/:user_id/roles/:role_id", app.UserHandler.RemoveRole)
+	r.PUT("/users/roles/:role_id", app.UserHandler.UpdateUserRoles)
+	r.GET("/users/roles/:role_id", app.UserHandler.GetUsersByRoleID)
 
 	r.POST("/auth/register", app.AuthHandler.Register)
 	r.POST("/auth/login", app.AuthHandler.Login)
@@ -61,6 +63,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.DELETE("/resources/cascade/:id", app.ResourceHandler.CascadeDeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
+	r.GET("/roles/:role_id", app.RoleHandler.GetRoleById)
 	r.POST("/roles", app.RoleHandler.CreateRole)
 	r.PUT("/roles/:role_id", app.RoleHandler.UpdateRole)
 	r.DELETE("/roles/:role_id", app.RoleHandler.DeleteRoleById)

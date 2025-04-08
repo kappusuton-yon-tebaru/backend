@@ -31,6 +31,16 @@ func (s *Service) GetAllUsers(ctx context.Context) ([]models.User, error) {
 	return users, nil
 }
 
+func (s *Service) GetUsersByRoleID(ctx context.Context, roleID string) ([]models.User, error) {
+	users, err := s.repo.GetUsersByRoleID(ctx, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+
 func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError {
 	objId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
@@ -78,6 +88,16 @@ func (s *Service) RemoveRole(ctx context.Context, userId string, roleId string) 
 		return werror.New().
 			SetCode(http.StatusNotFound).
 			SetMessage("not found")
+	}
+
+	return nil
+}
+
+func (s *Service) UpdateUserRoles(ctx context.Context, roleId string, userIds []string) *werror.WError {
+	err := s.repo.UpdateUserRoles(ctx, roleId, userIds)
+	if err != nil {
+		return werror.NewFromError(err).
+			SetCode(http.StatusBadRequest)
 	}
 
 	return nil
