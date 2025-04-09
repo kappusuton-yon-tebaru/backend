@@ -110,11 +110,13 @@ func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.
 		for _, pod := range pods.Items {
 			for _, condition := range pod.Status.ContainerStatuses {
 				if condition.State.Terminated != nil {
-					fmt.Println("pod terminated")
+					err := deployClient.Delete(ctx, fmt.Sprintf("%s-deployment", dto.ServiceName))
+					if err != nil {
+						s.logger.Error("error occured while deleting deployment", zap.Any("manifest", deployManifest), zap.Error(err))
+						return werror.New().SetMessage("deployment pod terminated")
+					}
 
-					deployClient.Delete(ctx, fmt.Sprintf("%s-deployment", dto.ServiceName))
-
-					return werror.New().SetMessage("pod terminated")
+					return werror.New().SetMessage("deployment pod terminated")
 				}
 			}
 		}
