@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/deployenv"
@@ -69,14 +70,18 @@ func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.
 		return werror.NewFromError(err)
 	}
 
-	svcManifest := kubernetes.ApplyLoadBalancerService(dto)
-	svcClient := s.kube.NewServiceClient(dto.Namespace)
+	if dto.Port != nil {
+		svcManifest := kubernetes.ApplyLoadBalancerService(dto)
+		svcClient := s.kube.NewServiceClient(dto.Namespace)
 
-	_, err = svcClient.Apply(ctx, svcManifest)
-	if err != nil {
-		s.logger.Error("error occured while deploying service", zap.Any("manifest", deployManifest), zap.Error(err))
-		return werror.NewFromError(err)
+		_, err = svcClient.Apply(ctx, svcManifest)
+		if err != nil {
+			s.logger.Error("error occured while deploying service", zap.Any("manifest", deployManifest), zap.Error(err))
+			return werror.NewFromError(err)
+		}
 	}
+
+	podClient := s.kube.NewPodClient(dto.Namespace)
 
 	for {
 		deployedService, err := deployClient.Get(ctx, deployedService.Name)
@@ -95,6 +100,24 @@ func (s *Service) Deploy(ctx context.Context, dto kubernetes.DeployDTO) *werror.
 
 		available := condition.Available != nil &&
 			condition.Available.Status == apicorev1.ConditionTrue
+
+		pods, err := podClient.List(ctx, deployedService.Labels)
+		if err != nil {
+			s.logger.Error("error occured while getting pod status", zap.Any("manifest", deployManifest), zap.Error(err))
+			return werror.NewFromError(err)
+		}
+
+		for _, pod := range pods.Items {
+			for _, condition := range pod.Status.ContainerStatuses {
+				if condition.State.Terminated != nil {
+					fmt.Println("pod terminated")
+
+					deployClient.Delete(ctx, fmt.Sprintf("%s-deployment", dto.ServiceName))
+
+					return werror.New().SetMessage("pod terminated")
+				}
+			}
+		}
 
 		if replicaDeplyed && available && replicaMatched {
 			success = true

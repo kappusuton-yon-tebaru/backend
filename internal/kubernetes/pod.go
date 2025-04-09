@@ -2,7 +2,9 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"strings"
 
 	apicorev1 "k8s.io/api/core/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,6 +39,22 @@ func (p Pod) Delete(ctx context.Context, name string) error {
 	}
 
 	return nil
+}
+
+func (p Pod) List(ctx context.Context, filters map[string]string) (*apicorev1.PodList, error) {
+	labels := []string{}
+	for key, value := range filters {
+		labels = append(labels, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	pod, err := p.client.List(ctx, apimetav1.ListOptions{
+		LabelSelector: strings.Join(labels, ","),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pod, nil
 }
 
 func (p Pod) Get(ctx context.Context, name string) (*apicorev1.Pod, error) {
