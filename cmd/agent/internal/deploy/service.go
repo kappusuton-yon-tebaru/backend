@@ -158,9 +158,7 @@ func (s *Service) DeleteDeployment(ctx context.Context, dto DeleteDeploymentRequ
 
 	serviceClient := s.kube.NewServiceClient(name)
 	err = serviceClient.Delete(ctx, fmt.Sprintf("%s-service", dto.ServiceName))
-	if apierrors.IsNotFound(err) {
-		return werror.NewFromError(err).SetCode(http.StatusBadRequest).SetMessage("service not found")
-	} else if err != nil {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return werror.NewFromError(err)
 	}
 

@@ -184,6 +184,6 @@ func (h *Handler) DeleteDeployment(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, DeploymentResponse{
-		Message: fmt.Sprintf("deleted deployment %s", req.DeploymentEnv),
+		Message: fmt.Sprintf("deleted deployment %s", req.ServiceName),
 	})
 }
