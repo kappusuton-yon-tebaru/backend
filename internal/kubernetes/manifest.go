@@ -135,26 +135,32 @@ func ApplyBuilderConsumerDeploymentManifest(dto ConfigureMaxWorkerDTO, config *c
 }
 
 func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfiguration {
-	port := accorev1.ContainerPort()
+	container := accorev1.Container().
+		WithImagePullPolicy(apicorev1.PullAlways).
+		WithName(dto.ServiceName).
+		WithImage(dto.ImageUri)
+
 	if dto.Port != nil {
-		port = port.WithContainerPort(int32(*dto.Port))
+		container = container.WithPorts(accorev1.ContainerPort().WithContainerPort(int32(*dto.Port)))
 	}
 
 	envs := []*accorev1.EnvVarApplyConfiguration{}
 	for key, val := range dto.Environments {
 		envs = append(envs, accorev1.EnvVar().WithName(key).WithValue(val))
 	}
+	container = container.WithEnv(envs...)
 
-	httpProbe := (*accorev1.ProbeApplyConfiguration)(nil)
 	if dto.HealthCheck != nil {
-		httpProbe = accorev1.Probe().
-			WithHTTPGet(&accorev1.HTTPGetActionApplyConfiguration{
-				Path: &dto.HealthCheck.Path,
-				Port: utils.Pointer(intstr.FromInt32(dto.HealthCheck.Port)),
-			}).
-			WithInitialDelaySeconds(5).
-			WithPeriodSeconds(5).
-			WithTimeoutSeconds(1)
+		container = container.WithReadinessProbe(
+			accorev1.Probe().
+				WithHTTPGet(&accorev1.HTTPGetActionApplyConfiguration{
+					Path: &dto.HealthCheck.Path,
+					Port: utils.Pointer(intstr.FromInt32(dto.HealthCheck.Port)),
+				}).
+				WithInitialDelaySeconds(5).
+				WithPeriodSeconds(5).
+				WithTimeoutSeconds(1),
+		)
 	}
 
 	return acappsv1.Deployment(fmt.Sprintf("%s-deployment", dto.ServiceName), dto.Namespace).
@@ -181,15 +187,7 @@ func ApplyDeploymentManifest(dto DeployDTO) *acappsv1.DeploymentApplyConfigurati
 				}).
 				WithSpec(accorev1.PodSpec().
 					WithServiceAccountName(SystemServiceAccount).
-					WithContainers(
-						accorev1.Container().
-							WithImagePullPolicy(apicorev1.PullAlways).
-							WithName(dto.ServiceName).
-							WithPorts(port).
-							WithImage(dto.ImageUri).
-							WithEnv(envs...).
-							WithReadinessProbe(httpProbe),
-					),
+					WithContainers(container),
 				),
 			),
 		)
