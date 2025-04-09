@@ -118,7 +118,7 @@ func (h *Handler) PodUpdated(oldPod *apicorev1.Pod, newPod *apicorev1.Pod) {
 			}
 
 			logs = append(logs, logging.InsertLogDTO{
-				Log:       fmt.Sprintf("[system] restarting %s service: terminated with exit code: %d, reason: %s", name, terminated.ExitCode, terminated.Reason),
+				Log:       fmt.Sprintf("[system] %s service terminated with exit code: %d, reason: %s", name, terminated.ExitCode, terminated.Reason),
 				Attribute: h.podAttributes(newPod),
 				Timestamp: time.Now(),
 			})
