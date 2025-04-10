@@ -2,6 +2,7 @@ package podevent
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"strings"
 	"sync"
@@ -52,18 +53,7 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 		container = ""
 	}
 
-	attributes, ok := pod.Labels["watchlog.attributes"]
-	if !ok {
-		attributes = ""
-	}
-
-	attrs := map[string]string{}
-	for _, key := range strings.Split(attributes, ".") {
-		val, ok := pod.Labels[key]
-		if ok {
-			attrs[key] = val
-		}
-	}
+	attributes := h.podAttributes(pod)
 
 	term := make(chan struct{})
 
@@ -81,7 +71,7 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 					return
 				default:
 					if err := podWatcher.WatchLog(context.Background(), ch); err != nil {
-						h.logger.Error("error occured while getting pod log", zap.String("pod", pod.Name), zap.Duration("retry", ReconnectTimeout), zap.Error(err))
+						h.logger.Error("error occured while getting pod log", zap.String("pod", pod.Name), zap.Duration("next_retry", ReconnectTimeout), zap.Error(err))
 						time.Sleep(ReconnectTimeout)
 						continue
 					}
@@ -93,31 +83,10 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 
 		for chunk := range chunkLogCh {
 			for _, log := range chunk {
-				maps.Copy(log.Attribute, attrs)
+				maps.Copy(log.Attribute, attributes)
 			}
 
-			switch h.mode {
-			case enum.PodLoggerModeMongoDb:
-				werr := h.loggingService.BatchInsertLog(context.Background(), chunk)
-				if werr != nil {
-					h.logger.Info(
-						"error occured while inserting logs",
-						zap.Error(werr.Err),
-						zap.String("pod", pod.Name),
-						zap.Duration("next_retry", InsertRetryTimeout),
-					)
-
-					go h.retryInsertion(pod.Name, chunk)
-				}
-			default:
-				for _, log := range chunk {
-					h.logger.Info(
-						log.Log,
-						zap.Time("timestamp", log.Timestamp),
-						zap.Any("attribute", log.Attribute),
-					)
-				}
-			}
+			h.insertLog(pod, chunk)
 		}
 	}()
 
@@ -128,7 +97,38 @@ func (h *Handler) PodCreated(pod *apicorev1.Pod) {
 	h.logger.Info("Registered pod", zap.String("namespace", pod.Namespace), zap.String("pod", pod.Name), zap.String("container", container))
 }
 
-func (h *Handler) PodUpdated(oldPod *apicorev1.Pod, newPod *apicorev1.Pod) {}
+func (h *Handler) PodUpdated(oldPod *apicorev1.Pod, newPod *apicorev1.Pod) {
+	restarts := map[string]int32{}
+	for _, status := range newPod.Status.ContainerStatuses {
+		restarts[status.Name] = status.RestartCount
+	}
+
+	for _, status := range oldPod.Status.ContainerStatuses {
+		restarts[status.Name] -= status.RestartCount
+	}
+
+	logs := []logging.InsertLogDTO{}
+	for name, value := range restarts {
+		if value > 0 {
+			terminated := (*apicorev1.ContainerStateTerminated)(nil)
+			for _, condition := range newPod.Status.ContainerStatuses {
+				if condition.Name == name {
+					terminated = condition.State.Terminated
+				}
+			}
+
+			logs = append(logs, logging.InsertLogDTO{
+				Log:       fmt.Sprintf("[system] %s service terminated with exit code: %d, reason: %s", name, terminated.ExitCode, terminated.Reason),
+				Attribute: h.podAttributes(newPod),
+				Timestamp: time.Now(),
+			})
+		}
+	}
+
+	if len(logs) > 0 {
+		h.insertLog(newPod, logs)
+	}
+}
 
 func (h *Handler) PodDeleted(pod *apicorev1.Pod) {
 	h.Lock()
@@ -137,6 +137,48 @@ func (h *Handler) PodDeleted(pod *apicorev1.Pod) {
 	h.Unlock()
 
 	h.logger.Info("Unregistered pod", zap.String("namespace", pod.Namespace), zap.String("pod", pod.Name))
+}
+
+func (h *Handler) podAttributes(pod *apicorev1.Pod) map[string]string {
+	attributes, ok := pod.Labels["watchlog.attributes"]
+	if !ok {
+		attributes = ""
+	}
+
+	attrs := map[string]string{}
+	for _, key := range strings.Split(attributes, ".") {
+		val, ok := pod.Labels[key]
+		if ok {
+			attrs[key] = val
+		}
+	}
+
+	return attrs
+}
+
+func (h *Handler) insertLog(pod *apicorev1.Pod, chunk []logging.InsertLogDTO) {
+	switch h.mode {
+	case enum.PodLoggerModeMongoDb:
+		werr := h.loggingService.BatchInsertLog(context.Background(), chunk)
+		if werr != nil {
+			h.logger.Info(
+				"error occured while inserting logs",
+				zap.Error(werr.Err),
+				zap.String("pod", pod.Name),
+				zap.Duration("next_retry", InsertRetryTimeout),
+			)
+
+			go h.retryInsertion(pod.Name, chunk)
+		}
+	default:
+		for _, log := range chunk {
+			h.logger.Info(
+				log.Log,
+				zap.Time("timestamp", log.Timestamp),
+				zap.Any("attribute", log.Attribute),
+			)
+		}
+	}
 }
 
 func (h *Handler) retryInsertion(pod string, chunk []logging.InsertLogDTO) {
