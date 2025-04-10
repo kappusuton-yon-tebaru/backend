@@ -13,6 +13,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/kubernetes"
 	"github.com/kappusuton-yon-tebaru/backend/internal/logger"
 	"github.com/kappusuton-yon-tebaru/backend/internal/mongodb"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
@@ -58,6 +60,8 @@ func Initialize() (*App, error) {
 		resourcerelationship.NewRepository,
 		resource.NewRepository,
 		resource.NewService,
+		role.NewRepository,
+		user.NewRepository,
 		New,
 	)
 

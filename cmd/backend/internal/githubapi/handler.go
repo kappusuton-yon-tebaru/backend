@@ -14,6 +14,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/projectrepository"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
@@ -404,7 +405,7 @@ func (h *Handler) GetServices(c *gin.Context) {
 
 // create repo in github then project and projectrepo
 func (h *Handler) CreateRepository(c *gin.Context) {
-	project_space_id := c.Param("project_space_id")
+	project_space_id := c.Param("id")
 	var req models.CreateRepoRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -439,10 +440,19 @@ func (h *Handler) CreateRepository(c *gin.Context) {
 	}
 	// create project from repo name
 	project := resource.CreateResourceDTO{
+		ParentId: 	project_space_id,
 		ResourceName: repo.FullName,
 		ResourceType: "PROJECT",
 	}
-	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, project_space_id)
+	userID,err := utils.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	resourceId, err := h.resourceService.CreateResource(c.Request.Context(), project, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

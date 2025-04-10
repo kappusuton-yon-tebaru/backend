@@ -17,6 +17,7 @@ type ResourceDTO struct {
 }
 
 type CreateResourceDTO struct {
+	ParentId     string            `json:"parent_id" bson:"parent_id"`
 	ResourceName string            `json:"resource_name" bson:"resource_name"`
 	ResourceType enum.ResourceType `json:"resource_type" bson:"resource_type"`
 }

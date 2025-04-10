@@ -10,24 +10,48 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/httputils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/query"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
 	"github.com/kappusuton-yon-tebaru/backend/internal/utils"
 	"github.com/kappusuton-yon-tebaru/backend/internal/validator"
 )
 
 type Handler struct {
-	service   *resource.Service
-	validator *validator.Validator
+	service     *resource.Service
+	validator   *validator.Validator
+	roleService *role.Service
 }
 
-func NewHandler(service *resource.Service, validator *validator.Validator) *Handler {
+func NewHandler(service *resource.Service, validator *validator.Validator, roleService *role.Service) *Handler {
 	return &Handler{
 		service,
 		validator,
+		roleService,
 	}
 }
 
 func (h *Handler) GetAllResources(ctx *gin.Context) {
-	resources, err := h.service.GetAllResources(ctx)
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	permissions, err := h.roleService.GetUserPermissions(ctx, userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user permissions",
+			"error":   err.Error(),
+		})
+		return
+	}
+	resourceIds := make([]string, 0)
+	for _, permission := range permissions {
+		resourceIds = append(resourceIds, permission.ResourceId)
+	}
+
+	resources, err := h.service.GetAllResources(ctx, resourceIds)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -54,7 +78,7 @@ func (h *Handler) GetResourceByID(ctx *gin.Context) {
 }
 
 func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
-	parentId := ctx.Param("parent_id")
+	parentId := ctx.Param("id")
 	if parentId == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "parent_id is required"})
 	}
@@ -106,7 +130,27 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 		WithSortQuery(sortFilter).
 		WithQueryFilter(queryFilter)
 
-	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId)
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	permissions, err := h.roleService.GetUserPermissions(ctx, userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user permissions",
+			"error":   err.Error(),
+		})
+		return
+	}
+	resourceIds := make([]string, 0)
+	for _, permission := range permissions {
+		resourceIds = append(resourceIds, permission.ResourceId)
+	}
+	resources, err := h.service.GetChildrenResourcesByParentID(ctx, queryParam, parentId,resourceIds)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -116,8 +160,6 @@ func (h *Handler) GetChildrenResourcesByParentID(ctx *gin.Context) {
 }
 
 func (h *Handler) CreateResource(ctx *gin.Context) {
-	id := ctx.DefaultQuery("parent_id", "")
-
 	var resourceDTO resource.CreateResourceDTO
 
 	if err := ctx.ShouldBindJSON(&resourceDTO); err != nil {
@@ -128,7 +170,50 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		return
 	}
 
-	resourceId, err := h.service.CreateResource(ctx, resourceDTO, id)
+	if err := h.validator.Struct(CreateResourceRequest{
+		ResourceName: resourceDTO.ResourceName,
+		ParentId:     resourceDTO.ParentId,
+		ResourceType: resourceDTO.ResourceType,
+	}); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
+	// Check user permission to create resource under parentId
+	userID, err := utils.GetUserID(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, map[string]any{
+			"message": "failed to get user id",
+			"error":   err.Error(),
+		})
+		return
+	}
+	if resourceDTO.ParentId != "" { // user is NOT creating an org, must check if user has permission to create resource under parentId
+		permissions, err := h.roleService.GetUserPermissions(ctx, userID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]any{
+				"message": "failed to get user permissions",
+				"error":   err.Error(),
+			})
+			return
+		}
+		havePermission := false
+		for _, permission := range permissions {
+			if permission.ResourceId == resourceDTO.ParentId && permission.Action == enum.PermissionActionsWrite {
+				havePermission = true
+				break
+			}
+		}
+		if !havePermission {
+			ctx.JSON(http.StatusForbidden, map[string]any{
+				"message": "user does not have permission to create resource in this organization",
+			})
+			return
+		}
+	}
+
+	resourceId, err := h.service.CreateResource(ctx, resourceDTO, userID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]any{
 			"message": "failed to create resource",
@@ -158,6 +243,15 @@ func (h *Handler) UpdateResource(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
 			"error":   err.Error(),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(UpdateResourceRequest{
+		ResourceName: resourceDTO.ResourceName,
+	}); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
 		})
 		return
 	}

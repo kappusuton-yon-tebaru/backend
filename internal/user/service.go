@@ -57,14 +57,13 @@ func (s *Service) DeleteUserById(ctx context.Context, id string) *werror.WError 
 	return nil
 }
 
-func (s *Service) AddRole(ctx context.Context, userId string, roleId string) (string, *werror.WError) {
-	roleId, err := s.repo.AddRole(ctx, userId, roleId)
+func (s *Service) AddRole(ctx context.Context, userId string, roleId string) (string, error) {
+	userId, err := s.repo.AddRole(ctx, userId, roleId)
 	if err != nil {
-		return "", werror.NewFromError(err).
-			SetCode(http.StatusBadRequest)
+		return "", err
 	}
 
-	return roleId, nil
+	return userId, nil
 }
 
 func (s *Service) RemoveRole(ctx context.Context, userId string, roleId string) *werror.WError {

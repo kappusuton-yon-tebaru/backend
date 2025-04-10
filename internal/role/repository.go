@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	// "errors"
 
 	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	"github.com/kappusuton-yon-tebaru/backend/internal/models"
@@ -15,11 +16,13 @@ import (
 
 type Repository struct {
 	role *mongo.Collection
+	user *mongo.Collection
 }
 
 func NewRepository(db *mongo.Database) *Repository {
 	return &Repository{
 		role: db.Collection("roles"),
+		user: db.Collection("users"),
 	}
 }
 
@@ -48,6 +51,23 @@ func (r *Repository) GetAllRoles(ctx context.Context) ([]models.Role, error) {
 
 	return roles, nil
 }
+
+func (r *Repository) GetRoleByFilter(ctx context.Context, filter bson.M) (models.Role, error) {
+	var role RoleDTO
+
+	err := r.role.FindOne(ctx, filter).Decode(&role)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// No document found, return an empty Role
+			return models.Role{}, nil
+		}
+		log.Println("Error in FindOne:", err)
+		return models.Role{}, err
+	}
+
+	// Convert DTO to the actual model
+	return DTOToRole(role), nil
+}	
 
 func (r *Repository) CreateRole(ctx context.Context, dto CreateRoleDTO) (string, error) {
 	role := bson.M{
@@ -261,4 +281,86 @@ func (r *Repository) DeletePermission(ctx context.Context, roleID string, permID
 	}
 
 	return result.ModifiedCount, nil
+}
+
+func (r *Repository) GetUserPermissions(ctx context.Context, userID string) ([]models.Permission, error) {
+	userObjID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Println("ObjectID FromHex err")
+		return nil, err
+	}
+
+	pipeline := []bson.M{
+		{
+			"$match": bson.M{"_id": userObjID}, 
+		},
+		{
+			"$lookup": bson.M{
+				"from":         "roles",             
+				"localField":   "role_ids",         
+				"foreignField": "_id",               
+				"as":           "roles",            
+			},
+		},
+		{
+			"$unwind": bson.M{
+				"path": "$roles",
+			},
+		},
+		
+		{
+			"$group": bson.M{
+				"_id":         "$_id",
+				"permissions": bson.M{"$push": "$roles.permissions"}, // Collect all permissions
+			},
+		},
+		{
+			"$project": bson.M{
+				"_id":   0,
+				"permissions": bson.M{
+					"$reduce": bson.M{ // Flatten permissions array
+						"input":        "$permissions",
+						"initialValue": bson.A{},
+						"in": bson.M{
+							"$concatArrays": bson.A{"$$value", "$$this"},
+						},
+					},
+				},
+			},
+		},
+		{
+			"$unwind": bson.M{
+				"path": "$permissions",
+			},
+		},
+		{
+			"$replaceRoot": bson.M{ 
+				"newRoot": "$permissions",
+			},
+		},
+	}
+	
+	cur, err := r.user.Aggregate(ctx, pipeline)
+	if err != nil {
+		fmt.Println("Error in Aggregate:", err)
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	permissions := make([]models.Permission, 0)
+
+	for cur.Next(ctx) {
+		var permission PermissionDTO
+
+		err = cur.Decode(&permission)
+		if err != nil {
+			log.Println("Error in Find:", err)
+			return nil, err
+		}
+
+		permissions = append(permissions, DTOToPermission(permission))
+
+	}
+
+	return permissions, nil
 }

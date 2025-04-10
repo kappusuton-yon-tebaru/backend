@@ -5,6 +5,7 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/cmd/backend/backend"
 	_ "github.com/kappusuton-yon-tebaru/backend/cmd/backend/docs"
 	"github.com/kappusuton-yon-tebaru/backend/internal/config"
+	"github.com/kappusuton-yon-tebaru/backend/internal/enum"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -34,7 +35,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	}
 
 	// example for authenticated route
-	// authenticated := r.Group("/", app.Middleware.Authentication())
+	authenticated := r.Group("/", app.Middleware.Authentication())
 	// authenticated.GET("/", app.GreetingHandler.Greeting)
 
 	r.GET("/users", app.UserHandler.GetAllUsers)
@@ -46,32 +47,33 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.POST("/auth/login", app.AuthHandler.Login)
 	r.POST("/auth/logout", app.AuthHandler.Logout)
 
-	r.GET("/resources", app.ResourceHandler.GetAllResources)
-	r.GET("/resources/:id", app.ResourceHandler.GetResourceByID)
-	r.GET("/resources/children/:parent_id", app.ResourceHandler.GetChildrenResourcesByParentID)
-	r.POST("/resources", app.ResourceHandler.CreateResource) // ?parent_id={id}
-	r.PUT("/resources/:id", app.ResourceHandler.UpdateResource)
-	r.DELETE("/resources/:id", app.ResourceHandler.DeleteResource)
-	r.DELETE("/resources/cascade/:id", app.ResourceHandler.CascadeDeleteResource)
+	authenticated.GET("/resources", app.ResourceHandler.GetAllResources)
+	authenticated.GET("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetResourceByID)
+	authenticated.GET("/resources/children/:id", app.Middleware.HavePermission(enum.PermissionActionsRead), app.ResourceHandler.GetChildrenResourcesByParentID)
+	authenticated.POST("/resources", app.ResourceHandler.CreateResource) 
+	authenticated.PUT("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.UpdateResource)
+	authenticated.DELETE("/resources/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.DeleteResource)
+	authenticated.DELETE("/resources/cascade/:id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.ResourceHandler.CascadeDeleteResource)
 
 	r.GET("/roles", app.RoleHandler.GetAllRoles)
-	r.POST("/roles", app.RoleHandler.CreateRole)
-	r.PUT("/roles/:role_id", app.RoleHandler.UpdateRole)
-	r.DELETE("/roles/:role_id", app.RoleHandler.DeleteRoleById)
-	r.POST("/roles/:role_id/permissions", app.RoleHandler.AddPermission)
-	r.PUT("/roles/:role_id/permissions/:perm_id", app.RoleHandler.UpdatePermission)
-	r.DELETE("/roles/:role_id/permissions/:perm_id", app.RoleHandler.DeletePermission)
+	authenticated.POST("/roles", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.CreateRole)
+	authenticated.PUT("/roles/:role_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.UpdateRole)
+	authenticated.DELETE("/roles/:role_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.DeleteRoleById)
+	authenticated.POST("/roles/:role_id/permissions", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.AddPermission)
+	authenticated.PUT("/roles/:role_id/permissions/:perm_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.UpdatePermission)
+	authenticated.DELETE("/roles/:role_id/permissions/:perm_id", app.Middleware.HavePermission(enum.PermissionActionsWrite), app.RoleHandler.DeletePermission)
+	authenticated.GET("/roles/me/permissions", app.RoleHandler.GetUserPermissions)
 
 	r.GET("/projrepos", app.ProjectRepositoryHandler.GetAllProjectRepositories)
 	r.GET("/projrepos/project/:project_id", app.ProjectRepositoryHandler.GetProjectRepositoryByProjectId)
 	r.POST("/projrepos/:id", app.ProjectRepositoryHandler.CreateProjectRepository)
-	r.PATCH("/projrepos/:id", app.ProjectRepositoryHandler.UpdateProjectRepositoryRegistryProvider)
+	// r.PATCH("/projrepos/:id", app.ProjectRepositoryHandler.UpdateProjectRepositoryRegistryProvider)
 	r.DELETE("/projrepos/:id", app.ProjectRepositoryHandler.DeleteProjectRepository)
 
-	r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
-	r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourceRelationshipByParentID)
-	r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
-	r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
+	// r.GET("/resourcerelas", app.ResourceRelationshipHandler.GetAllResourceRelationships)
+	// r.GET("/resourcerelas/:parent_id", app.ResourceRelationshipHandler.GetChildrenResourceRelationshipByParentID)
+	// r.POST("/resourcerelas", app.ResourceRelationshipHandler.CreateResourceRelationship)
+	// r.DELETE("/resourcerelas/:id", app.ResourceRelationshipHandler.DeleteResourceRelationship)
 
 	r.GET("/jobs", app.JobHandler.GetAllJobParents)
 	r.GET("/jobs/:id/parent", app.JobHandler.GetAllJobsByParentId)
@@ -109,7 +111,7 @@ func (r *Router) RegisterRoutes(app *backend.App) {
 	r.PUT("/github/:owner/:repo/push", app.GithubAPIHandler.UpdateFileContent)
 	r.GET("/github/:owner/:repo/commit-metadata", app.GithubAPIHandler.GetCommitMetadata)           // ?path={filePath}&branch={branchName}
 	r.GET("/github/:owner/:repo/file-content", app.GithubAPIHandler.FetchFileContent)               // ?path={filePath}&branch={branchName}
-	r.POST("/github/create-repo/:project_space_id/resource", app.GithubAPIHandler.CreateRepository) // might need some changes
+	authenticated.POST("/github/create-repo/:id/resource",app.Middleware.HavePermission(enum.PermissionActionsWrite), app.GithubAPIHandler.CreateRepository) // might need some changes
 	r.GET("/github/login", app.GithubAPIHandler.RedirectToGitHub)
 	r.GET("/github/callback", app.GithubAPIHandler.GitHubCallback) // ?code={code got from the above api in search bar}
 

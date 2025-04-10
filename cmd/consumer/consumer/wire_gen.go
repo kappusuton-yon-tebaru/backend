@@ -18,6 +18,8 @@ import (
 	"github.com/kappusuton-yon-tebaru/backend/internal/resource"
 	"github.com/kappusuton-yon-tebaru/backend/internal/resourcerelationship"
 	"github.com/kappusuton-yon-tebaru/backend/internal/rmq"
+	"github.com/kappusuton-yon-tebaru/backend/internal/role"
+	"github.com/kappusuton-yon-tebaru/backend/internal/user"
 )
 
 // Injectors from wire.go:
@@ -49,7 +51,12 @@ func Initialize() (*App, error) {
 	handler := build.NewHandler(loggerLogger, buildService)
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
-	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
+	roleRepository := role.NewRepository(database)
+	userRepository, err := user.NewRepository(database)
+	if err != nil {
+		return nil, err
+	}
+	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository, roleRepository, userRepository)
 	deployenvService := deployenv.NewService(kubernetesKubernetes, resourceService, loggerLogger)
 	deployService := deploy.NewService(kubernetesKubernetes, loggerLogger, service, deployenvService)
 	deployHandler := deploy.NewHandler(loggerLogger, deployService)

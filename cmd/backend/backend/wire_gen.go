@@ -67,10 +67,10 @@ func Initialize() (*App, error) {
 	handler := user2.NewHandler(service, validatorValidator)
 	resourceRepository := resource.NewRepository(database)
 	resourcerelationshipRepository := resourcerelationship.NewRepository(database)
-	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository)
-	resourceHandler := resource2.NewHandler(resourceService, validatorValidator)
 	roleRepository := role.NewRepository(database)
+	resourceService := resource.NewService(resourceRepository, resourcerelationshipRepository, roleRepository, repository)
 	roleService := role.NewService(roleRepository, repository)
+	resourceHandler := resource2.NewHandler(resourceService, validatorValidator, roleService)
 	roleHandler := role2.NewHandler(roleService)
 	projectrepositoryRepository := projectrepository.NewRepository(database)
 	projectrepositoryService := projectrepository.NewService(projectrepositoryRepository)
@@ -118,7 +118,7 @@ func Initialize() (*App, error) {
 	}
 	authService := auth.NewService(configConfig, authRepository, repository, loggerLogger)
 	authHandler := auth2.NewHandler(configConfig, authService, validatorValidator)
-	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger)
+	middlewareMiddleware := middleware.NewMiddleware(configConfig, authService, loggerLogger, roleService)
 	app := New(loggerLogger, configConfig, database, handler, resourceHandler, roleHandler, projectrepositoryHandler, resourcerelationshipHandler, jobHandler, regprovidersHandler, ecrHandler, dockerhubHandler, buildHandler, reverseProxy, githubapiHandler, deployHandler, authHandler, middlewareMiddleware)
 	return app, nil
 }

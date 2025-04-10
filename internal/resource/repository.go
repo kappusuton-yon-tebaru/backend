@@ -21,6 +21,7 @@ type Repository struct {
 	resource     *mongo.Collection
 	resourceRela *mongo.Collection
 	projectRepo  *mongo.Collection
+	role         *mongo.Collection
 }
 
 func NewRepository(db *mongo.Database) *Repository {
@@ -28,11 +29,12 @@ func NewRepository(db *mongo.Database) *Repository {
 		resource:     db.Collection("resources"),
 		resourceRela: db.Collection("resource_relationships"),
 		projectRepo:  db.Collection("projects_repositories"),
+		role:         db.Collection("roles"),
 	}
 }
 
-func (r *Repository) GetAllResources(ctx context.Context) ([]models.Resource, error) {
-	cur, err := r.resource.Find(ctx, bson.D{})
+func (r *Repository) GetAllResources(ctx context.Context, filter map[string]any) ([]models.Resource, error) {
+	cur, err := r.resource.Find(ctx, filter)
 	if err != nil {
 		log.Println("Error in Find:", err)
 		return nil, err
@@ -74,10 +76,18 @@ func (r *Repository) GetResourceByFilter(ctx context.Context, filter map[string]
 	return DTOToResource(resource), nil
 }
 
-func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string) (models.Paginated[ResourceDTO], error) {
+func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.QueryParam, parentId string, ids []string) (models.Paginated[ResourceDTO], error) {
 	objId, err := bson.ObjectIDFromHex(parentId)
 	if err != nil {
 		return models.Paginated[ResourceDTO]{}, err
+	}
+	viewAbleIds := make([]bson.ObjectID, 0)
+	for _, id := range ids {
+		objId, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			return models.Paginated[ResourceDTO]{}, err
+		}
+		viewAbleIds = append(viewAbleIds, objId)
 	}
 	pipeline := utils.NewFilterAggregationPipeline(queryParam,
 		[]map[string]any{
@@ -97,6 +107,11 @@ func (r *Repository) GetResourcesByFilter(ctx context.Context, queryParam query.
 			{
 				"$match": map[string]any{
 					"relationships.parent_resource_id": objId,
+				},
+			},
+			{
+				"$match": map[string]any{
+					"_id": map[string]any{"$in": viewAbleIds},
 				},
 			},
 		},
@@ -260,6 +275,30 @@ func (r *Repository) CascadeDeleteResource(ctx context.Context, resourceID strin
 		log.Println("r.resourceRela.DeleteMany err")
 
 		return err
+	}
+	// Delete Roles and permissions
+	if resourceType == enum.ResourceTypeOrganization {
+		// If deleting org -> delete all roles that is in this org
+		_, err = r.role.DeleteMany(ctx, map[string]any{"org_id": objId})
+		if err != nil {
+			log.Println("r.role.DeleteMany err")
+
+			return err
+		}
+	} else {
+		// Delete all permissions associated with this resource ID
+		update := bson.M{
+			"$pull": bson.M{
+				"permissions": bson.M{"resource_id": objId},
+			},
+		}
+
+		// Apply the update to all roles
+		_, err = r.role.UpdateMany(ctx, bson.M{}, update)
+		if err != nil {
+			log.Println("Error deleting permissions with resource_id:", err)
+			return err
+		}
 	}
 
 	// Delete the resource itself
