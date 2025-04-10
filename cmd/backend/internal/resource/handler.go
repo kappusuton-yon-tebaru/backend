@@ -169,6 +169,17 @@ func (h *Handler) CreateResource(ctx *gin.Context) {
 		})
 		return
 	}
+
+	if err := h.validator.Struct(CreateResourceRequest{
+		ResourceName: resourceDTO.ResourceName,
+		ParentId:     resourceDTO.ParentId,
+		ResourceType: resourceDTO.ResourceType,
+	}); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
+		})
+		return
+	}
 	// Check user permission to create resource under parentId
 	userID, err := utils.GetUserID(ctx)
 	if err != nil {
@@ -232,6 +243,15 @@ func (h *Handler) UpdateResource(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, map[string]any{
 			"message": "invalid input",
 			"error":   err.Error(),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(UpdateResourceRequest{
+		ResourceName: resourceDTO.ResourceName,
+	}); err != nil {
+		ctx.JSON(http.StatusBadRequest, map[string]any{
+			"messages": h.validator.Translate(err),
 		})
 		return
 	}
